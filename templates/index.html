@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>Welcome to the Intermural Futsal League</h1>
+<br>
+
+<link rel="stylesheet" type="text/css" href="/static/slides.css">
+
+<div class="top-screen">     
+    <div class="text">
+        <div class="top-text">
+            <h1> Haverford Intramural Futsal League </h1>
+            <h2> The best Futsal League in the Tri-Co </h2>
+        </div>
+    </div>
+</div>
+
+<div class = "top-container">
+    <h3>IFL Promotional Video</h3>
+    <div class="video-container">
+        <video controls autoplay loop muted>
+            <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4"allowfullscreen>
+            Your browser does not support the video tag.
+        </video>
+    </div>
+</div>
+
+
+<div class="bottom-screen totw">
+
+    <h1>TOTW</h1>
+
+    <div class="container">
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="" width="fit-content" height="fit-content">
+        </div>
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="" width="fit-content" height="fit-content">
+        </div>
+         
+    </div>
+    <div class="container">
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+        <div class="card">
+            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        </div>
+    </div>
+</div>
+
+
+<section id="slideshow">
+    <div class="entire-content">
+      <div class="content-carrousel">
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
+      </div>
+  </div>
+</section>
+
+{% endblock %}

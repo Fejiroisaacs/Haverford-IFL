@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Players{% endblock %}
+
+{% block content %}
+<h1>Our Players</h1>
+<p>Details about players will go here.</p>
+
+<h1>Player Search</h1> 
+<form method="get" action="/search"> 
+    <input type="text" name="query" id="search"> 
+    <input type="submit" value="Search">
+</form>
+
+<div class="results"> 
+    {% if count > 0 %} 
+        {% for player in Players %}
+        <div class="stats player-card">
+            <h3>{{player["Name"]}}</h3>
+                {%for stat in player%}
+                    {% if "Name" not in stat %}
+                        <p class="stat">{{stat}}: {{player[stat]}}</p>
+                    {%endif%}
+                {%endfor%}
+        </div>
+        {%endfor%}
+    {% else %}
+        <p>No players found.</p>
+    {% endif %}
+</div>
+<style>
+    .results {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .player-card {
+        background-color: #f5f5f5;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+        padding: 20px;
+        text-align: center;
+        width: auto;
+        height: auto;
+    }
+    
+    .player-card h2 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .player-card p {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .player-card .stats {
+        display: flex;
+        flex-direction: column;
+        margin-top: 15px;
+    }
+    
+    .player-card .stat {
+        font-size: 16px;
+        color: #444;
+    }
+
+    .stats .player-card :hover {
+        background-color: black;
+        color: white;
+        box-shadow: 0 0 7px black;
+        transition: ease-in-out;
+    }
+    
+</style>
+{% endblock %}
