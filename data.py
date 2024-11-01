@@ -1,7 +1,7 @@
 import requests, pyrebase, json, pandas as pd
 
 
-firebase = pyrebase.initialize_app(json.load(open("firebase/cred.json")))
+firebase = pyrebase.initialize_app(json.load(open("cred.json")))
 fb_storage = firebase.storage()
 database = firebase.database()
 

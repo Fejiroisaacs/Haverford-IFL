@@ -10,7 +10,7 @@ import pyrebase, json
 from fastapi import APIRouter
 
 router = APIRouter()
-firebase_config = json.load(open("firebase/cred.json"))
+firebase_config = json.load(open("cred.json"))
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
 

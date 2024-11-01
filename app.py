@@ -10,9 +10,9 @@ from routers import matches, signup, login, contact, fantasy, players, settings,
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-firebase_config = json.load(open("firebase/cred.json"))
+firebase_config = json.load(open("cred.json"))
 
-firebase = pyrebase.initialize_app(firebase_config)
+firebase = pyrebase.initialize_app("firebase_config")
 db = firebase.database()
 fb_storage = firebase.storage()
 auth = firebase.auth()

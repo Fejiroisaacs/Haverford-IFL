@@ -12,12 +12,12 @@ from fastapi import APIRouter
 from exceptions import UserNameAlreadyExists, InvalidUserName
 from routers import login
 
-cred = credentials.Certificate('firebase/cred.json')
+cred = credentials.Certificate('cred.json')
 firebase_admin.initialize_app(cred)
 
 
 router = APIRouter()
-firebase_config = json.load(open("firebase/cred.json"))
+firebase_config = json.load(open("cred.json"))
 firebase = pyrebase.initialize_app(firebase_config)
 database = firebase.database()
 auth = firebase.auth()
