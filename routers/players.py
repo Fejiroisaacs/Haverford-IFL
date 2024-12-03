@@ -18,13 +18,12 @@ firebase = pyrebase.initialize_app(firebase_config)
 db = firebase.database() 
 players = db.child("Players").get()
 players = {player.key(): player.val() for player in players}
-print("Doing this")
 
 @router.get("/players", response_class=HTMLResponse)
 async def read_players(request: Request):
     return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": [], "count": 0})
 
-@router.get("/search", response_class=HTMLResponse)
+@router.get("/player_search", response_class=HTMLResponse)
 async def search_players(request: Request, query: str):
     filtered_players = [players[player] for player in players if query.lower() in player.lower()]
     return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": filtered_players, "count": len(filtered_players)})

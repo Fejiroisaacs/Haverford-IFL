@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 firebase_config = json.load(open("cred.json"))
 
-firebase = pyrebase.initialize_app("firebase_config")
+firebase = pyrebase.initialize_app(firebase_config)
 db = firebase.database()
 fb_storage = firebase.storage()
 auth = firebase.auth()
