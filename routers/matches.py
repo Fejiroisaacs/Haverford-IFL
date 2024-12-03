@@ -6,7 +6,7 @@ from pydantic import BaseModel
 import firebase_admin
 from fastapi.responses import RedirectResponse
 from starlette.responses import HTMLResponse, RedirectResponse
-import pyrebase
+import pyrebase, pandas as pd
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -16,4 +16,10 @@ user = None
 
 @router.get("/matches", response_class=HTMLResponse)
 async def read_matches(request: Request):
-    return templates.TemplateResponse("matches.html", {"request": request, "user": user})
+    return templates.TemplateResponse("matches.html", {"request": request, "user": user, "groups": get_table()})
+
+def get_table():
+    data = pd.read_csv("data/table.csv").to_dict(orient='records')
+
+    return [data, data]
+    
