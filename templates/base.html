@@ -4,61 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="shortcut icon" href="/static/Images/Logo/logo.png"  type="image/x-icon">
+    <link rel="shortcut icon" href="/static/Images/Logo/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js" defer></script>
 </head>
+
 <body>
-    <div class="menu">
-        <a href="/" class = "menuOptions">Home</a>   
-        <a href="/matches" class = "menuOptions">Matches</a>
-        <a href="/teams" class = "menuOptions">Teams</a>
-        <a href="/players" class = "menuOptions">Players</a>
-        <a href="/contact" class = "menuOptions">Contact</a>
-        {% if user is not none and 'idToken' in user %}
-        <a href="/fantasy" class = "menuOptions">Fantasy</a>
-        <a href="/settings" class = "menuOptions">Settings</a>
-        <a href="/logout" class = "menuOptions">Logout</a>
-        {% else %}
-        <a href="/signup" class = "menuOptions">Signup</a>
-        <a href="/login" class = "menuOptions">LogIn</a>
-        {% endif %}
-    </div>
+    <header class="headerclass">
+        <div class="menu">
+          <div class="menu-left">
+            <a href="/" class="logo">
+                <img src="/static/Images/Logo/logo.png" alt="Logo" class="logo-image" />
+              </a>
+            <a href="/" class="menuOptions">Home</a>
+            <a href="/matches" class="menuOptions">Matches</a>
+            <a href="/teams" class="menuOptions">Teams</a>
+            <a href="/players" class="menuOptions">Players</a>
+            <a href="/contact" class="menuOptions">Contact</a>
+            <a href="/fantasy" class="menuOptions">Fantasy</a>
+        </div>
+        <div class="menu-right">
+            {% if user is not none and 'idToken' in user %}
+                <a href="/settings" class="menuOptions">Settings</a>
+                <a href="/logout" class="menuOptions">Logout</a>
+            {% else %}
+                <a href="/signup" class="menuOptions">Signup</a>
+                <a href="/login" class="menuOptions">LogIn</a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
 
 
     <div class="nav">
         <div id="mySidenav" class="sidenav" style="z-index:4;">
             <a href="javascript:void(0)" class="closebtnMobile" onclick="closeMobileNav()">&times;</a>
             <a href="/">Home</a>
-            <a href="/matches ">Matches</a>
+            <a href="/matches">Matches</a>
             <a href="/teams">Teams</a>
             <a href="/players">Players</a>
             <a href="/contact">Contact</a>
             {% if user is not none and 'idToken' in user %}
-            <a href="/fantasy" class = "menuOptions">Fantasy</a>
-            <a href="/settings" class = "menuOptions">Settings</a>
-            <a href="/logout" class = "menuOptions">Logout</a>
+            <a href="/fantasy" class="menuOptions">Fantasy</a>
+            <a href="/settings" class="menuOptions">Settings</a>
+            <a href="/logout" class="menuOptions">Logout</a>
             {% else %}
-            <a href="/signup" class = "menuOptions">Signup</a>
-            <a href="/login" class = "menuOptions">Log In</a>
+            <div class="dropdown">
+                <a href="/fantasy" data-toggle="dropdown">Fantasy</a>
+                <div class="dropdown-menu">
+                    <a href="/signup" class="menuOptions dropdown-item">Sign Up</a>
+                    <a href="/login" class="menuOptions dropdown-item">Log In</a>
+                </div>
+            </div>
             {% endif %}
         </div>
-        <span style="font-size:30px;cursor:pointer; margin-left:3%; color: #8B0000; z-index:3;" class="openMenuMobile" onclick="openMobileNav()">&#9776;</span>
-        
+        <span id="navIcon" style="font-size:30px; cursor:pointer; margin-left:3%; color: #8B0000; z-index:1000;" class="openMenuMobile" onclick="openMobileNav()">&#9776;</span>
     </div>
-    
+
     <main>
         {% block content %}{% endblock %}
     </main>
-    
-    <footer class="footer">    
-        <div class="footer-social ">
+
+    <footer class="footer">
+        <div class="footer-social">
             <a id="instagram" href="https://www.instagram.com/ifl_haverford/" target="_blank" class="fa fa-instagram"></a>
         </div>
         <div class="footer-bottom">
-            <em> &copy; 2024 </em>
-        </div>    
+            <em>&copy; 2024</em>
+        </div>
     </footer>
 </body>
 </html>
+
+<style>
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background-color: #000;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-item {
+        color: white;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+
+</style>
