@@ -3,11 +3,9 @@
 {% block title %}Players{% endblock %}
 
 {% block content %}
-<h1>Our Players</h1>
-<p>Details about players will go here.</p>
 
 <h1>Player Search</h1> 
-<form method="get" action="/search"> 
+<form method="get" action="/player_search"> 
     <input type="text" name="query" id="search"> 
     <input type="submit" value="Search">
 </form>
@@ -18,7 +16,7 @@
         <div class="stats player-card">
             <h3>{{player["Name"]}}</h3>
                 {%for stat in player%}
-                    {% if "Name" not in stat %}
+                    {% if "Team(s)" in stat %}
                         <p class="stat">{{stat}}: {{player[stat]}}</p>
                     {%endif%}
                 {%endfor%}
