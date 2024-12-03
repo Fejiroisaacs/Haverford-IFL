@@ -3,6 +3,88 @@
 {% block title %}Fantasy{% endblock %}
 
 {% block content %}
+{#
 <h1>Fantasy IFL</h1>
-<p>Fantasy stuff goes here</p>
+{% if user is not none and 'idToken' in user %} 
+#}
+    <div class="fantasy-container">
+        <div class="fantasy-section">
+            <h2>Current Team</h2>
+            <ul>
+                <li>Player 1</li>
+                <li>Player 2</li>
+                <li>Player 3</li>
+            </ul>
+        </div>
+
+        <div class="fantasy-section">
+            <h2>Captain</h2>
+            <p>Current Captain: Player 1</p>
+        </div>
+
+        <div class="fantasy-section">
+            <h2>Balance</h2>
+            <p>Current Balance: 1000</p>
+        </div>
+
+        <div class="fantasy-section">
+            <h2>Transfer</h2>
+            <p>Transfers Available: 2</p>
+            <button type="button">Make a Transfer</button>
+        </div>
+    </div>
+{#
+{% else %}
+    <h1>Log in to access Fantasy IFL</h1>
+{% endif %}
+#}
+<style>
+
+    .fantasy-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .fantasy-section {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 10px 0;
+        width: 80%;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .fantasy-section h2 {
+        margin-top: 0;
+    }
+
+    .fantasy-section ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .fantasy-section ul li {
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 3px;
+    }
+
+    button {
+        background-color: #8B0000;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #a94442;
+    }
+
+</style>
 {% endblock %}
