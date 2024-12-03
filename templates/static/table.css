@@ -1,70 +1,72 @@
-h1{
-    {% comment %} font-size: 25px; {% endcomment %}
-    color: #000;
-    text-transform: uppercase;
-    font-weight: 300;
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  table{
-    width:100%;
-    table-layout: fixed;
-  }
-  .tbl-header{
-    background-color: #8B0000;
-   }
-  .tbl-content{
-    height:300px;
-    overflow-x:auto;
-    margin-top: 0px;
-    border: 1px solid rgba(255,255,255,0.15);
-  }
-  th{
-    padding: 20px 15px;
-    text-align: left;
-    font-weight: 510;
-    font-size: auto;
-    color: #000;
-    text-transform: uppercase;
-  }
-  td{
-    padding: 15px;
-    text-align: left;
-    vertical-align:middle;
-    font-weight: 300;
-    font-size: 16px;
-    color: #000;
-    border-bottom: solid 1px rgba(255,255,255,0.15);
-  }
+h1 {
+  color: #000;
+  text-transform: uppercase;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 15px;
+}
 
-  
-  body{
-    background-color: white;
-    color: black;
-    
-  }
-  section{
-    margin: 40px;
-  }
+table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
 
-  
-  /* for custom scrollbar for webkit browser*/
-  
-  ::-webkit-scrollbar {
-      width: 6px;
-  } 
-  ::-webkit-scrollbar-track {
-      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
-  } 
-  ::-webkit-scrollbar-thumb {
-      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
-  }
+.tbl-header {
+  background: #f3f3f3;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
 
-@media only screen and (min-width: 200px) and (max-width: 900px){
-    th{
-        font-size: 11px;
-    }
-    td{
-        font-size: 11px;
-    }
+.tbl-content {
+  height: 300px;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+th, td {
+  padding: 15px;
+  font-size: 16px;
+  color: #000;
+}
+
+th {
+  font-weight: 510;
+  background: #f9f9f9;
+  text-transform: uppercase;
+}
+
+td {
+  font-weight: 300;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+td:first-child, th:first-child {
+  white-space: nowrap;
+  width: 100px;
+  text-align: left;
+  padding-left: 5px;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 900px) {
+  .tbl-content {
+    overflow-x: auto;
+  }
+  th, td {
+    font-size: 14px;
+    white-space: nowrap;
+  }
 }
