@@ -3,85 +3,206 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Welcome to the Intermural Futsal League</h1>
-<br>
-
-<link rel="stylesheet" type="text/css" href="/static/slides.css">
-
-<div class="top-screen">     
-    <div class="text">
-        <div class="top-text">
-            <h1> Haverford Intramural Futsal League </h1>
-            <h2> The best Futsal League in the Tri-Co </h2>
-        </div>
+<section class="hero">
+    <div class="hero-content">
+        <h1>Haverford Intramural Futsal League</h1>
     </div>
-</div>
+</section>
 
-<div class = "top-container">
+<section class="video-section">
     <h3>IFL Promotional Video</h3>
-    <div class="video-container">
-        <video controls autoplay loop muted>
-            <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4"allowfullscreen>
-            Your browser does not support the video tag.
-        </video>
-    </div>
-</div>
-
-
-<div class="bottom-screen totw">
-
-    <h1>TOTW</h1>
-
-    <div class="container">
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+    <div class="video-and-results">
+        <div class="video-container">
+            <video controls autoplay loop muted>
+                <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4" allowfullscreen>
+                Your browser does not support the video tag.
+            </video>
         </div>
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
-        </div>
-    </div>
-    <div class="container">
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="" width="fit-content" height="fit-content">
-        </div>
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="" width="fit-content" height="fit-content">
-        </div>
-         
-    </div>
-    <div class="container">
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
-        </div>
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
+        <div class="match-results">
+            <h3>Final Results</h3>
+            <ul>
+                <li>Team A 2 - 1 Team B</li>
+                <li>Team C 3 - 0 Team D</li>
+                <li>Team E 1 - 1 Team F</li>
+                <li>Team G 4 - 2 Team H</li>
+                <li>Team I 0 - 3 Team J</li>
+                <li>Team K 1 - 4 Team L</li>
+                <li>Team M 2 - 2 Team N</li>
+                <li>Team O 5 - 3 Team P</li>
+            </ul>
         </div>
     </div>
-    <div class="container">
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
-        </div>
-        <div class="card">
-            <img src="/static/Images/Logo/logo.png" alt="Girl in a jacket" width="fit-content" height="fit-content">
-        </div>
-    </div>
-</div>
+</section>
 
 
 <section id="slideshow">
-    <div class="entire-content">
-      <div class="content-carrousel">
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-        <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      </div>
-  </div>
+    <div class="slideshow-container">
+        <div class="content-carousel">
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+        </div>
+    </div>
 </section>
+<style>
+    .hero {
+        position: relative;
+        height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+        text-align: center;
+        overflow: hidden; 
+    }
+    
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('/static/Images/Elements/background_1.jpg') no-repeat center center/cover;
+        filter: blur(5px);
+        z-index: -1;
+    }
+    
+    
+    .hero-content {
+        filter: blur(0);
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .hero-content h1 {
+        font-size: 3em;
+        margin: 0;
+    }
+
+    .video-section {
+        background-color: #fff;
+        padding: 30px 15px;
+        text-align: center;
+    }
+
+    .video-container video {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #slideshow {
+        padding: 30px 0;
+        background-color: #f4f4f4;
+        text-align: center;
+    }
+
+    .slideshow-container {
+        max-width: 80%;
+        margin: 0 auto;
+    }
+
+    .content-carousel {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .content-carousel figure {
+        margin: 10px;
+        flex: 1 1 calc(20% - 20px);
+    }
+
+    .content-carousel img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .video-and-results {
+        display: flex;
+        justify-content: space-between;
+        margin: 30px;
+        padding: 20px;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .video-container {
+        flex: 1;
+    }
+
+    .match-results {
+        flex: 1;
+        max-width: 350px;
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        align-self: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .match-results h3 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .match-results ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .match-results ul li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .match-results ul li:last-child {
+        border-bottom: none;
+    }
+
+    /* Video container styling */
+    .video-container video {
+        
+        height: auto;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Section and heading styling */
+    .video-section h3 {
+        text-align: center;
+        color: #8B0000;
+        margin-bottom: 20px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .video-and-results {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .match-results {
+            margin-top: 20px;
+            text-align: center;
+            flex: none;
+            width: 100%;
+        }
+    }
+
+
+</style>
 
 {% endblock %}
