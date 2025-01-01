@@ -1,20 +1,20 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, Form
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Request, Form, APIRouter, Depends, Cookie
+from firebase_admin import auth, firestore
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-import firebase_admin
-from fastapi.responses import RedirectResponse
-from starlette.responses import HTMLResponse, RedirectResponse
-import pyrebase
-from fastapi import APIRouter
+from starlette.responses import HTMLResponse
 
 router = APIRouter()
-
 templates = Jinja2Templates(directory="templates")
 user = None
 
 @router.get("/fantasy", response_class=HTMLResponse)
-async def read_contact(request: Request):
+@router.get("/login", response_class=HTMLResponse)
+async def read_contact(request: Request, session_token: str = Cookie(None)):
+    user = None
+    if session_token:
+        try:
+            user = auth.verify_id_token(session_token)
+        except Exception as e:
+            print("Invalid session token:", str(e))
+    
     return templates.TemplateResponse("fantasy.html", {"request": request, "user": user})
-
