@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Teams{% endblock %}
+
+{% block content %}
+<div class="player-card">
+    <div class="header">
+        <h1>{{player}} ({{data["Latest Team"]}})</h1>
+        <h2>Current Record: {{data["Player Record"][2:]}}</h2>
+        <h2>POTM: {{data["POTM"]}}</h2>
+        <div class="player-role">
+            <span class="role">Position: {{data["Primary Position"]}}</span>
+            <span class="ovr-label">OVR:</span>
+            <span class="overall-score">{{data["OVR Rating"]}}</span>
+        </div>
+    </div>
+    <div class="stats">
+        <div class="stat">
+            <span class="stat-label">ATT</span>
+            <span class="stat-value">{{data["ATT Rating"]}}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">AST</span>
+            <span class="stat-value">{{data["AST Rating"]}}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">DEF</span>
+            <span class="stat-value">{{data["DEF Rating"]}}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">GLK</span>
+            <span class="stat-value">{{data["GLK Rating"]}}</span>
+        </div>
+    </div>
+    <div class="performance">
+        <div class="metric">Goals: {{data["Goals"]}}</div>
+        <div class="metric">Assists: {{data["Assist"]}}</div>
+        <div class="metric">Saves: {{data["Saves"]}}</div>
+        <div class="metric">MP: {{data["Matches Played"]}}</div>
+    </div>
+    <div class="team-record">
+        <h4>Team Record</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Season</th>
+                    <th>G</th>
+                    <th>Δ</th>
+                    <th>S</th>
+                    <th>POTM</th>
+                    <th>Team</th>
+                    <th>Record</th>
+                    <th>MP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(1,5) %}
+                  <tr>
+                    <td>S{{i}}</td>
+                    <td>{{ data["Goals"] }}</td>
+                    <td>{{ data["Assist"] }}</td>
+                    <td>{{ data["Saves"] }}</td>
+                    <td>{{ data["POTM"] }}</td>
+                    <td>{{ data["Latest Team"] }}</td>
+                    <td>{{ data["Player Record"][2:] }}</td>
+                    <td>{{ data["Matches Played"] }}</td>
+                  </tr>
+                {% endfor %}
+                <tr>
+                    <td>Total</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .player-card {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Arial', sans-serif;
+        overflow: hidden;
+        background-color: #f9f9f9;
+    }
+    
+    .header {
+        background: linear-gradient(90deg, #4caf50, #81c784);
+        color: #fff;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .header h1 {
+        font-size: 22px;
+        margin: 0;
+    }
+    
+    .header h2 {
+        font-size: 18px;
+        margin: 5px 0;
+    }
+    
+    .player-role {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
+    .player-role .role {
+        font-size: 16px;
+        margin-right: 10px;
+    }
+    
+    .player-role .ovr-label {
+        font-size: 14px;
+        margin-right: 5px;
+    }
+    
+    .player-role .overall-score {
+        font-size: 24px;
+        font-weight: bold;
+        color: #FFF;
+    }
+    
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        padding: 15px;
+        background: #e3f2fd;
+    }
+    
+    .stats .stat {
+        text-align: center;
+        transition: background-color 0.3s;
+    }
+    
+    .stats .stat:hover {
+        background-color: #d1ecf1;
+    }
+    
+    .stats .stat-label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stats .stat-value {
+        font-size: 16px;
+    }
+    
+    .performance {
+        display: flex;
+        justify-content: space-around;
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #ddd;
+    }
+    
+    .performance .metric {
+        font-size: 14px;
+        text-align: center;
+        color: #4caf50;
+    }
+    
+    .team-record {
+        padding: 15px;
+        background: #f1f8e9;
+    }
+    
+    .team-record h4 {
+        margin: 0 0 15px;
+        font-size: 18px;
+        text-align: center;
+    }
+    
+    .team-record table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 14px;
+    }
+    
+    .team-record table th, .team-record table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+    
+    .team-record table th {
+        background: #c8e6c9;
+        font-weight: bold;
+    }
+</style>
+
+{% endblock %}

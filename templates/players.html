@@ -14,12 +14,10 @@
     {% if count > 0 %} 
         {% for player in Players %}
         <div class="stats player-card">
-            <h3>{{player["Name"]}}</h3>
-                {%for stat in player%}
-                    {% if "Team(s)" in stat %}
-                        <p class="stat">{{stat}}: {{player[stat]}}</p>
-                    {%endif%}
-                {%endfor%}
+            <a href="/players/{{player['Name']}}" style="text-decoration: none; color: inherit;">
+                <h3>{{player["Name"]}}</h3>
+                <p class="stat">Team(s): {{player["Team(s)"]}}</p>
+            </a>
         </div>
         {%endfor%}
     {% else %}
