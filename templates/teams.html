@@ -13,17 +13,11 @@
     {% if count > 0 %} 
         {% for team in Teams %}
         <div class="stats team-card">
-            <h3>{{team["Name"]}}</h3>
-            <p class="">Rating: {{team['Rating']}}</p>
-            <h4>Current Players:</h4>
-            {%for current_player in team['current_players']%}
-                <p class="curr">{{current_player}}</p>
-            {%endfor%}
-            <h4>Previous Players:</h4>
-            {%for previous_player in team['previous_players']%}
-                <p class="prev">{{previous_player}}</p>
-            {%endfor%}
-        </div>
+            <a href="/teams/{{team['Name']}}" style="text-decoration: none; color: inherit;">
+                <h3>{{team["Name"]}}</h3>
+                <h4>Rating: {{team['Rating']}}</h4>
+            </a>
+        </div>        
         {%endfor%}
     {% else %}
         <p>No Team found.</p>
@@ -69,15 +63,6 @@
         color: #555;
     }
 
-    .curr {
-        color: #33a02c; /* Green */
-    }
-
-    .prev {
-        color: #fc8d62; /* Orange */
-    }
-
-    /* Responsive design */
     @media (max-width: 768px) {
         .team-card {
             width: 100%;
