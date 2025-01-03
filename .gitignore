@@ -3,3 +3,5 @@
 cred.json
 __pycache__/
 firebase_storage.py
+old/
+test.py
