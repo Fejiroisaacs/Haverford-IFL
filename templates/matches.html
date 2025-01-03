@@ -4,48 +4,62 @@
 {% block content %}
 <link rel="stylesheet" href="/static/table.css">
 <h1>Match Schedule</h1>
-  <br>
-  <h2>League Table</h2>
-  <div class="table1">
-    {% for group in groups %}
-      <h1>Group {{ loop.index }}</h1>
-      <div class="tbl-header">
-        <table cellpadding="0" cellspacing="0" border="0">
-          <thead>
-            <tr>
-              <th>Club</th>
-              <th>MP</th>
-              <th>W</th>
-              <th>D</th>
-              <th>L</th>
-              <th>GF</th>
-              <th>GA</th>
-              <th>GD</th>
-              <th><b>Pts</b></th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-      <div class="tbl-content">
-        <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-          <tbody>
-            {% for team in group %}
-              <tr>
-                <td>{{ team["Club"] }}</td>
-                <td>{{ team["MP"] }}</td>
-                <td>{{ team["W"] }}</td>
-                <td>{{ team["D"] }}</td>
-                <td>{{ team["L"] }}</td>
-                <td>{{ team["GF"] }}</td>
-                <td>{{ team["GA"] }}</td>
-                <td>{{ team["GD"] }}</td>
-                <td><b>{{ team["Pts"] }}</b></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+<br>
+
+<div class="sec-center"> 	
+  <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
+  <label class="for-dropdown" for="dropdown"> SEASONS &nbsp;<span style='font-size:20px;'>&#8681;</span></i></label>
+  
+  <div class="section-dropdown"> 
+    {% for season in range(1, current_season+1) %}
+    <a href="/matches/{{season}}">Season {{ season }}</i></a>
     {% endfor %}
   </div>
+
+</div>
+
+<h2>Season {{ active_season }} Standings</h2>
+<div class="table1">
+  {% for group in groups %}
+    <h1>Group {{ group[0]['Group'] }}</h1>
+    <div class="tbl-header">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <thead>
+          <tr>
+            <th>Club</th>
+            <th>MP</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+            <th><b>PTS</b></th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <div class="tbl-content">
+      <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+        <tbody>
+          {% for team in group %}
+            <tr>
+              <td>{{ team["Team"] }}</td>
+              <td>{{ team["MP"] }}</td>
+              <td>{{ team["W"] }}</td>
+              <td>{{ team["D"] }}</td>
+              <td>{{ team["L"] }}</td>
+              <td>{{ team["GF"] }}</td>
+              <td>{{ team["GA"] }}</td>
+              <td>{{ team["GD"] }}</td>
+              <td><b>{{ team["PTS"] }}</b></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+</div>
+
 
 {% endblock %}
