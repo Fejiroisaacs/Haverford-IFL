@@ -1,0 +1,129 @@
+.options-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.option {
+    flex: 1 1 100%;
+    max-width: 200px;
+    margin: 5px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.05s, border-bottom 0.05s;
+}
+
+.option:hover, .option.active {
+    color: #8B0000;
+    border-bottom: 2px solid #AB0000;
+}
+
+hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 2px solid #ccc;
+}
+
+.content {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.individual-match {
+    display: flex;
+    align-items: center;
+    width: auto;
+    max-width: 300px;
+    min-width: 300px;
+    justify-content: flex-start; 
+    margin: 30px; 
+    position: relative;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px; 
+    background-color: #f9f9f9; 
+}
+
+.team-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 0;
+    flex: 0;
+    padding-right: auto;
+}
+
+.score{
+    margin-left: 120px;
+}
+
+.time {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+}
+
+.individual-match .separator::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 50%;
+    background-color: #ddd;
+    position: absolute;
+    right: 95px;
+    top: 25%;
+}
+
+.results {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin:20px;
+}
+
+.result-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+    padding: 20px;
+    width: 250px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.result-card h3 {
+    font-size: 1.5em;
+    margin: 0 0 10px;
+    color: #333;
+}
+
+.result-card p {
+    font-size: 1em;
+    margin: 5px 0;
+    color: #666;
+}
+
+.result-card h4 {
+    font-size: 1.2em;
+    margin: 10px 0 5px;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .result-card {
+        width: 100%;
+        margin: 10px 0;
+    }
+}

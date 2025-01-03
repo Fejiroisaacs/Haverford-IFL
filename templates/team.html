@@ -1,11 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Teams{% endblock %}
+{% block title %}{{team}} Team{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/table.css">
+<link rel="stylesheet" href="/static/displays.css">
+
 <h1>{{team}} TEAM</h1>
-<h2>Fill Record</h2>
 <h2>Rating: {{data["Rating"]}} Rank:</h2>
+
+<div class="sec-center">    
+    <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
+    <label class="for-dropdown" for="dropdown"> SEASONS &nbsp;<span style='font-size:20px;'>&#8681;</span></label>
+    
+    <div class="section-dropdown"> 
+        {% for season in seasons_played %}
+            <a href="javascript:void(0)" onclick="showSeason('{{season}}'); hideDropdown();">Season {{ season }}</a>
+        {% endfor %}
+    </div>
+</div>
 
 <div class="options-container">
     <div class="option" id="results-option" onclick="showContent('results')">Match Results</div>
@@ -15,102 +28,120 @@
 
 <hr>
 
-<div id="results" class="content">
-    <p>Team results will be here.</p>
-</div>
-
-<div id="standings" class="content" style="display: none;">
-    <p>Team standings will be here.</p>
-</div>
-
-<div id="players" class="content" style="display: none;">
-    <h4>Current:</h4>
-    {% for current_player in data['current_players'] %}
-        <a href="/players/{{current_player}}" style="text-decoration: none; color: inherit;">
-            <p class="curr">{{current_player}}</p>
-        </a>
-    {% endfor %}
-    <h4>Past:</h4>
-    {% for previous_player in data['previous_players'] %}
-        <a href="/players/{{previous_player}}" style="text-decoration: none; color: inherit;">
-            <p class="prev">{{previous_player}}</p>
-        </a>
-    {% endfor %}
-</div>
+<div id="results" class="content"></div>
+<div id="standings" class="content" style="display: none;"></div>
+<div id="players" class="content" style="display: none;"></div>
 
 <script>
-function showContent(section) {
-    // Hide all content sections
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('standings').style.display = 'none';
-    document.getElementById('players').style.display = 'none';
-    
-    // Show the selected content section
-    document.getElementById(section).style.display = 'block';
-    
-    // Remove the 'active' class from all options
-    document.getElementById('results-option').classList.remove('active');
-    document.getElementById('standings-option').classList.remove('active');
-    document.getElementById('players-option').classList.remove('active');
-    
-    // Add the 'active' class to the clicked option
-    document.getElementById(`${section}-option`).classList.add('active');
-}
+    const standingsData = {{ standings_data | tojson }};
+    const matchesData = {{ matches_data | tojson }};
+    const playersData = {{ players_data | tojson }};
+    let activeSeason = '{{ seasons_played|max }}';
+    let activeContent = 'results';
 
-// Set default active section
-document.addEventListener('DOMContentLoaded', function() {
-    showContent('results');
-});
+    function showContent(section) {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('standings').style.display = 'none';
+        document.getElementById('players').style.display = 'none';
+
+        document.getElementById(section).style.display = 'block';
+
+        document.getElementById('results-option').classList.remove('active');
+        document.getElementById('standings-option').classList.remove('active');
+        document.getElementById('players-option').classList.remove('active');
+
+        document.getElementById(`${section}-option`).classList.add('active');
+        
+        activeContent = section;
+        updateContent(section);
+    }
+
+    function showSeason(season) {
+        activeSeason = season;
+        showContent(activeContent);
+    }
+
+    function hideDropdown() {
+        document.getElementById('dropdown').checked = false;
+    }
+
+    function updateContent(section) {
+        if (section === 'results') {
+            const matches = matchesData[activeSeason];
+            let content = `<h2>Season ${activeSeason} Matches</h2><div class="results">`;
+            matches.forEach(match => {
+                content += `<div class="individual-match">
+                    <div class="team-score">
+                        <p class="team">${match['Team 1']}</p>
+                        <p class="team">${match['Team 2']}</p>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="team-score">
+                        <p class="score">${match['Score Team 1']}</p>
+                        <p class="score">${match['Score Team 2']}</p>
+                    </div>
+                    <div class="time">${match['Time']}</div>
+                </div>`;
+            });
+            content += `</div>`;
+            document.getElementById('results').innerHTML = content;
+        } else if (section === 'standings') {
+            const standings = standingsData[activeSeason];
+            let content = `<h2>Season ${activeSeason} Standings</h2>
+                <div class="table1">
+                    <div class="tbl-header">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                            <thead>
+                                <tr>
+                                    <th>Club</th>
+                                    <th>MP</th>
+                                    <th>W</th>
+                                    <th>D</th>
+                                    <th>L</th>
+                                    <th>GF</th>
+                                    <th>GA</th>
+                                    <th>GD</th>
+                                    <th><b>PTS</b></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div class="tbl-content">
+                        <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+                            <tbody>`;
+            standings.forEach(team => {
+                content += `<tr${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
+                    <td>${team["Team"]}</td>
+                    <td>${team["MP"]}</td>
+                    <td>${team["W"]}</td>
+                    <td>${team["D"]}</td>
+                    <td>${team["L"]}</td>
+                    <td>${team["GF"]}</td>
+                    <td>${team["GA"]}</td>
+                    <td>${team["GD"]}</td>
+                    <td><b>${team["PTS"]}</b></td>
+                </tr>`;
+            });
+            content += `</tbody></table></div></div>`;
+            document.getElementById('standings').innerHTML = content;
+        } else if (section === 'players') {
+            const players = playersData[activeSeason];
+            let content = `<h2>Season ${activeSeason} Players</h2>
+                <div class="results">`;
+            players.forEach(player => {
+                content += `<a href="/players/${player}" style="text-decoration: none; color: inherit;">
+                    <h4 class='result-card'>${player}</h4>
+                </a>`;
+                console.log(player);
+            });
+            content += `</div>`;
+            document.getElementById('players').innerHTML = content;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showContent('results');
+    });
 </script>
-
-<style>
-.options-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 20px 0;
-}
-
-.option {
-    flex: 1 1 100%;
-    max-width: 200px;
-    margin: 5px;
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: color 0.05s, border-bottom 0.05s;
-}
-
-.option:hover, .option.active {
-    color: #8B0000;
-    border-bottom: 2px solid #AB0000;
-}
-
-hr {
-    margin: 20px 0;
-    border: none;
-    border-top: 2px solid #ccc;
-}
-
-.content {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 5px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.curr, .prev {
-    font-size: 1.2em;
-    color: #495057;
-    margin: 5px 0;
-    padding: 5px;
-    transition: background-color 0.05s;
-}
-
-.curr:hover, .prev:hover {
-    background-color: #f1f1f1;
-}
-</style>
 
 {% endblock %}

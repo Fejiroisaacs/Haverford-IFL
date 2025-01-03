@@ -3,6 +3,7 @@
 {% block title %}Teams{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/displays.css">
 <h1>Team Search</h1> 
 <form method="get" action="/team_search"> 
     <input type="text" name="query" id="search", placeholder="Enter team acronymn"> 
@@ -12,7 +13,7 @@
 <div class="results"> 
     {% if count > 0 %} 
         {% for team in Teams %}
-        <div class="stats team-card">
+        <div class="stats result-card">
             <a href="/teams/{{team['Name']}}" style="text-decoration: none; color: inherit;">
                 <h3>{{team["Name"]}}</h3>
                 <h4>Rating: {{team['Rating']}}</h4>
@@ -24,51 +25,7 @@
     {% endif %}
 </div>
 <style>
-    .results {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .team-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-        padding: 20px;
-        width: 250px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .team-card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .team-card h3 {
-        font-size: 1.5em;
-        margin: 0 0 10px;
-        color: #333;
-    }
-
-    .team-card p {
-        font-size: 1em;
-        margin: 5px 0;
-        color: #666;
-    }
-
-    .team-card h4 {
-        font-size: 1.2em;
-        margin: 10px 0 5px;
-        color: #555;
-    }
-
-    @media (max-width: 768px) {
-        .team-card {
-            width: 100%;
-            margin: 10px 0;
-        }
-    }
+    
 
 </style>
 {% endblock %}
