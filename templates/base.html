@@ -28,9 +28,6 @@
             {% if user is not none and 'idToken' in user %}
                 <a href="/settings" class="menuOptions">Settings</a>
                 <a href="/logout" class="menuOptions">Logout</a>
-            {% else %}
-                <a href="/signup" class="menuOptions">Signup</a>
-                <a href="/login" class="menuOptions">LogIn</a>
             {% endif %}
           </div>
         </div>
@@ -45,18 +42,10 @@
             <a href="/teams">Teams</a>
             <a href="/players">Players</a>
             <a href="/contact">Contact</a>
-            {% if user is not none and 'idToken' in user %}
             <a href="/fantasy" class="menuOptions">Fantasy</a>
-            <a href="/settings" class="menuOptions">Settings</a>
-            <a href="/logout" class="menuOptions">Logout</a>
-            {% else %}
-            <div class="dropdown">
-                <a href="/fantasy" data-toggle="dropdown">Fantasy</a>
-                <div class="dropdown-menu">
-                    <a href="/signup" class="menuOptions dropdown-item">Sign Up</a>
-                    <a href="/login" class="menuOptions dropdown-item">Log In</a>
-                </div>
-            </div>
+            {% if user is not none and 'idToken' in user %}
+                <a href="/settings" class="menuOptions">Settings</a>
+                <a href="/logout" class="menuOptions">Logout</a>
             {% endif %}
         </div>
         <span id="navIcon" style="font-size:30px; cursor:pointer; margin-left:3%; color: #8B0000; z-index:1000;" class="openMenuMobile" onclick="openMobileNav()">&#9776;</span>
@@ -76,33 +65,3 @@
     </footer>
 </body>
 </html>
-
-<style>
-
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #000;
-        min-width: 160px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .dropdown-item {
-        color: white;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .dropdown:hover .dropdown-menu {
-        display: block;
-    }
-
-
-</style>

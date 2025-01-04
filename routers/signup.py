@@ -9,7 +9,7 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/signup", response_class=HTMLResponse)
 async def get_signup(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request, "user": None})
+    return templates.TemplateResponse("fantasy.html", {"request": request, "user": None})
 
 @router.post("/signup")
 async def post_signup(request: Request, email: str = Form(...), username: str = Form(...), password: str = Form(...)):
@@ -34,4 +34,4 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
     
     except Exception as e:
         print(str(e))
-        return templates.TemplateResponse("signup.html", {"request": request, "error": str(e)})
+        return templates.TemplateResponse("fantasy.html", {"request": request, "error": str(e)})
