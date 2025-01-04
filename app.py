@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, Form, status
+from fastapi import FastAPI, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import firebase_admin
@@ -13,14 +13,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-firebase_config = json.load(open("cred.json"))
+firebase_config_str = os.getenv("FIREBASE_CONFIG")
+firebase_config = json.loads(firebase_config_str)
 cred = credentials.Certificate(firebase_config)
-firebase_admin.initialize_app(cred, {
-    'storageBucket': os.getenv("storageBucket"),
-    'databaseURL': os.getenv("databaseURL")
-})
+firebase_admin.initialize_app(cred)
 
-# Initialize Realtime Database and Storage
 db = db.reference('/')
 bucket = storage.bucket()
 
@@ -28,7 +25,6 @@ secret_key = os.getenv("SECRET_KEY")
 
 app = FastAPI()
 
-# Mount static files
 app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
 user = None
