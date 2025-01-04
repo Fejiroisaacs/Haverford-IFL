@@ -40,7 +40,6 @@ async def team_page(request: Request, team: str, db: firebase_db.Reference = Dep
 @router.get("/team_search", response_class=HTMLResponse)
 async def search_teams(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     teams = get_teams()
-    print(teams)
     filtered_teams = [team for team in teams if query.lower() in team['Name'].lower()]
     
     return templates.TemplateResponse("teams.html", {"request": request, 
@@ -86,13 +85,10 @@ def get_players(team):
     global seasons_played
     data = pd.read_csv("data/season_player_stats.csv")
     players_data = {}
-    print(seasons_played)
     for season in seasons_played:
         sub_data:pd.DataFrame = data[data['Season'] == str(season)]
         sub_data = sub_data[sub_data['Team'] == team]
-        print(sub_data)
         if sub_data.shape[0] > 0: players_data[season] = sub_data['Name'].tolist()
-    print(players_data)
     return players_data
 
 def get_teams():

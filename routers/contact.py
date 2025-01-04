@@ -6,7 +6,6 @@ from pydantic import BaseModel
 import firebase_admin
 from fastapi.responses import RedirectResponse
 from starlette.responses import HTMLResponse, RedirectResponse
-import pyrebase
 from fastapi import APIRouter
 
 router = APIRouter()
