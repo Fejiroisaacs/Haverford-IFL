@@ -16,8 +16,9 @@ async def teams_home(request: Request, session_token: str = Cookie(None), db: fi
 
 @router.get("/teams/{team}", response_class=HTMLResponse)
 async def team_page(request: Request, team: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    teams_ref = db.child('Teams')
-    team_data = teams_ref.child(team).get()
+    # teams_ref = db.child('Teams')
+    # team_data = teams_ref.child(team).get()
+    team_data = get_team(team)
     if team_data:
         standings_data = get_standings(team)
         matches_data = get_matches(team)
@@ -38,10 +39,9 @@ async def team_page(request: Request, team: str, db: firebase_db.Reference = Dep
 
 @router.get("/team_search", response_class=HTMLResponse)
 async def search_teams(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    teams_ref = db.child('Teams')
-    teams = teams_ref.get()
-    filtered_teams = {k: v for k, v in teams.items() if query.lower() in k.lower()}
-    filtered_teams = [teams[team] for team in filtered_teams]
+    teams = get_teams()
+    print(teams)
+    filtered_teams = [team for team in teams if query.lower() in team['Name'].lower()]
     
     return templates.TemplateResponse("teams.html", {"request": request, 
                                                      "user": user, "Teams": filtered_teams, 
@@ -86,12 +86,22 @@ def get_players(team):
     global seasons_played
     data = pd.read_csv("data/season_player_stats.csv")
     players_data = {}
-    
+    print(seasons_played)
     for season in seasons_played:
-        sub_data:pd.DataFrame = data[data['Season'] == season]
+        sub_data:pd.DataFrame = data[data['Season'] == str(season)]
         sub_data = sub_data[sub_data['Team'] == team]
-        
+        print(sub_data)
         if sub_data.shape[0] > 0: players_data[season] = sub_data['Name'].tolist()
-        
+    print(players_data)
     return players_data
-    
+
+def get_teams():
+    with open('data/team_ratings.csv') as file:
+        data = pd.read_csv(file)
+    return data.to_dict(orient='records')
+
+def get_team(team):
+    with open('data/team_ratings.csv') as file:
+        data = pd.read_csv(file)
+        data = data[data['Name'] == team]
+    return data.to_dict(orient='records')[0] if data.shape[0] > 0 else None
