@@ -1,42 +1,42 @@
 {% extends "base.html" %}
 
-{% block title %}Teams{% endblock %}
+{% block title %}{{rating_data['Name']}} ({{rating_data["Latest Team"]}}){% endblock %}
 
 {% block content %}
 <div class="player-card">
     <div class="header">
-        <h1>{{player}} ({{data["Latest Team"]}})</h1>
-        <h2>Current Record: {{data["Player Record"][2:]}}</h2>
-        <h2>POTM: {{data["POTM"]}}</h2>
+        <h1>{{rating_data['Name']}} ({{rating_data["Latest Team"]}})</h1>
+        <h2>Current Record: {{season_data[-2]["Record"]}}</h2>
+        <h2>POTM: {{rating_data["POTM"]}}</h2>
         <div class="player-role">
-            <span class="role">Position: {{data["Primary Position"]}}</span>
+            <span class="role">Position: {{rating_data["Primary Position"]}}</span>
             <span class="ovr-label">OVR:</span>
-            <span class="overall-score">{{data["OVR Rating"]}}</span>
+            <span class="overall-score">{{rating_data["OVR Rating"]}}</span>
         </div>
     </div>
     <div class="stats">
         <div class="stat">
             <span class="stat-label">ATT</span>
-            <span class="stat-value">{{data["ATT Rating"]}}</span>
+            <span class="stat-value">{{rating_data["ATT Rating"]}}</span>
         </div>
         <div class="stat">
             <span class="stat-label">AST</span>
-            <span class="stat-value">{{data["AST Rating"]}}</span>
+            <span class="stat-value">{{rating_data["AST Rating"]}}</span>
         </div>
         <div class="stat">
             <span class="stat-label">DEF</span>
-            <span class="stat-value">{{data["DEF Rating"]}}</span>
+            <span class="stat-value">{{rating_data["DEF Rating"]}}</span>
         </div>
         <div class="stat">
             <span class="stat-label">GLK</span>
-            <span class="stat-value">{{data["GLK Rating"]}}</span>
+            <span class="stat-value">{{rating_data["GLK Rating"]}}</span>
         </div>
     </div>
     <div class="performance">
-        <div class="metric">Goals: {{data["Goals"]}}</div>
-        <div class="metric">Assists: {{data["Assist"]}}</div>
-        <div class="metric">Saves: {{data["Saves"]}}</div>
-        <div class="metric">MP: {{data["Matches Played"]}}</div>
+        <div class="metric">Goals: {{season_data[-2]["Goals"]}}</div>
+        <div class="metric">Assists: {{season_data[-2]["Assists"]}}</div>
+        <div class="metric">Saves: {{season_data[-2]["Saves"]}}</div>
+        <div class="metric">MP: {{season_data[-2]["MP"]}}</div>
     </div>
     <div class="team-record">
         <h4>Team Record</h4>
@@ -54,27 +54,18 @@
                 </tr>
             </thead>
             <tbody>
-                {% for i in range(1,5) %}
+                {% for season_stats in season_data %}
                   <tr>
-                    <td>S{{i}}</td>
-                    <td>{{ data["Goals"] }}</td>
-                    <td>{{ data["Assist"] }}</td>
-                    <td>{{ data["Saves"] }}</td>
-                    <td>{{ data["POTM"] }}</td>
-                    <td>{{ data["Latest Team"] }}</td>
-                    <td>{{ data["Player Record"][2:] }}</td>
-                    <td>{{ data["Matches Played"] }}</td>
+                    <td>{{season_stats['Season']}}</td>
+                    <td>{{ season_stats["Goals"] }}</td>
+                    <td>{{ season_stats["Assists"] }}</td>
+                    <td>{{ season_stats["Saves"] }}</td>
+                    <td>{{ season_stats["POTM"] }}</td>
+                    <td>{{ season_stats["Team"] }}</td>
+                    <td>{{ season_stats["Record"] }}</td>
+                    <td>{{ season_stats["MP"] }}</td>
                   </tr>
                 {% endfor %}
-                <tr>
-                    <td>Total</td>
-                    <td>...</td>
-                    <td>...</td>
-                    <td>...</td>
-                    <td>...</td>
-                    <td>...</td>
-                    <td>...</td>
-                </tr>
             </tbody>
         </table>
     </div>

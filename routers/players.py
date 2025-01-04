@@ -1,29 +1,52 @@
 from fastapi import APIRouter, Request, Cookie, Depends
 from fastapi.templating import Jinja2Templates
-from firebase_admin import db
+from firebase_admin import db as firebase_db
 from starlette.responses import HTMLResponse
+import pandas as pd, numpy as np
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 user = None
 @router.get("/players", response_class=HTMLResponse)
-async def read_players(request: Request, session_token: str = Cookie(None), db: db.Reference = Depends(lambda: db.reference('/'))):
+async def read_players(request: Request, session_token: str = Cookie(None), db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": [], "count": 0})
     
 @router.get("/players/{player}", response_class=HTMLResponse)
-async def get_player(request: Request, player: str, db: db.Reference = Depends(lambda: db.reference('/'))):
-    players_ref = db.child('Players')
-    player_data = players_ref.child(player).get()
-    if player_data:
-        return templates.TemplateResponse("player.html", {"request": request, "user": user, "player": player, "data": player_data})
+async def get_player(request: Request, player: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
+    player_rating_data = get_player_rating_stats(player)
+    season_data = get_player_season_data(player)
+    if player_rating_data:
+        return templates.TemplateResponse("player.html", {"request": request, 
+                                                          "user": user, 
+                                                          "rating_data": player_rating_data,
+                                                          'season_data': season_data,
+                                                          })
     else:
-        return templates.TemplateResponse("404error.html", {"request": request})
+        return templates.TemplateResponse("404error.html", {"request": request, 'error': f'Player {player} not found'})
 
 @router.get("/player_search", response_class=HTMLResponse)
-async def search_players(request: Request, query: str, db: db.Reference = Depends(lambda: db.reference('/'))):
-    players_ref = db.child('Players')
-    players = players_ref.get()
-    filtered_players = {k: v for k, v in players.items() if query.lower() in k.lower()}
-    filtered_players = [players[player] for player in filtered_players]
+async def search_players(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
+    players = get_players()
+    filtered_players = [player for player in players if query.lower() in player['Name'].lower()]
 
     return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": filtered_players, "count": len(filtered_players)})
+
+def get_player_season_data(player):
+    data = pd.read_csv('data/season_player_stats.csv')
+    data = data[data['Name'] == player]
+    data = data[data['Team'] != 0]
+    return data.to_dict(orient='records')
+
+def get_player_rating_stats(player):
+    data = pd.read_csv('data/player_ratings.csv', na_filter=False)
+    data = data[data['Name'] == player]
+
+    return data.to_dict(orient='records')[0] if data.shape[0] > 0 else None
+    
+def get_players():
+    data = pd.read_csv('data/player_ratings.csv')
+    data.drop_duplicates(subset=['Name'])
+    
+    return data[['Name', 'Latest Team']].to_dict(orient='records')
+
+    

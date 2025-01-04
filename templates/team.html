@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/static/displays.css">
 
 <h1>{{team}} TEAM</h1>
-<h2>Rating: {{data["Rating"]}} Rank:</h2>
+<h2>Rating: {{data["Rating"]}} Rank: {{data["Rank"]}}</h2>
 
 <div class="sec-center">    
     <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
@@ -125,10 +125,12 @@
             content += `</tbody></table></div></div>`;
             document.getElementById('standings').innerHTML = content;
         } else if (section === 'players') {
+            console.log(playersData);
             const players = playersData[activeSeason];
             let content = `<h2>Season ${activeSeason} Players</h2>
                 <div class="results">`;
             players.forEach(player => {
+                console.log(player);
                 content += `<a href="/players/${player}" style="text-decoration: none; color: inherit;">
                     <h4 class='result-card'>${player}</h4>
                 </a>`;

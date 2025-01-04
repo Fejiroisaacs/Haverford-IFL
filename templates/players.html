@@ -17,7 +17,7 @@
         <div class="stats result-card">
             <a href="/players/{{player['Name']}}" style="text-decoration: none; color: inherit;">
                 <h3>{{player["Name"]}}</h3>
-                <h4>Team: {{player["Team(s)"][-5:-2]}}</h4>
+                <h4>Team: {{player['Latest Team']}}</h4>
             </a>
         </div>
         {%endfor%}
