@@ -27,8 +27,8 @@
 
 <div class="options-container">
     <div class="option" id="match_option" onclick="showContent('match_stats')">MATCH STATS</div>
-    <div class="option" id="team1_option" onclick="showContent('team1_stats')">{{match_details[0]}}</div>
-    <div class="option" id="team2_option" onclick="showContent('team2_stats')">{{match_details[1]}}</div>
+    <div class="option" id="team1_option" onclick="showContent('team1_stats'); generateTable('team1_stats', '{{match_details[0]}}')">{{match_details[0]}}</div>
+    <div class="option" id="team2_option" onclick="showContent('team2_stats'); generateTable('team2_stats', '{{match_details[1]}}')">{{match_details[1]}}</div>
 </div>
 
 
@@ -75,11 +75,60 @@
         document.getElementById('team1_option').classList.remove('active');
         document.getElementById('team2_option').classList.remove('active');
 
-        document.getElementById(`${section}-option`).classList.add('active');
+        document.getElementById(`${section}`).classList.add('active');
         
         activeContent = section;
     }
 
+    function generateTable(team_id, team) {
+        let playerData = {{player_data | tojson}};
+    
+        const columns = ['Name', 'P', 'G', 'A', 'S', 'POTM', 'Y/R'];
+        const headers = ['Starters', 'Subs', 'External Players'];
+    
+        let content = '';
+    
+        for (let index = 0; index < 3; index++) {
+            let teamData = playerData[team][index];
+    
+            if (teamData.length > 0) {
+                let headerContent = '<table cellpadding="0" cellspacing="0" border="0"><tr>';
+                columns.forEach(col => {
+                    headerContent += `<th style='margin-right:10px;'>${col}</th>`;
+                });
+                headerContent += '</tr></table>';
+    
+                let bodyContent = '<table cellpadding="0" cellspacing="0" border="0">';
+                teamData.forEach(player => {
+                    bodyContent += '<tr>';
+                    columns.forEach(col => {
+                        let value = player[col];
+                        if (value.length > 18) {
+                            value = value.substring(0, 19);
+                        }
+                        bodyContent += `<td>${value}</td>`;
+                    });
+                    bodyContent += '</tr>';
+                });
+                bodyContent += '</table>';
+    
+                content += `
+                    <h2>${headers[index]}</h2>
+                    <div class="table1">
+                        <div class="tbl-header">
+                            ${headerContent}
+                        </div>
+                        <div class="tbl-content">
+                            ${bodyContent}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    
+        document.getElementById(`${team_id}`).innerHTML = content;
+    }
+    
 
 </script>
 

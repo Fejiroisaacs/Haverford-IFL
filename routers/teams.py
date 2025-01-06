@@ -46,6 +46,7 @@ async def team_page(request: Request, team_name: str, match_details: str):
                                                         "player_data": player_data,
                                                         "match_details": match_details.split('-')})
     except Exception as e:
+        print(str(e))
         return templates.TemplateResponse("404error.html", {"request": request, 'error': str(e)})
 
 
@@ -131,18 +132,23 @@ def get_player_data(team, opponent, match):
     with open("data/player_match_stats.csv") as file:
         data = pd.read_csv(file)
         
-    team_data = data[(data['My Team'] == team) & (data['Match Number (All Seasons)'] == int(match))].to_dict(orient='records')
-    opponent_data = data[(data['My Team'] == opponent) & (data['Match Number (All Seasons)'] == int(match))].to_dict(orient='records')
+    team_data = data[(data['My Team'] == team) & (data['Match Number (All Seasons)'] == int(match))].copy()
+    opponent_data = data[(data['My Team'] == opponent) & (data['Match Number (All Seasons)'] == int(match))].copy()
+    
+    print(opponent_data.columns)
+    dropped_cols = ['Season', 'Match Number (All Seasons)']
+    team_data.drop(dropped_cols, axis=1, inplace=True)
+    opponent_data.drop(dropped_cols, axis=1, inplace=True)
     
     team_extended_data = [[], [], []] # [start, team subs, external subs]
     opponent_extended_data = [[], [], []]
     
-    for player_stat in team_data:
+    for player_stat in team_data.to_dict(orient='records'):
         if player_stat['External Sub'] == 'Y': team_extended_data[2].append(player_stat)
         elif player_stat['Start?'] == '0' and player_stat['Played?'] == 'Y': team_extended_data[1].append(player_stat)
         else: team_extended_data[0].append(player_stat)
         
-    for player_stat in opponent_data:
+    for player_stat in opponent_data.to_dict(orient='records'):
         if player_stat['External Sub'] == 'Y': opponent_extended_data[2].append(player_stat)
         elif player_stat['Start?'] == '0' and player_stat['Played?'] == 'Y': opponent_extended_data[1].append(player_stat)
         else: opponent_extended_data[0].append(player_stat)
