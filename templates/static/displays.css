@@ -16,8 +16,8 @@
 }
 
 .option:hover, .option.active {
-    color: #8B0000;
-    border-bottom: 2px solid #AB0000;
+    color: #670000;
+    border-bottom: 2px solid #660000;
 }
 
 hr {
@@ -47,6 +47,7 @@ hr {
     border: 1px solid #ddd;
     border-radius: 10px; 
     background-color: #f9f9f9; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .team-score {
@@ -79,6 +80,11 @@ hr {
     position: absolute;
     right: 95px;
     top: 25%;
+}
+
+.individual-match:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .results {
@@ -126,4 +132,78 @@ hr {
         width: 100%;
         margin: 10px 0;
     }
+}
+
+#match_stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.team1, .stat-name, .team2 {
+    display: flex;
+    flex-direction: column;
+}
+
+.team1 p, .stat-name p, .team2 p {
+    margin: 5px 0;
+}
+
+.stat-name p {
+    font-weight: bold;
+}
+.match-separator {
+    width: 40px;
+    border-radius: 5%;
+    margin: 0 30px; 
+    border: 5px solid #bbbdbb;
+}
+.match-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.match-image {
+    width: 100px;
+    height: auto;
+    margin-bottom: 5px;
+}
+
+.separator {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 0 10px;
+}
+
+.team h1, h2 {
+    margin: 0;
+}
+
+.team h1 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.team h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
 }

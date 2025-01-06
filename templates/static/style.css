@@ -147,8 +147,8 @@ body {
 
 .sidenav a:hover {
   
-  background: -webkit-linear-gradient(left, #8B0000, #000000);
-  background: linear-gradient(to right, #8B0000, #000000);
+  background: -webkit-linear-gradient(left, #670000, #000000);
+  background: linear-gradient(to right, #670000, #000000);
 }
 
 .sidenav .closebtn {
@@ -224,7 +224,7 @@ form input {
 form button {
     width: 100%;
     padding: 0.7rem;
-    background-color: #8B0000;
+    background-color: #670000;
     color: white;
     border: none;
     border-radius: 5px;
