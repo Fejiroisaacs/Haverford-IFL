@@ -34,4 +34,4 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
     
     except Exception as e:
         print(str(e))
-        return templates.TemplateResponse("fantasy.html", {"request": request, "error": str(e)})
+        return templates.TemplateResponse("fantasy.html", {"request": request, "error": str(e), "user": None})

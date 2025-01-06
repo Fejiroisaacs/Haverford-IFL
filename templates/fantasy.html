@@ -42,6 +42,9 @@
                     <input type="password" placeholder="PASSWORD" id="password" name="password" required>
                     <button class="opacity" type="submit">SUBMIT</button>
                 </form>
+                {% if error %}
+                    <p style="color: red;">{{ error }}</p>
+                {% endif %}
                 <div class="register-forget opacity" id="user-actions">
                     <a href="#" onclick="showRegisterForm()">REGISTER</a>
                     <a href="#" onclick="showForgotPasswordForm()">FORGOT PASSWORD</a>
@@ -86,7 +89,7 @@
     }
 
     button {
-        background-color: #8B0000;
+        background-color: #670000;
         color: white;
         padding: 10px 20px;
         border: none;

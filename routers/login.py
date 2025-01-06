@@ -41,7 +41,7 @@ async def post_login(request: Request, email: str = Form(...), password: str = F
     except Exception as e:
         print(str(e))
         user = None
-        return templates.TemplateResponse("fantasy.html", {"request": request, "error": "Invalid username/password"})
+        return templates.TemplateResponse("fantasy.html", {"request": request, "error": "Invalid username/password", "user": user})
 
 @router.get("/logout")
 async def logout(request: Request, response: Response):
