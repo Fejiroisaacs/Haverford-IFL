@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{match_details[0]}} v {{match_details[1]}} (Match {{match_details[2]}}){% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/table.css">
+<link rel="stylesheet" href="/static/displays.css">
+
+<h2 style='text-align: left; opacity:1'>{{match_data[0]['Time']}}</h2>
+<div class="match-header">
+    <div class="team">
+        <img src="/static/Images/Logo/logo.png" alt="Logo" class="match-image" />
+        <h1>{{match_details[0]}}</h1>
+    </div>
+    <h2>{{match_data[0]['Goals']}}</h2>
+
+    <hr class='match-separator'>
+
+    <h2>{{match_data[1]['Goals']}}</h2>
+    <div class="team">
+        <img src="/static/Images/Logo/logo.png" alt="Logo" class="match-image" />
+        <h1>{{match_details[1]}}</h1>
+    </div>
+</div>
+
+<hr>
+
+<div class="options-container">
+    <div class="option" id="match_option" onclick="showContent('match_stats')">MATCH STATS</div>
+    <div class="option" id="team1_option" onclick="showContent('team1_stats')">{{match_details[0]}}</div>
+    <div class="option" id="team2_option" onclick="showContent('team2_stats')">{{match_details[1]}}</div>
+</div>
+
+
+<div id="match_stats" class="content">
+    <div class='team1'>
+        <h4>{{match_details[0]}}</h4>
+        {% for key, value in match_data[0].items() %}
+            <p>{{value}}</p>
+        {% endfor %}
+    </div>
+    <div class='stat-name'>
+        <h4>TEAM STATS</h4>
+        {% for key, value in match_data[0].items() %}
+            <p>{{key}}</p>
+        {% endfor %}
+    </div>
+    <div class='team2'>
+        <h4>{{match_details[1]}}</h4>
+        {% for key, value in match_data[1].items() %}
+        <p>{{value}}</p>
+        {% endfor %}
+    </div>
+</div>
+
+
+<div id="team1_stats" class="content" style="display: none;"></div>
+<div id="team2_stats" class="content" style="display: none;"></div>
+
+<script>
+    let activeContent = 'match_stats';
+
+    function showContent(section) {
+        document.getElementById('match_stats').style.display = 'none';
+        document.getElementById('team1_stats').style.display = 'none';
+        document.getElementById('team2_stats').style.display = 'none';
+        
+        if (section == 'match_stats') {
+            document.getElementById(section).style.display = 'grid';
+        } else {
+            document.getElementById(section).style.display = 'block';
+        }
+
+        document.getElementById('match_option').classList.remove('active');
+        document.getElementById('team1_option').classList.remove('active');
+        document.getElementById('team2_option').classList.remove('active');
+
+        document.getElementById(`${section}-option`).classList.add('active');
+        
+        activeContent = section;
+    }
+
+
+</script>
+
+{% endblock %}

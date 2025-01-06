@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/static/displays.css">
 
 <h1>{{team}} TEAM</h1>
-<h2>Rating: {{data["Rating"]}} Rank: {{data["Rank"]}}</h2>
+<h2>Rating: {{data["Rating"]}}/Rank: {{data["Rank"]}}</h2>
 
 <div class="sec-center">    
     <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
@@ -70,21 +70,24 @@
             const matches = matchesData[activeSeason];
             let content = `<h2>Season ${activeSeason} Matches</h2><div class="results">`;
             matches.forEach(match => {
-                content += `<div class="individual-match">
-                    <div class="team-score">
-                        <p class="team">${match['Team 1']}</p>
-                        <p class="team">${match['Team 2']}</p>
-                    </div>
-                    <div class="separator"></div>
-                    <div class="team-score">
-                        <p class="score">${match['Score Team 1']}</p>
-                        <p class="score">${match['Score Team 2']}</p>
-                    </div>
-                    <div class="time">${match['Time']}</div>
-                </div>`;
+                content += `<a href="${match['Team']}/${match['Team']}-${match['Opponent']}-${match['Match']}" style="text-decoration: none; color: inherit;">
+                                <div class="individual-match">
+                                    <div class="team-score">
+                                        <p class="team">${match['Team']}</p>
+                                        <p class="team">${match['Opponent']}</p>
+                                    </div>
+                                    <div class="separator"></div>
+                                    <div class="team-score">
+                                        <p class="score">${match['Goals']}</p>
+                                        <p class="score">${match['Goals Allowed']}</p>
+                                    </div>
+                                    <div class="time">${match['Time']}</div>
+                                </div>
+                            </a>`;
             });
             content += `</div>`;
             document.getElementById('results').innerHTML = content;
+
         } else if (section === 'standings') {
             const standings = standingsData[activeSeason];
             let content = `<h2>Season ${activeSeason} Standings</h2>
