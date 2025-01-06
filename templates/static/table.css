@@ -83,7 +83,7 @@ td:first-child, th:first-child {
   position: relative;
   max-width: 100%;
   text-align: center;
-  z-index: 200;
+  z-index: 1;
 }
 
 [type="checkbox"]:checked,
