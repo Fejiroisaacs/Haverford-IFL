@@ -3,10 +3,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, FileResponse
 from routers import matches, signup, login, contact, fantasy, players, settings, teams
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.errors import ServerErrorMiddleware
 import json, os
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
@@ -44,21 +45,33 @@ app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
-    if exc.status_code == 404:
-        return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
-    return templates.TemplateResponse("error.html", {"request": request, "error": str(exc.detail)})
+    try:
+        if exc.status_code == 404:
+            return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
+    except Exception:
+        return templates.TemplateResponse("error.html", {"request": request})
+    
+app.add_middleware(ServerErrorMiddleware, handler=http_exception_handler)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    if exc.status_code == 404:
-        return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
-    return templates.TemplateResponse("error.html", {"request": request, "error": str(exc.detail)})
+    print(exec)
+    try:
+        if exc.status_code == 404:
+            return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
+    except Exception as e:
+        return templates.TemplateResponse("error.html", {"request": request})
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
 @app.get("/home", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "user": user})
+
+@app.get("/pdf")
+async def get_pdf():
+    return FileResponse("data/IFL_Rule_Book.pdf")
+
 
 if __name__ == "__main__":
     import uvicorn
