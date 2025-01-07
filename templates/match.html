@@ -36,19 +36,25 @@
     <div class='team1'>
         <h4>{{match_details[0]}}</h4>
         {% for key, value in match_data[0].items() %}
-            <p>{{value}}</p>
+            {% if key != 'Goals' and key != 'Goals Allowed' %}
+                <p>{{value}}</p>
+            {% endif %}
         {% endfor %}
     </div>
     <div class='stat-name'>
         <h4>TEAM STATS</h4>
         {% for key, value in match_data[0].items() %}
-            <p>{{key}}</p>
+            {% if key != 'Goals' and key != 'Goals Allowed' %}
+                <p>{{key}}</p>
+            {% endif %}
         {% endfor %}
     </div>
     <div class='team2'>
         <h4>{{match_details[1]}}</h4>
         {% for key, value in match_data[1].items() %}
-        <p>{{value}}</p>
+            {% if key != 'Goals' and key != 'Goals Allowed' %}
+                <p>{{value}}</p>
+            {% endif %}
         {% endfor %}
     </div>
 </div>
@@ -56,6 +62,8 @@
 
 <div id="team1_stats" class="content" style="display: none;"></div>
 <div id="team2_stats" class="content" style="display: none;"></div>
+
+<img src="/static/Images/POTM/{{match_details[2]}}.png" alt="POTM" style='height:400px;width:fit-content;' />
 
 <script>
     let activeContent = 'match_stats';
@@ -75,7 +83,8 @@
         document.getElementById('team1_option').classList.remove('active');
         document.getElementById('team2_option').classList.remove('active');
 
-        document.getElementById(`${section}`).classList.add('active');
+        let activeTag = section.split('_')[0];
+        document.getElementById(`${activeTag}_option`).classList.add('active');
         
         activeContent = section;
     }
@@ -83,7 +92,7 @@
     function generateTable(team_id, team) {
         let playerData = {{player_data | tojson}};
     
-        const columns = ['Name', 'P', 'G', 'A', 'S', 'POTM', 'Y/R'];
+        const columns = ['Name', 'P', 'G', 'A', 'S', 'Y/R'];
         const headers = ['Starters', 'Subs', 'External Players'];
     
         let content = '';
@@ -104,7 +113,7 @@
                     columns.forEach(col => {
                         let value = player[col];
                         if (value.length > 18) {
-                            value = value.substring(0, 19);
+                            value = value.substring(0, 18);
                         }
                         bodyContent += `<td>${value}</td>`;
                     });
@@ -125,10 +134,12 @@
                 `;
             }
         }
-    
         document.getElementById(`${team_id}`).innerHTML = content;
     }
-    
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showContent(activeContent);
+    });
 
 </script>
 
