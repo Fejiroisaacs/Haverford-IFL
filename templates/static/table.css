@@ -80,6 +80,7 @@ td:first-child, th:first-child {
 }
 
 .sec-center {
+  margin-top: 1rem;
   position: relative;
   max-width: 100%;
   text-align: center;

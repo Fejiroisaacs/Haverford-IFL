@@ -132,6 +132,9 @@ hr {
         width: 100%;
         margin: 10px 0;
     }
+    body {
+        font-size: 12px;
+    }
 }
 
 #match_stats {
@@ -170,7 +173,6 @@ hr {
     gap: 20px;
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .team {
@@ -223,7 +225,16 @@ hr {
 
 @media (max-width: 480px) {
     .potm-image {
-        height: 200px; 
-        width: 200px;
+        height: 250px; 
+        width: 250px;
+    }
+    .match-image {
+        width: 5rem;
+    }
+    .team h1 {
+        font-size: 14px;
+    }
+    body {
+        font-size: 12px;
     }
 }
