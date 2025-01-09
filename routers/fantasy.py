@@ -16,4 +16,17 @@ async def fantasy_loading(request: Request, session_token: str = Cookie(None)):
         except Exception as e:
             print("Invalid session token:", str(e))
     
-    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user})
+    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data()})
+
+
+def get_user_data():
+    dummy_data = {
+        'Name': 'Dummy',
+        'Average': 40,
+        'curr_pts' : 197,
+        'record': 62,
+        'team': ['Rami', 'Yass', 'Kab', 'Fej', 'Grant'],
+        'MW': 5,
+        'Deadline': '1/17'
+    }
+    return dummy_data

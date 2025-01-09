@@ -3,86 +3,38 @@
 {% block title %}Fantasy{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/fantasy.css">
+
 {% if user is not none and 'user_id' in user.keys() %}
-    <div class="fantasy-container">
-        <div class="fantasy-section">
-            <h2>Current Team</h2>
-            <ul>
-                <li>Player 1</li>
-                <li>Player 2</li>
-                <li>Player 3</li>
-            </ul>
+{% endif %}
+{% if True %}
+    <div class='container'>
+        <h4 class='mw'>Matchweek {{data['MW']}}</h4>
+        <h2 class='title'>IFL Fantasy</h2>
+        <h4 class='subtitle'>{{data['Name']}}'s Team</h4>
+        <div class='points-container'>
+            <div class='points'>
+                <h1 class='pt'>{{data['Average']}}</h1>
+                <h4 class='pt-label'>Average</h4>
+            </div>
+            <div class='points'>
+                <h1 class='pt'>{{data['curr_pts']}}</h1>
+                <h4 class='pt-label'>My Points</h4>
+            </div>
+            <div class='points'>
+                <h1 class='pt'>{{data['record']}}</h1>
+                <h4 class='pt-label'>Record</h4>
+            </div>
         </div>
-
-        <div class="fantasy-section">
-            <h2>Captain</h2>
-            <p>Current Captain: Player 1</p>
-        </div>
-
-        <div class="fantasy-section">
-            <h2>Balance</h2>
-            <p>Current Balance: 1000</p>
-        </div>
-
-        <div class="fantasy-section">
-            <h2>Transfer</h2>
-            <p>Transfers Available: 2</p>
-            <button type="button">Make a Transfer</button>
-        </div>
+        <hr>
     </div>
 {% else %}
     <h1>Please login to access this page</h1>
 {% endif %}
 
 <style>
-    .fantasy-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-    }
-
-    .fantasy-section {
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 20px;
-        margin: 10px 0;
-        width: 80%;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .fantasy-section h2 {
-        margin-top: 0;
-    }
-
-    .fantasy-section ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    .fantasy-section ul li {
-        padding: 10px;
-        margin: 5px 0;
-        border-radius: 3px;
-    }
-
-    button {
-        background-color: #670000;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    button:hover {
-        background-color: #a94442;
-    }
-
-    }
     
+
 </style>
 
 {% endblock %}
