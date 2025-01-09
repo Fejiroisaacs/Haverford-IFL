@@ -1,17 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Authentication{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
-<form action="/login" method="post">
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
-    <button type="submit">Login</button>
-</form>
+<link rel="stylesheet" href="/static/auth.css">
+<section class="container">
+    <div class="login-container">
+        <div class="circle circle-one"></div>
+        <div class="form-container">
+            <img src="/static/Images/Elements/login-pic.png" alt="player" class="illustration" />
+            <h1 class="opacity" id="form-title">LOGIN</h1>
+            <form id="auth-form" action="/login" method="post">
+                <input type="email" placeholder="EMAIL" id="email" name="email" required>
+                <input type="password" placeholder="PASSWORD" id="password" name="password" required>
+                <button class="opacity" type="submit">SUBMIT</button>
+            </form>
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            <div class="register-forget opacity" id="user-actions">
+                <a href="#" onclick="showRegisterForm()">REGISTER</a>
+                <a href="#" onclick="showForgotPasswordForm()">FORGOT PASSWORD</a>
+            </div>
+        </div>
+        <div class="circle circle-two"></div>
+    </div>
+    <div class="theme-btn-container"></div>
+</section>
 {% if error %}
     <p style="color: red;">{{ error }}</p>
 {% endif %}
+
+<script>
+    function showRegisterForm() {
+        document.getElementById('form-title').innerText = 'REGISTER';
+        document.getElementById('auth-form').action = "/signup";
+        document.getElementById('auth-form').innerHTML = `
+            <input type="email" placeholder="EMAIL" id="email" name="email" required>
+            <input type="text" placeholder="USERNAME" id="username" name="username" required>
+            <input type="password" placeholder="PASSWORD" id="password" name="password" required>
+            <button class="opacity" type="submit">SUBMIT</button>
+        `;
+        document.getElementById('user-actions').innerHTML = `
+            <a href="#" onclick="showLoginForm()">LOGIN</a>
+        `;
+    }
+
+    function showForgotPasswordForm() {
+        document.getElementById('form-title').innerText = 'FORGOT PASSWORD';
+        document.getElementById('auth-form').action = "/forgot_password";
+        document.getElementById('auth-form').innerHTML = `
+            <input type="email" placeholder="EMAIL" id="email" name="email" required>
+            <button class="opacity" type="submit">SUBMIT</button>
+        `;
+        document.getElementById('user-actions').innerHTML = `
+            <a href="#" onclick="showLoginForm()">LOGIN</a>
+            <a href="#" onclick="showRegisterForm()">REGISTER</a>
+        `;
+    }
+    function showLoginForm() {
+        document.getElementById('form-title').innerText = 'LOGIN';
+        document.getElementById('auth-form').action = "/login";
+        document.getElementById('auth-form').innerHTML = `
+            <input type="email" placeholder="EMAIL" id="email" name="email" required>
+            <input type="password" placeholder="PASSWORD" id="password" name="password" required>
+            <button class="opacity" type="submit">SUBMIT</button>
+        `;
+        document.getElementById('user-actions').innerHTML = `
+            <a href="#" onclick="showRegisterForm()">REGISTER</a>
+            <a href="#" onclick="showForgotPasswordForm()">FORGOT PASSWORD</a>
+        `;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if Login %}
+            showLoginForm();
+        {% else %}
+            showRegisterForm();
+        {% endif %}
+    });
+    
+    
+</script>
+
 {% endblock %}

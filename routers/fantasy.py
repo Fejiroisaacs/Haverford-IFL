@@ -8,8 +8,7 @@ templates = Jinja2Templates(directory="templates")
 user = None
 
 @router.get("/fantasy", response_class=HTMLResponse)
-@router.get("/login", response_class=HTMLResponse)
-async def read_contact(request: Request, session_token: str = Cookie(None)):
+async def fantasy_loading(request: Request, session_token: str = Cookie(None)):
     user = None
     if session_token:
         try:

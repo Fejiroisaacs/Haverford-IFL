@@ -1,7 +1,8 @@
-from fastapi import Request, Form, APIRouter, Response
+from fastapi import Request, Form, APIRouter, Response, Cookie
+from firebase_admin import auth
 import requests
 from fastapi.templating import Jinja2Templates
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, HTMLResponse
 from dotenv import load_dotenv
 import os
 
@@ -41,7 +42,21 @@ async def post_login(request: Request, email: str = Form(...), password: str = F
     except Exception as e:
         print(str(e))
         user = None
-        return templates.TemplateResponse("fantasy.html", {"request": request, "error": "Invalid username/password", "user": user})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username/password", "user": user, 'Login': True})
+
+@router.get("/login", response_class=HTMLResponse)
+async def login(request: Request, session_token: str = Cookie(None)):
+    user = None
+    if session_token:
+        try:
+            user = auth.verify_id_token(session_token)
+            response = RedirectResponse(url="/fantasy", status_code=303)
+            response.set_cookie(key="session_token", value=user['idToken'], httponly=True, secure=True, max_age=86400)
+            return response
+        except Exception as e:
+            print("Invalid session token:", str(e))
+    
+    return templates.TemplateResponse("login.html", {"request": request, "user": user, 'Login': True})
 
 @router.get("/logout")
 async def logout(request: Request, response: Response):
