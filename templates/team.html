@@ -128,7 +128,6 @@
             content += `</tbody></table></div></div>`;
             document.getElementById('standings').innerHTML = content;
         } else if (section === 'players') {
-            console.log(playersData);
             const players = playersData[activeSeason];
             let content = `<h2>Season ${activeSeason} Players</h2>
                 <div class="results">`;
