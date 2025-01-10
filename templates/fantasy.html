@@ -3,6 +3,8 @@
 {% block title %}Fantasy{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/table.css">
+<link rel="stylesheet" href="/static/displays.css">
 <link rel="stylesheet" href="/static/fantasy.css">
 
 {% if user is not none and 'user_id' in user.keys() %}
@@ -26,15 +28,98 @@
                 <h4 class='pt-label'>Record</h4>
             </div>
         </div>
-        <hr>
+        <hr style='margin-top: 1rem;'>
+        <div class='deadline'>
+            <h3>Next - Matchweek {{data['MW']+1}}</h3>
+            <div class='vertic-line'></div>
+            <span class='deadline-time'> Deadline: {{data['Deadline']}} @ Midnight</span>
+        </div>
+        
+        <hr style='margin-bottom: 1rem;'>
+
+        <div class="options-container">
+            <div class="option" id="team-option" onclick="showContent('team')">My Team</div>
+            <div class="option" id="transfers-option" onclick="showContent('transfers')">Make Transfers</div>
+            <div class="option" id="standings-option" onclick="showContent('standings')">Standings</div>
+        </div>
+
+        <div id="team" class="fantasy-content">
+            <div class='team-section'>
+                <div class="team">
+                    <div class="team-sec">
+                        {% for player in data['team'][0:2] %}
+                        <div class="player">
+                            <div class="shirt">
+                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
+                                <p class="number">{{ player[1] }}</p>
+                            </div>
+                            <p class="name">{{ player[0] }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="team-sec">
+                        {% for player in data['team'][2:4] %}
+                        <div class="player">
+                            <div class="shirt">
+                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
+                                <p class="number">{{ player[1] }}</p>
+                            </div>
+                            <p class="name">{{ player[0] }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="team-sec">
+                        {% set player = data['team'][-1]%}
+                        <div class="player">
+                            <div class="shirt">
+                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
+                                <p class="number">{{ player[1] }}</p>
+                            </div>
+                            <p class="name">{{ player[0] }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-stats">
+                    <h4>Team Stats</h4>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div id="transfers" class="fantasy-content" style="display: none;"></div>
+        <div id="standings" class="fantasy-content" style="display: none;"></div>
+
     </div>
+    
 {% else %}
     <h1>Please login to access this page</h1>
 {% endif %}
 
-<style>
-    
+<script>
 
-</style>
+    let activeContent = 'team';
+
+    function showContent(section) {
+        document.getElementById('team').style.display = 'none';
+        document.getElementById('transfers').style.display = 'none';
+        document.getElementById('standings').style.display = 'none';
+
+        document.getElementById(section).style.display = 'block';
+
+        document.getElementById('team-option').classList.remove('active');
+        document.getElementById('transfers-option').classList.remove('active');
+        document.getElementById('standings-option').classList.remove('active');
+
+        document.getElementById(`${section}-option`).classList.add('active');
+        
+        activeContent = section;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showContent('team');
+    });
+</script>
 
 {% endblock %}

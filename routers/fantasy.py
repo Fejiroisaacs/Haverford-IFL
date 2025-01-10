@@ -25,7 +25,7 @@ def get_user_data():
         'Average': 40,
         'curr_pts' : 197,
         'record': 62,
-        'team': ['Rami', 'Yass', 'Kab', 'Fej', 'Grant'],
+        'team': [('Rami', 25), ('Yass', 12), ('Will', 5), ('Fej', 17), ('Grant', -4)],
         'MW': 5,
         'Deadline': '1/17'
     }

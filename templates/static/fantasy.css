@@ -61,20 +61,137 @@
     color: #670000;
 }
 
+.vertic-line {
+    border-left: 2px solid #000;
+    height: 2rem;
+    margin: 0 2rem;
+    margin-left: 3.5rem;
+    color: #333;
+}
 
-/* Responsive Design */
+.deadline-time {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.deadline {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: #333;
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    opacity: 0.8;
+}
+
+
+.fantasy-content {
+    padding: 1rem;
+    text-align: center;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+}
+
+.team-sec {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    width: 120px; 
+    box-sizing: border-box; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+} 
+
+.player:hover { 
+    transform: scale(1.1); 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); 
+}
+
+
+.shirt {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    z-index: 1;
+}
+
+.shirt img {
+    width: 100%;
+    height: 100%;
+    background: none;
+}
+
+.number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    z-index: 2; 
+}
+
+.name {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    z-index: 3;
+}
+
+
+.team-section{
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
 @media (max-width: 768px) {
     .container {
-        width: 94%;
+        width: 90%;
         padding: 1.5rem;
+        font-size: 11px;
     }
 
-    .points-container {
-        flex-direction: column;
-        align-items: center;
+    .container h1{
+        font-size: 1.8rem;
     }
 
+    .mw {
+        font-size: 1rem;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .pt {
+        padding: 1rem;
+        width: 1.7rem;
+        height: 1.7rem;
+    }
+    .deadline{
+        font-size: 1rem;
+    }
     .points {
         margin-bottom: 1rem;
+    }
+    .team-section{
+        display: block;
     }
 }
