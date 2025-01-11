@@ -161,11 +161,132 @@
     margin-top: 2rem;
 }
 
+
+.team-stats {
+    margin-top: 20px;
+}
+
+.team-stats h4 {
+    margin-bottom: 10px;
+}
+
+.team-stats table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.team-stats th, .team-stats td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.team-stats th {
+    background-color: #f2f2f2;
+}
+
+.team-stats tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.team-stats tr:hover {
+    background-color: #ddd;
+}
+
+.team-stats td[colspan="6"] {
+    background-color: #e2e2e2;
+    font-weight: bold;
+    text-align: center;
+}
+
+.fantasy-content {
+    padding: 20px;
+}
+
+.transfers {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.transfers h3 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.transfers-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.transfers-section {
+    flex: 1;
+    min-width: 200px;
+    margin: 10px;
+}
+
+.transfers-section h4 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #555;
+}
+
+.transfers-list {
+    margin-bottom: 20px;
+}
+
+select {
+    border: 0;
+    outline: 0;
+    font: inherit;
+    width: 100%;
+    padding: 1rem 4rem 1rem 1rem;
+    color: #333;
+    border-radius: 0.3em;
+    box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    -webkit-appearance: none; /* Remove default arrow in Webkit browsers */
+    -moz-appearance: none; /* Remove default arrow in Firefox */
+    appearance: none; /* Remove default arrow in other browsers */
+    background: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 viewBox%3D%270 0 4 5%27%3E%3Cpath fill%3D%27%23000%27 d%3D%27M2 0L0 2h4zM2 5L0 3h4z%27%2F%3E%3C%2Fsvg%3E') no-repeat right 1rem center;
+    background-size: 1rem;
+}
+.btn {
+    background-color: #970000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px; 
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #870000;
+}
+
+.btn:active {
+    background-color: #770000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px); 
+}
+
+.transfers-hr {
+    border: 0;
+    border-top: 2px solid #ddd;
+    margin: 4rem 0;
+}
+
 @media (max-width: 768px) {
     .container {
         width: 90%;
         padding: 1.5rem;
-        font-size: 11px;
+        font-size: 12px;
     }
 
     .container h1{
@@ -193,5 +314,49 @@
     }
     .team-section{
         display: block;
+    }
+    .team-stats table {
+        display: block;
+        overflow-x: auto;
+    }
+    .team-stats th, .team-stats td {
+        white-space: nowrap;
+    }
+    th, td {
+        padding: 5px;
+        font-size: 12px;
+    }
+    .transfers-container {
+        flex-direction: column;
+    }
+
+    .transfers-section {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    select {
+        width: 100%;
+    }
+   
+}
+
+
+@media (max-width: 480px) {
+    .transfers h3 {
+        font-size: 20px;
+    }
+
+    .transfers-section h4 {
+        font-size: 16px;
+    }
+
+    select {
+        padding: 0.8rem 3rem 0.8rem 0.8rem;
+        font-size: 14px;
+    }
+    .btn {
+        padding: 8px 16px;
+        width: 8rem;
     }
 }

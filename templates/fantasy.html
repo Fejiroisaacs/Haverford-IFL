@@ -39,8 +39,9 @@
 
         <div class="options-container">
             <div class="option" id="team-option" onclick="showContent('team')">My Team</div>
-            <div class="option" id="transfers-option" onclick="showContent('transfers')">Make Transfers</div>
+            <div class="option" id="manage-team-option" onclick="showContent('manage-team')">Manage Team</div>
             <div class="option" id="standings-option" onclick="showContent('standings')">Standings</div>
+            <div class="option" id="previous-weeks-option" onclick="showContent('previous-weeks')">Previous Weeks</div>
         </div>
 
         <div id="team" class="fantasy-content">
@@ -81,15 +82,116 @@
                 </div>
 
                 <div class="team-stats">
-                    <h4>Team Stats</h4>
-
+                    <h3>Team Stats</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>MW Points</th>
+                                <th>MW Points</th>
+                                <th>Total Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">Starting Team</td>
+                            </tr>
+                            {% for player in data['starting_team'] %}
+                                <tr>
+                                    <td>{{ player.name }}</td>
+                                    <td>{{ player.pos }}</td>
+                                    <td>{{ player.team }}</td>
+                                    <td>{{ player.mw_points }}</td>
+                                    <td>{{ player.mw_points }}</td>
+                                    <td>{{ player.total_points }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="6">Bench</td>
+                            </tr>
+                            {% for player in data['bench'] %}
+                                <tr>
+                                    <td>{{ player.name }}</td>
+                                    <td>{{ player.pos }}</td>
+                                    <td>{{ player.team }}</td>
+                                    <td>{{ player.mw_points }}</td>
+                                    <td>{{ player.mw_points }}</td>
+                                    <td>{{ player.total_points }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+                
 
             </div>
         </div>
 
-        <div id="transfers" class="fantasy-content" style="display: none;"></div>
+        <div id="manage-team" class="fantasy-content" style="display: none;">
+            
+            <div class='transfers'>
+                <form action="/fantasy/update-team" method="post">
+                    <h3>Make Substitution</h3>
+                    <div class='transfers-container'>
+                        <div class='transfers-section'>
+                            <h4>Starting Team</h4>
+                            <div class='transfers-list'>
+                                <select name='starting_team'>
+                                    {% for player in data['starting_team'] %}
+                                        <option value="{{ player.name }}">{{ player.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class='transfers-section'>
+                            <h4>Bench</h4>
+                            <div class='transfers-list'>
+                                <select name='bench'>
+                                    {% for player in data['bench'] %}
+                                    <option value="{{ player.name }}">{{ player.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class='btn' id='substitution-btn'>Make Substitution</button>
+                </form>
+
+                <hr class='transfers-hr'>
+                <form action="/fantasy/transfer-team" method="post">
+                    <h3>Make Transfers</h3>
+                    <div class='transfers-container'>
+                        <div class='transfers-section'>
+                            <h4>My players</h4>
+                            <div class='transfers-list'>
+                                <select name='my_player'>
+                                    {% for player in data['starting_team'] + data['bench'] %}
+                                    <option value="{{ player.name }}">{{ player.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class='transfers-section'>
+                            <h4>All Fantasy players</h4>
+                            <div class='transfers-list'>
+                                <select name='new_player'>
+                                    {% for player in data['starting_team'] + data['bench'] %}
+                                    <option value="{{ player.name }}">{{ player.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class='btn' id='transfer-btn'>Make Transfer</button>
+                </form>
+            </div>
+
+        </div>
+
         <div id="standings" class="fantasy-content" style="display: none;"></div>
+        <div id="previous-weeks" class="fantasy-content" style="display: none;"></div>
 
     </div>
     
@@ -103,14 +205,16 @@
 
     function showContent(section) {
         document.getElementById('team').style.display = 'none';
-        document.getElementById('transfers').style.display = 'none';
+        document.getElementById('manage-team').style.display = 'none';
         document.getElementById('standings').style.display = 'none';
+        document.getElementById('previous-weeks').style.display = 'none';
 
         document.getElementById(section).style.display = 'block';
 
         document.getElementById('team-option').classList.remove('active');
-        document.getElementById('transfers-option').classList.remove('active');
+        document.getElementById('manage-team-option').classList.remove('active');
         document.getElementById('standings-option').classList.remove('active');
+        document.getElementById('previous-weeks-option').classList.remove('active');
 
         document.getElementById(`${section}-option`).classList.add('active');
         
@@ -121,5 +225,7 @@
         showContent('team');
     });
 </script>
+
+
 
 {% endblock %}
