@@ -11,4 +11,9 @@ class InvalidUserName(Exception):
     def __init__(self, message="Invalid Username."):
         self.message = message
         super().__init__(self.message)
+class EmailAlreadyExists(Exception):
+    
+    def __init__(self, message="Email already exists."):
+        self.message = message
+        super().__init__(self.message)
     
