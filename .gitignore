@@ -6,3 +6,4 @@ firebase_storage.py
 old/
 data_handler.py
 test.py
+compressor.py
