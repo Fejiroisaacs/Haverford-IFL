@@ -127,16 +127,6 @@ hr {
     color: #555;
 }
 
-@media (max-width: 768px) {
-    .result-card {
-        width: 100%;
-        margin: 10px 0;
-    }
-    body {
-        font-size: 12px;
-    }
-}
-
 #match_stats {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -222,8 +212,67 @@ hr {
 .potm-image:hover {
     transform: scale(1.05); 
 }
+.box {
+    position: relative;
+    width: 100%; 
+    max-width: 350px; 
+    margin: 0 auto; 
+}
+
+.input {
+    padding: 10px;
+    width: 100%;
+    height: 40px;
+    background: none;
+    border: 2px solid #670000;
+    border-radius: 20px;
+    box-sizing: border-box;
+    font-family: Comic Sans MS;
+    font-size: 16px;
+    color: whitesmoke;
+    outline: none;
+    transition: .5s;
+}
+
+.box:hover input {
+    background: #3b3640;
+    border-radius: 10px;
+}
+
+.search-button {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #670000;
+    cursor: pointer;
+    font-size: 16px;
+    transition: .2s;
+}
+
+.search-button:hover {
+    color: #570000; 
+}
+
+.box i {
+    font-size: 16px;
+}
 
 @media (max-width: 480px) {
+    .input {
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .search-button {
+        font-size: 14px;
+    }
+
+    .box i {
+        font-size: 14px;
+    }
     .potm-image {
         height: 250px; 
         width: 250px;
@@ -233,6 +282,16 @@ hr {
     }
     .team h1 {
         font-size: 14px;
+    }
+    body {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .result-card {
+        width: 100%;
+        margin: 10px 0;
     }
     body {
         font-size: 12px;
