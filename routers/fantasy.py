@@ -1,35 +1,38 @@
-from fastapi import Request, Form, APIRouter, Depends, Cookie
-from firebase_admin import auth, firestore
+from fastapi import Request, Form, APIRouter, Depends, Cookie, HTTPException
+from firebase_admin import auth, db
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
+from models import User
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-user = None
+
+def get_current_user(session_token: str = Cookie(None)):
+    if not session_token:
+        raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
+    try:
+        user = auth.verify_id_token(session_token)
+        return user
+    except Exception as e:
+        print("Invalid session token:", str(e))
+        raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
 
 @router.get("/fantasy", response_class=HTMLResponse)
-async def fantasy_loading(request: Request, session_token: str = Cookie(None)):
-    user = None
-    if session_token:
-        try:
-            user = auth.verify_id_token(session_token)
-        except Exception as e:
-            print("Invalid session token:", str(e))
-    
-    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data()})
-
+async def fantasy_loading(request: Request, user: dict = Depends(get_current_user)):
+    current_week = db.reference('Fantasy').child('current_week').child('Week').get()
+    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data(user)})
 
 @router.post("/fantasy/update-team")
-async def update_team(request: Request, starting_team: str = Form(...), bench: str = Form(...)):
-    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data()})
-
+async def update_team(request: Request, user: dict = Depends(get_current_user), starting_team: str = Form(...), bench: str = Form(...)):
+    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data(user)})
 
 @router.post("/fantasy/transfer-team")
-async def transfer_team(request: Request, my_player: str = Form(...), new_player: str = Form(...)):
-    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data()})
+async def transfer_team(request: Request, user: dict = Depends(get_current_user), my_player: str = Form(...), new_player: str = Form(...)):
+    return templates.TemplateResponse("fantasy.html", {"request": request, "user": user, 'data': get_user_data(user)})
 
-
-def get_user_data():
+def get_user_data(user):
+    if user:
+        userObject = User(user['name'], user['email'], user['email_verified'], db)
     dummy_data = {
         'Name': 'Dummy',
         'Average': 40,
