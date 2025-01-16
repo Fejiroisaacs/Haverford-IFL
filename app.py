@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
-from starlette.responses import HTMLResponse, FileResponse
+from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
 from routers import matches, signup, login, contact, fantasy, players, settings, teams
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -61,6 +61,12 @@ async def validation_exception_handler(request, exc):
             return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
     except Exception as e:
         return templates.TemplateResponse("error.html", {"request": request})
+
+@app.exception_handler(HTTPException) 
+async def http_exception_handler(request: Request, exc: HTTPException): 
+    if exc.status_code == 401: 
+        return RedirectResponse(url="/login") 
+    return templates.TemplateResponse("login.html", {"request": request, "user": None, "Login": True})
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
