@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
 from firebase_admin import auth as fb_auth, db
@@ -23,10 +23,10 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
         
-        user_data = {"Email": email, 'Username': username}
+        user_data = {"Email": email, 'Username': username, 'Admin': False}
         users_ref = db.reference('Users')
         all_users = users_ref.get()
-        print(all_users)
+        
         if username.lower() in [name.lower() for name in all_users.keys()]:
             raise UserNameAlreadyExists()
         
@@ -36,10 +36,9 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         if email.lower() in [all_users[userdata]['Email'].lower() for userdata in all_users]:
             raise EmailAlreadyExists()
         
-        user_record = fb_auth.create_user(email=email, password=password)
+        fb_auth.create_user(email=email, password=password, display_name=username)
         verification_link = fb_auth.generate_email_verification_link(email=email)
         
-        # Create the email template
         email_template = f"""
         Dear {username},
 
@@ -51,7 +50,7 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         If you did not create an account with us, please disregard this email.
 
         Thank you,
-        Grant, Kabir, Ben, and Fejiro.
+        Haverford IFL.
         """
 
         send_email(email=f'{os.getenv("OUR_EMAIL")}', bccs=email, subject="Welcome to Haverford IFL Fantasy! Verify Your Email", message=email_template)
@@ -61,4 +60,4 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         return RedirectResponse("/login", status_code=303)
     except Exception as e:
         print(str(e))
-        return templates.TemplateResponse("login.html", {"request": request, "error": str(e), "user": None})
+        return templates.TemplateResponse("login.html", {"request": request, "error": str(e), "user": None, "Login": False})
