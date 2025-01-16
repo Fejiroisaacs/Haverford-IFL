@@ -45,38 +45,19 @@
         <div id="team" class="fantasy-content">
             <div class='team-section'>
                 <div class="team">
+                    {% for i in range(3)%}
                     <div class="team-sec">
-                        {% for player in data['team'][0:2] %}
+                        {% for player in data['starting_team'][i*2:i*2+2] %}
                         <div class="player">
                             <div class="shirt">
                                 <img src="/static/Images/Elements/shirt.png" alt="Shirt">
-                                <p class="number">{{ player[1] }}</p>
+                                <p class="number">{{ player.mw_points }}</p>
                             </div>
-                            <p class="name">{{ player[0] }}</p>
+                            <p class="name">{{ player.name }}</p>
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="team-sec">
-                        {% for player in data['team'][2:4] %}
-                        <div class="player">
-                            <div class="shirt">
-                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
-                                <p class="number">{{ player[1] }}</p>
-                            </div>
-                            <p class="name">{{ player[0] }}</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="team-sec">
-                        {% set player = data['team'][-1]%}
-                        <div class="player">
-                            <div class="shirt">
-                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
-                                <p class="number">{{ player[1] }}</p>
-                            </div>
-                            <p class="name">{{ player[0] }}</p>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <div class="team-stats">
@@ -194,7 +175,8 @@
     </div>
     
 {% else %}
-    <h1>Please login to access this page</h1>
+    <h1>Please login to access this page\n</h1>
+    <button class='btn' onclick="window.location.href='/login'">Login</button>
 {% endif %}
 
 <script>
