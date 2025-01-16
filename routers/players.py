@@ -2,14 +2,14 @@ from fastapi import APIRouter, Request, Cookie, Depends
 from fastapi.templating import Jinja2Templates
 from firebase_admin import db as firebase_db
 from starlette.responses import HTMLResponse
-import pandas as pd, numpy as np
+import pandas as pd
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-user = None
+
 @router.get("/players", response_class=HTMLResponse)
 async def read_players(request: Request, session_token: str = Cookie(None), db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": [], "count": 0})
+    return templates.TemplateResponse("players.html", {"request": request, "Players": [], "count": 0})
     
 @router.get("/players/{player}", response_class=HTMLResponse)
 async def get_player(request: Request, player: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
@@ -17,7 +17,6 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
     season_data = get_player_season_data(player)
     if player_rating_data:
         return templates.TemplateResponse("player.html", {"request": request, 
-                                                          "user": user, 
                                                           "rating_data": player_rating_data,
                                                           'season_data': season_data,
                                                           })
@@ -29,7 +28,7 @@ async def search_players(request: Request, query: str, db: firebase_db.Reference
     players = get_players()
     filtered_players = [player for player in players if query.lower() in player['Name'].lower()]
 
-    return templates.TemplateResponse("players.html", {"request": request, "user": user, "Players": filtered_players, "count": len(filtered_players)})
+    return templates.TemplateResponse("players.html", {"request": request, "Players": filtered_players, "count": len(filtered_players)})
 
 def get_player_season_data(player):
     data = pd.read_csv('data/season_player_stats.csv')

@@ -8,11 +8,11 @@ import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-user = None
 
 # Load environment variables
 load_dotenv()
 FIREBASE_API_KEY = os.getenv("apiKey")
+
 def verify_password(email: str, password: str):
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
     payload = {
@@ -33,7 +33,6 @@ def verify_password(email: str, password: str):
 
 @router.post("/login")
 async def post_login(request: Request, email: str = Form(...), password: str = Form(...)):
-    global user
     try:
         user = verify_password(email, password)
         response = RedirectResponse(url="/fantasy", status_code=303)
@@ -41,8 +40,7 @@ async def post_login(request: Request, email: str = Form(...), password: str = F
         return response
     except Exception as e:
         print(str(e))
-        user = None
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username/password", "user": user, 'Login': True})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username/password", "user": None, 'Login': True})
 
 @router.get("/login", response_class=HTMLResponse)
 async def login(request: Request, session_token: str = Cookie(None)):
@@ -62,5 +60,4 @@ async def login(request: Request, session_token: str = Cookie(None)):
 async def logout(request: Request, response: Response):
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie(key="session_token")
-    response.delete_cookie(key="user_email")
     return response

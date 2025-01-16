@@ -1,18 +1,16 @@
-from fastapi import APIRouter, Request, Cookie, Depends
+from fastapi import APIRouter, Request, Cookie
 from fastapi.templating import Jinja2Templates
-from firebase_admin import db as firebase_db
 from starlette.responses import HTMLResponse
 import pandas as pd
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-user = None
 CURRENT_SEASON = max(pd.read_csv("data/season_standings.csv")['Season'].tolist())
 seasons_played = None
 
 @router.get("/teams", response_class=HTMLResponse)
 async def teams_home(request: Request, session_token: str = Cookie(None)):
-    return templates.TemplateResponse("teams.html", {"request": request, "user": user, "Teams": [], "count": 0})
+    return templates.TemplateResponse("teams.html", {"request": request, "Teams": [], "count": 0})
 
 @router.get("/teams/{team}", response_class=HTMLResponse)
 async def team_page(request: Request, team: str):
@@ -56,7 +54,7 @@ async def search_teams(request: Request, query: str):
     filtered_teams = [team for team in teams if query.lower() in team['Name'].lower()]
     
     return templates.TemplateResponse("teams.html", {"request": request, 
-                                                     "user": user, "Teams": filtered_teams, 
+                                                     "Teams": filtered_teams, 
                                                      "count": len(filtered_teams)})
 
 def get_standings(team):
