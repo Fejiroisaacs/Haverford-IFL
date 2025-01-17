@@ -133,7 +133,6 @@ def get_player_data(team, opponent, match):
     team_data = data[(data['My Team'] == team) & (data['Match Number (All Seasons)'] == int(match))].copy()
     opponent_data = data[(data['My Team'] == opponent) & (data['Match Number (All Seasons)'] == int(match))].copy()
     
-    print(opponent_data.columns)
     dropped_cols = ['Season', 'Match Number (All Seasons)']
     team_data.drop(dropped_cols, axis=1, inplace=True)
     opponent_data.drop(dropped_cols, axis=1, inplace=True)
