@@ -8,66 +8,50 @@
         <h1>Haverford Intramural Futsal League</h1>
     </div>
 </section>
-
-<section class="video-section">
-    <h3>IFL Promotional Video</h3>
+<br>
+<div class="video-section">
+    <h2>IFL Promotional Video</h2>
     <div class="video-and-results">
         <div class="video-container">
             <video controls autoplay loop muted>
-                <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4" allowfullscreen>
+                <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-        </div>
-        <div class="match-results">
-            <h3>Final Results</h3>
-            <ul>
-                <li>Team A 2 - 1 Team B</li>
-                <li>Team C 3 - 0 Team D</li>
-                <li>Team E 1 - 1 Team F</li>
-                <li>Team G 4 - 2 Team H</li>
-                <li>Team I 0 - 3 Team J</li>
-                <li>Team K 1 - 4 Team L</li>
-                <li>Team M 2 - 2 Team N</li>
-                <li>Team O 5 - 3 Team P</li>
-            </ul>
-        </div>
+        </div> 
     </div>
-</section>
+</div>
 
+<br>
+<br>
 
 <section id="slideshow">
     <div class="slideshow-container">
         <div class="content-carousel">
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/Logo/logo.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/0.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/1.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/2.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/3.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/4.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/5.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/6.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/7.png" alt="Logo"/></figure>
+            <figure class="shadow"><img src="/static/Images/POTM/8.png" alt="Logo"/></figure>
         </div>
     </div>
 </section>
 
-<section id='pdf-container'>
+<br>
+
+<div id='pdf-container'>
     <h2>IFL Rulebook</h2>
-    <embed src="/pdf" width="80%" height="500px" type="application/pdf">
-</section>
+    <embed src="/pdf" width="auto" height="400px" type="application/pdf">
+</div>
 
 
 <style>
     #pdf-container {
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
     }
-
     embed {
         max-width: 80%;
     }
@@ -108,7 +92,6 @@
 
     .video-section {
         background-color: #fff;
-        padding: 30px 15px;
         text-align: center;
     }
 
@@ -116,18 +99,17 @@
         max-width: 100%;
         height: auto;
         border-radius: 10px;
+        border: 2px outset #670000;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     #slideshow {
-        padding: 30px 0;
-        background-color: #f4f4f4;
+        padding: 6px 0;
         text-align: center;
     }
 
     .slideshow-container {
-        max-width: 80%;
-        margin: 0 auto;
+        max-width: 100%;
     }
 
     .content-carousel {
@@ -137,7 +119,7 @@
     }
 
     .content-carousel figure {
-        margin: 10px;
+        margin: 5px;
         flex: 1 1 calc(20% - 20px);
     }
 
@@ -145,16 +127,8 @@
         width: 100%;
         height: auto;
         border-radius: 10px;
+        border: 2px outset #670000;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .video-and-results {
-        display: flex;
-        justify-content: space-between;
-        margin: 30px;
-        padding: 20px;
-        align-items: flex-start;
-        gap: 20px;
     }
 
     .video-container {
