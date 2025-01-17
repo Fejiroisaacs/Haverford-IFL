@@ -8,7 +8,7 @@ from routers import matches, signup, login, contact, fantasy, players, settings,
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.errors import ServerErrorMiddleware
-import json, os
+import json, os, random
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 
@@ -72,12 +72,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.get("/index", response_class=HTMLResponse)
 @app.get("/home", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "user": user})
+    images = get_random_potm_images()
+    return templates.TemplateResponse("index.html", {"request": request, "user": user, 'images': images})
 
 @app.get("/pdf")
 async def get_pdf():
     return FileResponse("data/IFL_Rule_Book.pdf")
 
+def get_random_potm_images():
+    images = os.listdir('templates/static/Images/POTM')
+    return random.sample(images, k=9)
 
 if __name__ == "__main__":
     import uvicorn

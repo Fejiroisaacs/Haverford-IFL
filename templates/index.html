@@ -25,17 +25,12 @@
 <br>
 
 <section id="slideshow">
+    <h1>Player of the Match Highlight</h1>
     <div class="slideshow-container">
         <div class="content-carousel">
-            <figure class="shadow"><img src="/static/Images/POTM/0.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/1.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/2.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/3.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/4.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/5.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/6.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/7.png" alt="Logo"/></figure>
-            <figure class="shadow"><img src="/static/Images/POTM/8.png" alt="Logo"/></figure>
+            {% for image in images%}
+                <figure class="shadow"><img src="/static/Images/POTM/{{ image }}" alt="Logo"/></figure>
+            {% endfor %}
         </div>
     </div>
 </section>
