@@ -113,7 +113,7 @@
                         <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
                             <tbody>`;
             standings.forEach(team => {
-                content += `<tr${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
+                content += `<tr onclick="window.open('/teams/${team['Team']}', '_blank')" ${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
                     <td>${team["Team"]}</td>
                     <td>${team["MP"]}</td>
                     <td>${team["W"]}</td>
@@ -132,11 +132,9 @@
             let content = `<h2>Season ${activeSeason} Players</h2>
                 <div class="results">`;
             players.forEach(player => {
-                console.log(player);
                 content += `<a href="/players/${player}" style="text-decoration: none; color: inherit;">
                     <h4 class='result-card'>${player}</h4>
                 </a>`;
-                console.log(player);
             });
             content += `</div>`;
             document.getElementById('players').innerHTML = content;
