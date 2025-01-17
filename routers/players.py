@@ -2,14 +2,18 @@ from fastapi import APIRouter, Request, Cookie, Depends
 from fastapi.templating import Jinja2Templates
 from firebase_admin import db as firebase_db
 from starlette.responses import HTMLResponse
-import pandas as pd
+import pandas as pd, random, os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/players", response_class=HTMLResponse)
 async def read_players(request: Request, session_token: str = Cookie(None), db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    return templates.TemplateResponse("players.html", {"request": request, "Players": [], "count": 0})
+    potm_images = get_random_potm_images()
+    return templates.TemplateResponse("players.html", {"request": request, 
+                                                       "Players": [],
+                                                       'potm_images': potm_images,
+                                                       "count": 0})
     
 @router.get("/players/{player}", response_class=HTMLResponse)
 async def get_player(request: Request, player: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
@@ -27,8 +31,12 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
 async def search_players(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     players = get_players()
     filtered_players = [player for player in players if query.lower() in player['Name'].lower()]
+    potm_images = get_random_potm_images()
 
-    return templates.TemplateResponse("players.html", {"request": request, "Players": filtered_players, "count": len(filtered_players)})
+    return templates.TemplateResponse("players.html", {"request": request, 
+                                                       "Players": filtered_players,
+                                                       'potm_images': potm_images, 
+                                                       "count": len(filtered_players)})
 
 def get_player_season_data(player):
     data = pd.read_csv('data/season_player_stats.csv')
@@ -48,4 +56,6 @@ def get_players():
     
     return data[['Name', 'Latest Team']].to_dict(orient='records')
 
-    
+def get_random_potm_images():
+    images = os.listdir('./templates/static/Images/POTM')
+    return random.sample(images, k=20)

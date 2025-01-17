@@ -25,9 +25,21 @@
             </a>
         </div>
         {%endfor%}
-    {% else %}
-        <p>No players found.</p>
+
     {% endif %}
 </div>
+<br>
+<div class='potm'>
+    <h1>POTMs</h1>
+    <br>
+    <div class='potm-images'>
+        {% for i in potm_images %}
+            <div class='potm-card'>
+                <img src='/static/Images/POTM/{{i}}' alt='Player Image' class='potm-image'>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
 
 {% endblock %}
