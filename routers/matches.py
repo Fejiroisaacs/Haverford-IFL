@@ -13,6 +13,7 @@ CURRENT_SEASON = max(pd.read_csv("data/season_standings.csv")['Season'].tolist()
 async def read_matches(request: Request):
     return templates.TemplateResponse("matches.html", {"request": request, 
                                                        "groups": get_table(CURRENT_SEASON),
+                                                       "matches": get_matches(CURRENT_SEASON),
                                                        "active_season": CURRENT_SEASON,
                                                        "current_season": CURRENT_SEASON})
 
@@ -21,19 +22,28 @@ async def read_matches(request: Request, season: int):
     if season <= CURRENT_SEASON and season > 0:
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(season),
+                                                        "matches": get_matches(season),
                                                         "active_season": season,
                                                         "current_season": CURRENT_SEASON})
     else:
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(CURRENT_SEASON),
+                                                        "matches": get_matches(CURRENT_SEASON),
                                                         "active_season": CURRENT_SEASON,
                                                         "current_season": CURRENT_SEASON})
 
 def get_table(season):
-    data = pd.read_csv("data/season_standings.csv")
+    with open("data/season_standings.csv") as file:
+        data = pd.read_csv(file)
     data = data[data['Season'] == season]
     groupA = data[data["Group"] == 'A'].to_dict(orient='records')
     groupB = data[data["Group"] == 'B'].to_dict(orient='records')
     
     return [groupA, groupB]
+
+def get_matches(season):
+    with open("data/Match_Results.csv") as file:
+        data = pd.read_csv(file)
+    data = data[data['Season'] == f'S{season}'].to_dict(orient='records')
     
+    return data
