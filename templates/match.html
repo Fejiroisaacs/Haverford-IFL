@@ -92,8 +92,7 @@
 
     function generateTable(team_id, team) {
         let playerData = {{player_data | tojson}};
-    
-        const columns = ['Name', 'P', 'G', 'A', 'S', 'Y/R'];
+        const columns = ['Name', 'P', 'G', 'A', 'S', 'Y-R'];
         const headers = ['Starters', 'Subs', 'External Players'];
     
         let content = '';
@@ -110,7 +109,7 @@
     
                 let bodyContent = '<table cellpadding="0" cellspacing="0" border="0">';
                 teamData.forEach(player => {
-                    bodyContent += '<tr>';
+                    bodyContent += '<tr onclick="window.open(\'/players/' + player['Name'] + '\', \'_blank\')">';
                     columns.forEach(col => {
                         let value = player[col];
                         if (value.length > 18) {
