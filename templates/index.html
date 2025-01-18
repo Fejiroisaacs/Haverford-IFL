@@ -29,7 +29,11 @@
     <div class="slideshow-container">
         <div class="content-carousel">
             {% for image in images%}
-                <figure class="shadow"><img src="/static/Images/POTM/{{ image }}" alt="Logo"/></figure>
+                <figure class="shadow">
+                    <a href="/players/{{image['Name']}}" target="_blank">
+                        <img src="/static/Images/POTM/{{ image['Match Number (All Seasons)'] }}.png" alt="{{image['Name']}}"/>
+                    </a>
+                </figure>
             {% endfor %}
         </div>
     </div>
@@ -125,7 +129,10 @@
         border: 2px outset #670000;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-
+    .content-carousel img:hover {
+        transform: scale(1.05);
+        transition: transform 0.5s;
+    }
     .video-container {
         flex: 1;
     }
