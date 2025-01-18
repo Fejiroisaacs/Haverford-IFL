@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Cookie
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 import pandas as pd
+from functions import get_potm_match
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -38,10 +39,12 @@ async def team_page(request: Request, team_name: str, match_details: str):
     try:
         match_data = get_match_data(*match_details.split('-'))
         player_data = get_player_data(*match_details.split('-'))
+        potm = get_potm_match(match_details.split('-')[-1])
         
         return templates.TemplateResponse("match.html", {"request": request, 
                                                         "match_data": match_data, 
                                                         "player_data": player_data,
+                                                        "potm": potm,
                                                         "match_details": match_details.split('-')})
     except Exception as e:
         print(str(e))
