@@ -13,7 +13,7 @@ CURRENT_SEASON = max(pd.read_csv("data/season_standings.csv")['Season'].tolist()
 async def read_matches(request: Request):
     return templates.TemplateResponse("matches.html", {"request": request, 
                                                        "groups": get_table(CURRENT_SEASON),
-                                                       "matches": get_matches(CURRENT_SEASON),
+                                                       "matches_data": get_matches(CURRENT_SEASON),
                                                        "active_season": CURRENT_SEASON,
                                                        "current_season": CURRENT_SEASON})
 
@@ -22,13 +22,13 @@ async def read_matches(request: Request, season: int):
     if season <= CURRENT_SEASON and season > 0:
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(season),
-                                                        "matches": get_matches(season),
+                                                        "matches_data": get_matches(season),
                                                         "active_season": season,
                                                         "current_season": CURRENT_SEASON})
     else:
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(CURRENT_SEASON),
-                                                        "matches": get_matches(CURRENT_SEASON),
+                                                        "matches_data": get_matches(CURRENT_SEASON),
                                                         "active_season": CURRENT_SEASON,
                                                         "current_season": CURRENT_SEASON})
 
@@ -44,6 +44,11 @@ def get_table(season):
 def get_matches(season):
     with open("data/Match_Results.csv") as file:
         data = pd.read_csv(file)
-    data = data[data['Season'] == f'S{season}'].to_dict(orient='records')
+    data = data[data['Season'] == season]
+    subsets = ['Playoff', 'A', 'B']
+    match_data = {}
     
-    return data
+    for subset in subsets:
+        match_data[subset] = data[data['Group'] == subset].to_dict(orient='records')
+        
+    return match_data

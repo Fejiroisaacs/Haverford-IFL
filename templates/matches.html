@@ -29,6 +29,7 @@
 <div class="table1">
   {% for group in groups %}
     <h2>Group {{ group[0]['Group'] }}</h2>
+    <br>
     <div class="tbl-header">
       <table cellpadding="0" cellspacing="0" border="0">
         <thead>
@@ -50,7 +51,7 @@
       <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
         <tbody>
           {% for team in group %}
-            <tr>
+            <tr onclick="window.open('/teams/{{team['Team']}}', '_blank')">
               <td>{{ team["Team"] }}</td>
               <td>{{ team["MP"] }}</td>
               <td>{{ team["W"] }}</td>
@@ -65,6 +66,7 @@
         </tbody>
       </table>
     </div>
+    <br>
   {% endfor %}
 </div>
 
@@ -72,58 +74,67 @@
 <hr>
 <br>
 
-<h2>Previous Matches</h2>
-<div class="results">
-  {% for match in matches %}
-  <a href="/teams/{{ match['Team 1'] }}/{{ match['Team 1'] }}-{{ match['Team 2'] }}-{{ match['Match ID'] }}" style="text-decoration: none; color: inherit;" target="_blank">
-    <div class="individual-match">
-      <div class="team-score"> 
-        {% if match['Win Team 1'] == 1 %} 
-          <b><p class="team">{{match['Team 1']}}</p></b> 
-          <p class="team">{{match['Team 2']}}</p> 
-        {% elif match['Win Team 2'] == 1 %} 
-          <p class="team">{{match['Team 1']}}</p> 
-          <b><p class="team">{{match['Team 2']}}</p></b> 
-        {% else %} 
-          <p class="team">{{match['Team 1']}}</p> 
-          <p class="team">{{match['Team 2']}}</p> 
-        {% endif %} 
-      </div>
+<h1>Previous Matches</h1>
+{% for match_type in matches_data %}
+  <br>
+  {% if match_type != 'Playoff'%}
+    <h2>Group {{ match_type }} Matches</h2>
+  {%else%}
+    <h2>{{ match_type }} Matches</h2>
+  {% endif %}
 
-      <div class='team-score'>
-        {% if match['Red Card Team 1'] == 1 %}
-          <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-        {% else %}
-          <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-        {% endif %}
-        <br>
-        <br>
-        {% if match['Red Card Team 2'] == 1 %}
-          <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-        {% else %}
-          <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-        {% endif %}
-      </div>
+  <div class="results">
+    {% for match in matches_data[match_type] %}
+      <a href="/teams/{{ match['Team 1'] }}/{{ match['Team 1'] }}-{{ match['Team 2'] }}-{{ match['Match ID'] }}" style="text-decoration: none; color: inherit;" target="_blank">
+        <div class="individual-match">
+          <div class="team-score"> 
+            {% if match['Win Team 1'] == 1 %} 
+              <b><p class="team">{{match['Team 1']}}</p></b> 
+              <p class="team">{{match['Team 2']}}</p> 
+            {% elif match['Win Team 2'] == 1 %} 
+              <p class="team">{{match['Team 1']}}</p> 
+              <b><p class="team">{{match['Team 2']}}</p></b> 
+            {% else %} 
+              <p class="team">{{match['Team 1']}}</p> 
+              <p class="team">{{match['Team 2']}}</p> 
+            {% endif %} 
+          </div>
 
-      <div class="separator"></div>
-      <div class="team-score"> 
-        {% if match['Win Team 1'] == 1 %} 
-          <b><p class="score">{{match['Score Team 1']}}&#9666;</p></b> 
-          <p class="score">{{match['Score Team 2']}}<span class="invisible">&#9666;</span></p> 
-        {% elif match['Win Team 2'] == 1 %} 
-          <p class="score">{{match['Score Team 1']}}<span class="invisible">&#9666;</span></p> <b>
-          <p class="score">{{match['Score Team 2']}}&#9666;</p></b> 
-        {% else %} 
-          <p class="score">{{match['Score Team 1']}}</p> 
-          <p class="score">{{match['Score Team 2']}}</p> 
-        {% endif %} 
-      </div>
-      
-      <div class="time">{{match['Time']}}</div>
-    </div>
-  </a>
-  {% endfor %}
-</div>
+          <div class='team-score'>
+            {% if match['Red Card Team 1'] == 1 %}
+              <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
+            {% else %}
+              <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
+            {% endif %}
+            <br>
+            <br>
+            {% if match['Red Card Team 2'] == 1 %}
+              <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
+            {% else %}
+              <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
+            {% endif %}
+          </div>
+
+          <div class="separator"></div>
+          <div class="team-score"> 
+            {% if match['Win Team 1'] == 1 %} 
+              <b><p class="score">{{match['Score Team 1']}}&#9666;</p></b> 
+              <p class="score">{{match['Score Team 2']}}<span class="invisible">&#9666;</span></p> 
+            {% elif match['Win Team 2'] == 1 %} 
+              <p class="score">{{match['Score Team 1']}}<span class="invisible">&#9666;</span></p> <b>
+              <p class="score">{{match['Score Team 2']}}&#9666;</p></b> 
+            {% else %} 
+              <p class="score">{{match['Score Team 1']}}</p> 
+              <p class="score">{{match['Score Team 2']}}</p> 
+            {% endif %} 
+          </div>
+          
+          <div class="time">{{match['Time']}}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endfor %}
 
 
 <style>
