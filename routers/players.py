@@ -3,13 +3,14 @@ from fastapi.templating import Jinja2Templates
 from firebase_admin import db as firebase_db
 from starlette.responses import HTMLResponse
 import pandas as pd, random, os
+from functions import get_random_potm_images, get_player_potm
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/players", response_class=HTMLResponse)
 async def read_players(request: Request, session_token: str = Cookie(None), db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    potm_images = get_random_potm_images()
+    potm_images = get_random_potm_images(k=20)
     return templates.TemplateResponse("players.html", {"request": request, 
                                                        "Players": [],
                                                        'potm_images': potm_images,
@@ -19,9 +20,11 @@ async def read_players(request: Request, session_token: str = Cookie(None), db: 
 async def get_player(request: Request, player: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     player_rating_data = get_player_rating_stats(player)
     season_data = get_player_season_data(player)
+    potm_images = get_player_potm(player)
     if player_rating_data:
         return templates.TemplateResponse("player.html", {"request": request, 
                                                           "rating_data": player_rating_data,
+                                                          'potm_images': potm_images, 
                                                           'season_data': season_data,
                                                           })
     else:
@@ -31,7 +34,7 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
 async def search_players(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     players = get_players()
     filtered_players = [player for player in players if query.lower() in player['Name'].lower()]
-    potm_images = get_random_potm_images()
+    potm_images = get_random_potm_images(k=20)
 
     return templates.TemplateResponse("players.html", {"request": request, 
                                                        "Players": filtered_players,
@@ -55,7 +58,3 @@ def get_players():
     data.drop_duplicates(subset=['Name'])
     
     return data[['Name', 'Latest Team']].to_dict(orient='records')
-
-def get_random_potm_images():
-    images = os.listdir('./templates/static/Images/POTM')
-    return random.sample(images, k=20)

@@ -3,6 +3,7 @@
 {% block title %}{{rating_data['Name']}} ({{rating_data["Latest Team"]}}){% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/displays.css">
 <div class="player-card">
     <div class="header">
         <h1>{{rating_data['Name']}} ({{rating_data["Latest Team"]}})</h1>
@@ -11,7 +12,7 @@
         <div class="player-role">
             <span class="role">Position: {{rating_data["Primary Position"]}}</span>
             <span class="ovr-label">OVR:</span>
-            <span class="overall-score">{{rating_data["OVR Rating"]}}</span>
+            <span class="role">{{rating_data["OVR Rating"]}}</span>
         </div>
     </div>
     <div class="stats">
@@ -40,37 +41,55 @@
     </div>
     <div class="team-record">
         <h4>Team Record</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Season</th>
-                    <th>G</th>
-                    <th>Δ</th>
-                    <th>S</th>
-                    <th>POTM</th>
-                    <th>Team</th>
-                    <th>Record</th>
-                    <th>MP</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for season_stats in season_data %}
-                  <tr>
-                    <td>{{season_stats['Season']}}</td>
-                    <td>{{ season_stats["Goals"] }}</td>
-                    <td>{{ season_stats["Assists"] }}</td>
-                    <td>{{ season_stats["Saves"] }}</td>
-                    <td>{{ season_stats["POTM"] }}</td>
-                    <td>{{ season_stats["Team"] }}</td>
-                    <td>{{ season_stats["Record"] }}</td>
-                    <td>{{ season_stats["MP"] }}</td>
-                  </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table cellpadding="0" cellspacing="0" border="0">
+                <thead>
+                    <tr>
+                        <th>Season</th>
+                        <th>G</th>
+                        <th>Δ</th>
+                        <th>S</th>
+                        <th>POTM</th>
+                        <th>Team</th>
+                        <th>Record</th>
+                        <th>MP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for season_stats in season_data %}
+                      <tr>
+                        <td>{{season_stats['Season']}}</td>
+                        <td>{{ season_stats["Goals"] }}</td>
+                        <td>{{ season_stats["Assists"] }}</td>
+                        <td>{{ season_stats["Saves"] }}</td>
+                        <td>{{ season_stats["POTM"] }}</td>
+                        <td>{{ season_stats["Team"] }}</td>
+                        <td>{{ season_stats["Record"] }}</td>
+                        <td>{{ season_stats["MP"] }}</td>
+                      </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+{% if potm_images %}
+    <div class='potm'>
+        <h1>POTMs</h1>
+        <h2>Click on card to see match details</h2>
+        <br>
+        <div class='potm-images'>
+            {% for image in potm_images %}
+                <div class='potm-card'>
+                    <a href="/teams/{{image['Team 1']}}/{{image['Team 1']}}-{{image['Team 2']}}-{{image['Match ID']}}" target="_blank">
+                        <img src="/static/Images/POTM/{{image['Match ID'] }}.png" alt='{{image['Name']}}' class='potm-image'>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
 <style>
     .player-card {
         width: 100%;
@@ -85,19 +104,20 @@
     }
     
     .header {
-        background: linear-gradient(90deg, #4caf50, #81c784);
+        background: linear-gradient(90deg, #770000, #3e0000);
         color: #fff;
         padding: 15px;
         text-align: center;
+        flex-wrap: wrap; 
     }
     
     .header h1 {
-        font-size: 22px;
+        font-size: 1.5em;
         margin: 0;
     }
     
     .header h2 {
-        font-size: 18px;
+        font-size: 1.2em;  
         margin: 5px 0;
     }
     
@@ -109,35 +129,32 @@
     }
     
     .player-role .role {
-        font-size: 16px;
+        font-size: 1em;  
         margin-right: 10px;
     }
     
     .player-role .ovr-label {
-        font-size: 14px;
+        font-size: 0.875em;  
         margin-right: 5px;
     }
     
     .player-role .overall-score {
-        font-size: 24px;
+        font-size: 1.5em;  
         font-weight: bold;
-        color: #FFF;
+        color: #fff;
     }
     
     .stats {
         display: flex;
+        flex-wrap: wrap; 
         justify-content: space-around;
         padding: 15px;
-        background: #e3f2fd;
+        background: #fef8e9;
     }
     
     .stats .stat {
         text-align: center;
         transition: background-color 0.3s;
-    }
-    
-    .stats .stat:hover {
-        background-color: #d1ecf1;
     }
     
     .stats .stat-label {
@@ -147,50 +164,68 @@
     }
     
     .stats .stat-value {
-        font-size: 16px;
+        font-size: 1em;
     }
     
     .performance {
         display: flex;
         justify-content: space-around;
+        flex-wrap: wrap; 
         padding: 15px;
         background: #fff;
         border-top: 1px solid #ddd;
     }
     
     .performance .metric {
-        font-size: 14px;
+        font-size: 0.875em;
         text-align: center;
-        color: #4caf50;
+        color: #770000;
     }
     
     .team-record {
         padding: 15px;
-        background: #f1f8e9;
+        background: #faf8e9;
     }
     
     .team-record h4 {
         margin: 0 0 15px;
-        font-size: 18px;
+        font-size: 1.2em;
         text-align: center;
+        color: #770000;
     }
     
-    .team-record table {
+    .table-container {
+        overflow-x: auto;
+        width: 100%;
+    }
+    
+    .table-container table {
         width: 100%;
         border-collapse: collapse;
         text-align: center;
-        font-size: 14px;
+        font-size: 0.875em;
     }
     
-    .team-record table th, .team-record table td {
+    .table-container table th, .table-container table td {
         border: 1px solid #ddd;
         padding: 10px;
     }
     
-    .team-record table th {
-        background: #c8e6c9;
+    .table-container table th {
+        background: #770000; 
+        color: #fff;
         font-weight: bold;
     }
+    
+    @media screen and (max-width: 600px) {
+        .player-card {
+            width: 100%;
+        }
+        td, th {
+            font-size: 0.875rem;
+        }
+    }
+    
 </style>
 
 {% endblock %}
