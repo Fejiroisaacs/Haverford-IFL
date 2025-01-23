@@ -8,7 +8,6 @@ h1 {
 
 table {
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
 }
 
@@ -16,6 +15,13 @@ table {
   background: #f3f3f3;
   position: sticky;
   top: 0;
+  z-index: 2;
+}
+
+.tbl-col1 {
+  background: #f3f3f3;
+  position: sticky;
+  left: 0;
   z-index: 1;
 }
 
@@ -58,7 +64,7 @@ td:first-child, th:first-child {
   width: 3px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 @media (max-width: 900px) {

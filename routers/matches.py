@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 import pandas as pd
 from fastapi import APIRouter
+import ast
 
 router = APIRouter()
 
@@ -35,6 +36,7 @@ async def read_matches(request: Request, season: int):
 def get_table(season):
     with open("data/season_standings.csv") as file:
         data = pd.read_csv(file)
+        data['L5'] = data['L5'].apply(lambda x: ast.literal_eval(x))
     data = data[data['Season'] == season]
     groupA = data[data["Group"] == 'A'].to_dict(orient='records')
     groupB = data[data["Group"] == 'B'].to_dict(orient='records')

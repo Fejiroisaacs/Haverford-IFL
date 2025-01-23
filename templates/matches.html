@@ -30,11 +30,11 @@
   {% for group in groups %}
     <h2>Group {{ group[0]['Group'] }}</h2>
     <br>
-    <div class="tbl-header">
-      <table cellpadding="0" cellspacing="0" border="0">
-        <thead>
+    <div class="tbl-content">
+      <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+        <thead class='tbl-header'> 
           <tr>
-            <th>Club</th>
+            <th class='tbl-col1'>Club</th>
             <th>MP</th>
             <th>W</th>
             <th>D</th>
@@ -43,16 +43,13 @@
             <th>GA</th>
             <th>GD</th>
             <th><b>PTS</b></th>
+            <th>Last 5</th>
           </tr>
         </thead>
-      </table>
-    </div>
-    <div class="tbl-content">
-      <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
         <tbody>
           {% for team in group %}
             <tr onclick="window.open('/teams/{{team['Team']}}', '_blank')">
-              <td>{{ team["Team"] }}</td>
+              <td class='tbl-col1'>{{ team["Team"] }}</td>
               <td>{{ team["MP"] }}</td>
               <td>{{ team["W"] }}</td>
               <td>{{ team["D"] }}</td>
@@ -61,11 +58,23 @@
               <td>{{ team["GA"] }}</td>
               <td>{{ team["GD"] }}</td>
               <td><b>{{ team["PTS"] }}</b></td>
+              <td><b>
+                {% for result in team['L5'] %}
+                  {% if result == 'W' %}
+                    <img src="/static/Images/Elements/win.svg" alt="W">
+                  {% elif result == 'L' %}
+                    <img src="/static/Images/Elements/loss.svg" alt="L">
+                  {% else %}
+                    <img src="/static/Images/Elements/dash.svg" alt="-">
+                  {% endif %}
+                {% endfor %}
+              </b></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    <br>
     <br>
   {% endfor %}
 </div>
