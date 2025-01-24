@@ -105,35 +105,38 @@
             let teamData = playerData[team][index];
     
             if (teamData.length > 0) {
-                let headerContent = '<table cellpadding="0" cellspacing="0" border="0"><tr>';
+                let headerContent = '<table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows"><thead class="tbl-header"><tr>';
                 columns.forEach(col => {
-                    headerContent += `<th style='margin-right:10px;'>${col}</th>`;
+                    if (col == 'Name') {
+                        headerContent += `<th class='tbl-col1'>${col}</th>`;
+                    } else {
+                        headerContent += `<th style='margin-right:10px;'>${col}</th>`;
+                    }
                 });
-                headerContent += '</tr></table>';
+                headerContent += '</tr></thead>';
     
-                let bodyContent = '<table cellpadding="0" cellspacing="0" border="0">';
+                let bodyContent = '<tbody>';
                 teamData.forEach(player => {
                     bodyContent += '<tr onclick="window.open(\'/players/' + player['Name'] + '\', \'_blank\')">';
                     columns.forEach(col => {
                         let value = player[col];
-                        if (value.length > 18) {
-                            value = value.substring(0, 18);
+                        if (col == 'Name') {
+                            bodyContent += `<td class='tbl-col1'>${player[col]}</td>`;
+                        } else {
+                            bodyContent += `<td>${player[col]}</td>`;
                         }
-                        bodyContent += `<td>${value}</td>`;
                     });
                     bodyContent += '</tr>';
                 });
-                bodyContent += '</table>';
+                bodyContent += '</tbody></table>';
     
                 content += `
+                    <br>
                     <h2>${headers[index]}</h2>
-                    <div class="table1">
-                        <div class="tbl-header">
+                    <br>
+                    <div class="tbl-content">
                             ${headerContent}
-                        </div>
-                        <div class="tbl-content">
                             ${bodyContent}
-                        </div>
                     </div>
                 `;
             }

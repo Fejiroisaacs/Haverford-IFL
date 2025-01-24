@@ -70,16 +70,33 @@
             const matches = matchesData[activeSeason];
             let content = `<h2>Season ${activeSeason} Matches</h2><div class="results">`;
             matches.forEach(match => {
-                content += `<a href="${match['Team']}/${match['Team']}-${match['Opponent']}-${match['Match']}" style="text-decoration: none; color: inherit;">
+                content += `<a href="/teams/${match['Team 1']}/${match['Team 1']}-${match['Team 2']}-${match['Match ID']}" style="text-decoration: none; color: inherit;" target="_blank">
                                 <div class="individual-match">
                                     <div class="team-score">
-                                        <p class="team">${match['Team']}</p>
-                                        <p class="team">${match['Opponent']}</p>
+                                        ${match['Win Team 1'] == 1 ? 
+                                            `<b><p class="team">${match['Team 1']}</p></b><p class="team">${match['Team 2']}</p>` : 
+                                            match['Win Team 2'] == 1 ? 
+                                                `<p class="team">${match['Team 1']}</p><b><p class="team">${match['Team 2']}</p></b>` : 
+                                                `<p class="team">${match['Team 1']}</p><p class="team">${match['Team 2']}</p>`
+                                        }
+                                    </div>
+                                    <div class="team-score">
+                                        ${match['Red Card Team 1'] == 1 ? 
+                                            `<img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">` : 
+                                            `<img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">`}
+                                        <br><br>
+                                        ${match['Red Card Team 2'] == 1 ? 
+                                            `<img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">` : 
+                                            `<img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">`}
                                     </div>
                                     <div class="separator"></div>
                                     <div class="team-score">
-                                        <p class="score">${match['Goals']}</p>
-                                        <p class="score">${match['Goals Allowed']}</p>
+                                        ${match['Win Team 1'] == 1 ? 
+                                            `<b><p class="score">${match['Score Team 1']}&#9666;</p></b><p class="score">${match['Score Team 2']}<span class="invisible">&#9666;</span></p>` : 
+                                            match['Win Team 2'] == 1 ? 
+                                                `<p class="score">${match['Score Team 1']}<span class="invisible">&#9666;</span></p><b><p class="score">${match['Score Team 2']}&#9666;</p></b>` : 
+                                                `<p class="score">${match['Score Team 1']}</p><p class="score">${match['Score Team 2']}</p>`
+                                        }
                                     </div>
                                     <div class="time">${match['Time']}</div>
                                 </div>
@@ -91,9 +108,9 @@
         } else if (section === 'standings') {
             const standings = standingsData[activeSeason];
             let content = `<h2>Season ${activeSeason} Standings</h2>
-                <div class="table1">
-                    <div class="tbl-header">
-                        <table cellpadding="0" cellspacing="0" border="0">
+                <div class="tbl-content">
+                    <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+                        <div class="tbl-header">
                             <thead>
                                 <tr>
                                     <th>Club</th>
@@ -105,26 +122,35 @@
                                     <th>GA</th>
                                     <th>GD</th>
                                     <th><b>PTS</b></th>
+                                    <th><b>Last 5</b></th>
                                 </tr>
                             </thead>
-                        </table>
-                    </div>
-                    <div class="tbl-content">
-                        <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-                            <tbody>`;
-            standings.forEach(team => {
-                content += `<tr onclick="window.open('/teams/${team['Team']}', '_blank')" ${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
-                    <td>${team["Team"]}</td>
-                    <td>${team["MP"]}</td>
-                    <td>${team["W"]}</td>
-                    <td>${team["D"]}</td>
-                    <td>${team["L"]}</td>
-                    <td>${team["GF"]}</td>
-                    <td>${team["GA"]}</td>
-                    <td>${team["GD"]}</td>
-                    <td><b>${team["PTS"]}</b></td>
-                </tr>`;
-            });
+                        </div>
+                        <tbody>`;
+                            standings.forEach(team => {
+                                content += `<tr onclick="window.open('/teams/${team['Team']}', '_blank')" ${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
+                                    <td>${team["Team"]}</td>
+                                    <td>${team["MP"]}</td>
+                                    <td>${team["W"]}</td>
+                                    <td>${team["D"]}</td>
+                                    <td>${team["L"]}</td>
+                                    <td>${team["GF"]}</td>
+                                    <td>${team["GA"]}</td>
+                                    <td>${team["GD"]}</td>
+                                    <td><b>${team["PTS"]}</b></td>
+                                    <td><b>`;
+                                team["L5"].forEach(result => {
+                                    if (result === 'W') {
+                                        content += `<img src="/static/Images/Elements/win.svg" alt="W">`;
+                                    } else if (result === 'L') {
+                                        content += `<img src="/static/Images/Elements/loss.svg" alt="L">`;
+                                    } else {
+                                        content += `<img src="/static/Images/Elements/dash.svg" alt="-">`;
+                                    }
+                                });
+                                content += `</b></td>
+                                </tr>`;
+                            });
             content += `</tbody></table></div></div>`;
             document.getElementById('standings').innerHTML = content;
         } else if (section === 'players') {

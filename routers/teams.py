@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 import pandas as pd
 from functions import get_potm_match
+import ast
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -63,6 +64,7 @@ async def search_teams(request: Request, query: str):
 def get_standings(team):
     global seasons_played
     data = pd.read_csv("data/season_standings.csv")
+    data['L5'] = data['L5'].apply(lambda x: ast.literal_eval(x))
     seasons_played = data[data['Team'] == team]['Season'].to_list()
     team_data = {}
     
@@ -84,15 +86,15 @@ def get_standings(team):
 
 def get_matches(team):
     global seasons_played
-    with open("data/team_match_stats.csv") as file:
+    with open("data/Match_Results.csv") as file:
         data = pd.read_csv(file)
     match_data = {}
     
     for season in seasons_played:
         sub_data = data[data['Season'] == season]
-        sub_data = sub_data[sub_data['Team'] == team].to_dict(orient='records')
+        sub_data = sub_data[sub_data['Team 1'] == team].to_dict(orient='records')
         if sub_data: match_data[season] = sub_data
-    
+    print(data, match_data)
     return match_data
 
 def get_match_data(team, opponent, match):
