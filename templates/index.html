@@ -4,6 +4,8 @@
 
 {% block content %}
 <link rel="stylesheet" href="/static/slides.css">
+<link rel="stylesheet" href="/static/message-form.css">
+
 <script src="/static/slide.js" defer></script>
 <section class="hero">
     <div class="hero-content">
@@ -11,10 +13,12 @@
     </div>
 </section>
 
+<hr>
+
 <br>
 <br>
 <div class="video-section">
-    <h2>IFL Promotional Video</h2>
+    <h1>IFL Promotional Video</h1>
     <br>
     <div class="video-container">
         <video controls autoplay loop muted>
@@ -24,7 +28,11 @@
     </div> 
 </div>
 
+<br>
+<br>
+<hr>
 
+<h1 style="margin-bottom:-6rem;">IFL Champions</h1>
 <div class="content-width">
     <div class="slideshow">
       <div class="slideshow-items">
@@ -133,143 +141,137 @@
     </div>
 
 </div>
-
 <br>
 
-<div id='pdf-container'>
-    <h2>IFL Rulebook</h2>
-    <embed src="/pdf" width="700px" height="700px" type="application/pdf">
-</div>
+<hr>
 
+<br>
+<a href="/static/IFL_Rule_Book.pdf" download>
+  <button class='btn'>Download IFL Rule Book</button>
+</a>
 
 <style>
-    #pdf-container {
-        text-align: center;
-    }
-    .stats{
-        margin-top: -10vw;
-    }
-    .hero {
-        position: relative;
-        height: 50vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: black;
-        text-align: center;
-        overflow: hidden; 
-    }
-    
-    .hero::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: url('/static/Images/Elements/background_1.jpg') no-repeat center center/cover;
-        filter: blur(5px);
-        z-index: -1;
-    }
-    
-    .hero-content {
-        filter: blur(0);
-        background-color: rgba(255, 255, 255, 0.5);
-        padding: 20px;
-        border-radius: 10px;
-    }
-    .hero-content h1 {
-        font-size: 3em;
-        margin: 0;
-    }
+.stats{
+    margin-top: -10vw;
+}
+.hero {
+    position: relative;
+    height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    text-align: center;
+    overflow: hidden; 
+}
 
-    .video-section {
-        background-color: #fff;
-        text-align: center;
-    }
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/static/Images/Elements/background_1.jpg') no-repeat center center/cover;
+    filter: blur(5px);
+    z-index: -1;
+}
 
+.hero-content {
+    filter: blur(0);
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+}
+.hero-content h1 {
+    font-size: 3em;
+    margin: 0;
+}
+
+.video-section {
+    background-color: #fff;
+    text-align: center;
+}
+
+.video-container video {
+    width: 50%;
+    max-width: 50%;
+    height: auto;
+    border-radius: 10px;
+    border: 2px outset #670000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.video-container {
+    flex: 1;
+}
+
+.video-section h3 {
+    text-align: center;
+    color: #670000;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
     .video-container video {
-        width: 50%;
-        max-width: 50%;
-        height: auto;
-        border-radius: 10px;
-        border: 2px outset #670000;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+        width: 20rem;
+        height: 12rem;
     }
+}
 
-    .video-container {
-        flex: 1;
-    }
-
-    .video-section h3 {
-        text-align: center;
-        color: #670000;
-        margin-bottom: 20px;
-    }
-
-    @media (max-width: 768px) {
-        embed {
-            width: 100%;
-        }
-        .video-container video {
-            max-width: 100%;
-            width: 20rem;
-            height: 12rem;
-        }
-    }
-
+.stats-leaders {
+    margin-top: -30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0;
+    list-style: none;
+  }
+  
+  .leader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 10px;
+    border: 2px outset #670000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 1rem;
+    padding: 0.1rem;
+    width: 17rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .leader a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .leader img {
+    width: 15rem;
+  
+  }
+  
+  .leader h3 {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .leader:hover {
+    transform: translateY(-0.5rem);
+  }
+  
+  @media (max-width: 48rem) {
     .stats-leaders {
-        margin-top: -30px;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 0;
-        list-style: none;
-      }
-      
-      .leader {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: #ffffff;
-        border-radius: 10px;
-        border: 2px outset #670000;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin: 1rem;
-        padding: 0.1rem;
-        width: 17rem;
-        text-align: center;
-        transition: transform 0.3s ease;
-      }
-      
-      .leader a {
-        text-decoration: none;
-        color: inherit;
-      }
-      
-      .leader img {
-        width: 15rem;
-     
-      }
-      
-      .leader h3 {
-        margin-top: 0.5rem;
-        font-size: 1.2rem;
-        color: #333;
-      }
-      
-      .leader:hover {
-        transform: translateY(-0.5rem);
-      }
-      
-      @media (max-width: 48rem) {
-        .stats-leaders {
-          flex-direction: column;
-          align-items: center;
-        }
-      }
-      
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+    
 </style>
 
 {% endblock %}
