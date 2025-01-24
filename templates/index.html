@@ -3,22 +3,135 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/slides.css">
+<script src="/static/slide.js" defer></script>
 <section class="hero">
     <div class="hero-content">
         <h1>Haverford Intramural Futsal League</h1>
     </div>
 </section>
+
+<br>
 <br>
 <div class="video-section">
     <h2>IFL Promotional Video</h2>
-    <div class="video-and-results">
-        <div class="video-container">
-            <video controls autoplay loop muted>
-                <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div> 
+    <br>
+    <div class="video-container">
+        <video controls autoplay loop muted>
+            <source src="/static/Videos/Promotional/futsal_trailer.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div> 
+</div>
+
+
+<div class="content-width">
+    <div class="slideshow">
+      <div class="slideshow-items">
+        <div class="item">
+          <div class="item-image-container">
+            <img class="item-image" src="/static/Images/champs/1.jpg" />
+          </div>
+          <div class="item-header">
+            <span class="vertical-part"><b>TEAM MUNCH</b></span>
+          </div>
+          <div class="item-description">
+            <span class="vertical-part">
+              <b style='font-size:2rem;'>Season 1</b>
+            </span>     
+            <span class="vertical-part">
+              <b>We would like to Congratulate our Inaugural IFL Champions Meunch FC for a resounding 7-2 Victory against a valiantly performing Brixton side. It was an absolute show, with some amazing goals, fans, commentary, and skill on display!!! Incredible final, and an incredible win from the all freshman team. Thank you to everyone who contributed to this finale!</b>
+            </span>     
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-image-container">
+            <img class="item-image" src="/static/Images/champs/2.jpg" />
+          </div>
+          <div class="item-header">
+            <span class="vertical-part"><b>TEAM MUNCH</b></span>
+          </div>
+          <div class="item-description">
+            <span class="vertical-part">
+              <b style='font-size:2rem;'>Season 2</b>
+            </span>
+            <span class="vertical-part">
+              <b>Brixton were there with a vengeance. Some crucial saves by Ben, and a tight counter pressing game kept Brixton high up on the pitch and looking forward, able to fight back when Behind. Meunch kept their cool, epitomized by Krishs sensational Volley for Meunchs second. With a minute of regular time left, Meunch reacted to Brixtons fight back with a knock-out punch on the Bullies.</b>
+            </span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-image-container">
+            <img class="item-image" src="/static/Images/champs/3.jpg" />
+          </div>
+          <div class="item-header">
+            <span class="vertical-part"><b>TEAM MUNCH</b></span>
+          </div>
+          <div class="item-description">
+            <span class="vertical-part">
+              <b style='font-size:2rem;'>Season 3</b>
+            </span>
+            <span class="vertical-part">
+              <b>There was an incredible atmosphere and support for our finalists and the final matched the intensity. Munch played an incredible press to take and hold an early lead with Owen finding the key breakthroughs. BNC played some beautiful stuff but could not find a way past James in goal who keeps the first finals clean sheet. High quality possession and some great skill saw a show which ended with MCHs IFL 3-peat!</b>
+            </span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-image-container">
+            <img class="item-image" src="/static/Images/champs/4.jpg" />
+          </div>
+          <div class="item-header">
+            <span class="vertical-part"><b>BRIXTON &nbsp</b></span>
+            <span class="vertical-part"><b>BULLIES</b></span>
+          </div>
+          <div class="item-description">
+            <span class="vertical-part">
+              <b style='font-size:2rem;'>Season 4</b>
+            </span>
+            <span class="vertical-part">
+              <b>And..... Time! Its third time lucky for the Brixton Bullies who played some fluid, brilliant, futsal, putting a spear through Munchs hopes of a 4-peat. Bangers from Isaiah and Alex, served up by Amartya, see the Bullies lift the biggest trophy in what is, for many, their last dance.</b>
+            </span>
+          </div>
+        </div>
+      </div> 
+      <div class="controls">
+        <ul>
+          <li class="control" data-index="0"></li>
+          <li class="control" data-index="1"></li>
+          <li class="control" data-index="2"></li>
+          <li class="control" data-index="3"></li>
+        </ul>
+      </div>
     </div>
+</div>
+
+<h1 style='margin-top: -80px;'>Stats Leaders</h1>
+<br>
+<div class='stats-leaders'>
+    <div class='leader'>
+        <h3>Rami Nasr</h3>
+        <a href="/players/Rami Nasr" target="_blank">
+            <img src="/static/Images/POTM/140.png" alt="Rami Nasr"/>
+        </a>
+        <h3>62 Goals</h3>
+    </div>
+    
+    <div class='leader'>
+        <h3>Ishan Deb</h3>
+        <a href="/players/Ishan Deb" target="_blank">
+            <img src="/static/Images/POTM/158.png" alt="Ishan Deb"/>
+        </a>
+        <h3>31 Assists</h3>
+    </div>
+    
+    <div class='leader'>
+        <h3>Ben Mansfield</h3>
+        <a href="/players/Ben Mansfield" target="_blank">
+            <img src="/static/Images/POTM/22.png" alt="Ben Mansfield"/>
+        </a>
+        <h3>204 Saves</h3>
+    </div>
+
 </div>
 
 <br>
@@ -26,6 +139,7 @@
 
 <section id="slideshow">
     <h1>Player of the Match Highlight</h1>
+    <br>
     <div class="slideshow-container">
         <div class="content-carousel">
             {% for image in images%}
@@ -56,7 +170,7 @@
     }
     .hero {
         position: relative;
-        height: 70vh;
+        height: 50vh;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -77,7 +191,6 @@
         z-index: -1;
     }
     
-    
     .hero-content {
         filter: blur(0);
         background-color: rgba(255, 255, 255, 0.5);
@@ -95,7 +208,8 @@
     }
 
     .video-container video {
-        max-width: 100%;
+        width: 50%;
+        max-width: 50%;
         height: auto;
         border-radius: 10px;
         border: 2px outset #670000;
@@ -137,43 +251,6 @@
         flex: 1;
     }
 
-    .match-results {
-        flex: 1;
-        max-width: 350px;
-        background-color: #f9f9f9;
-        padding: 15px;
-        border-radius: 5px;
-        align-self: center;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-    }
-
-    .match-results h3 {
-        margin-top: 0;
-        color: #333;
-    }
-
-    .match-results ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .match-results ul li {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .match-results ul li:last-child {
-        border-bottom: none;
-    }
-
-    .video-container video {
-        
-        height: auto;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
 
     .video-section h3 {
         text-align: center;
@@ -182,20 +259,66 @@
     }
 
     @media (max-width: 768px) {
-        .video-and-results {
-            flex-direction: column;
-            align-items: center;
-        }
 
-        .match-results {
-            margin-top: 20px;
-            text-align: center;
-            flex: none;
-            width: 100%;
+        .video-container video {
+            max-width: 100%;
+            width: 20rem;
+            height: 12rem;
         }
     }
 
-
+    .stats-leaders {
+        margin-top: -30px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 0;
+        list-style: none;
+      }
+      
+      .leader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #ffffff;
+        border-radius: 10px;
+        border: 2px outset #670000;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 1rem;
+        padding: 0.1rem;
+        width: 17rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+      }
+      
+      .leader a {
+        text-decoration: none;
+        color: inherit;
+      }
+      
+      .leader img {
+        width: 15rem;
+     
+      }
+      
+      .leader h3 {
+        margin-top: 0.5rem;
+        font-size: 1.2rem;
+        color: #333;
+      }
+      
+      .leader:hover {
+        transform: translateY(-0.5rem);
+      }
+      
+      @media (max-width: 48rem) {
+        .stats-leaders {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+      
 </style>
 
 {% endblock %}
