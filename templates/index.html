@@ -105,7 +105,7 @@
     </div>
 </div>
 
-<h1 style='margin-top: -80px;'>Stats Leaders</h1>
+<h1 class='stats'>Stats Leaders</h1>
 <br>
 <div class='stats-leaders'>
     <div class='leader'>
@@ -135,29 +135,10 @@
 </div>
 
 <br>
-<br>
-
-<section id="slideshow">
-    <h1>Player of the Match Highlight</h1>
-    <br>
-    <div class="slideshow-container">
-        <div class="content-carousel">
-            {% for image in images%}
-                <figure class="shadow">
-                    <a href="/players/{{image['Name']}}" target="_blank">
-                        <img src="/static/Images/POTM/{{ image['Match Number (All Seasons)'] }}.png" alt="{{image['Name']}}"/>
-                    </a>
-                </figure>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<br>
 
 <div id='pdf-container'>
     <h2>IFL Rulebook</h2>
-    <embed src="/pdf" width="auto" height="400px" type="application/pdf">
+    <embed src="/pdf" width="700px" height="700px" type="application/pdf">
 </div>
 
 
@@ -165,8 +146,8 @@
     #pdf-container {
         text-align: center;
     }
-    embed {
-        max-width: 80%;
+    .stats{
+        margin-top: -10vw;
     }
     .hero {
         position: relative;
@@ -216,41 +197,9 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    #slideshow {
-        padding: 6px 0;
-        text-align: center;
-    }
-
-    .slideshow-container {
-        max-width: 100%;
-    }
-
-    .content-carousel {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .content-carousel figure {
-        margin: 5px;
-        flex: 1 1 calc(20% - 20px);
-    }
-
-    .content-carousel img {
-        width: 100%;
-        height: auto;
-        border-radius: 10px;
-        border: 2px outset #670000;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    .content-carousel img:hover {
-        transform: scale(1.05);
-        transition: transform 0.5s;
-    }
     .video-container {
         flex: 1;
     }
-
 
     .video-section h3 {
         text-align: center;
@@ -259,7 +208,9 @@
     }
 
     @media (max-width: 768px) {
-
+        embed {
+            width: 100%;
+        }
         .video-container video {
             max-width: 100%;
             width: 20rem;

@@ -11,7 +11,6 @@ from routers import matches, signup, login, contact, fantasy, players, settings,
 import json, os
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
-from functions import get_random_potm_images
 
 load_dotenv()
 
@@ -73,8 +72,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.get("/index", response_class=HTMLResponse)
 @app.get("/home", response_class=HTMLResponse)
 async def read_root(request: Request):
-    images = get_random_potm_images(k=9)
-    return templates.TemplateResponse("index.html", {"request": request, "user": user, 'images': images})
+    return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 @app.get("/pdf")
 async def get_pdf():
