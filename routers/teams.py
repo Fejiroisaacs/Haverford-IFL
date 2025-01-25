@@ -48,7 +48,6 @@ async def team_page(request: Request, team_name: str, match_details: str):
                                                         "potm": potm,
                                                         "match_details": match_details.split('-')})
     except Exception as e:
-        print(str(e))
         return templates.TemplateResponse("404error.html", {"request": request, 'error': str(e)})
 
 
@@ -92,9 +91,8 @@ def get_matches(team):
     
     for season in seasons_played:
         sub_data = data[data['Season'] == season]
-        sub_data = sub_data[sub_data['Team 1'] == team].to_dict(orient='records')
+        sub_data = sub_data[(sub_data['Team 1'] == team) | (sub_data['Team 2'] == team)].to_dict(orient='records')
         if sub_data: match_data[season] = sub_data
-    print(data, match_data)
     return match_data
 
 def get_match_data(team, opponent, match):
@@ -135,10 +133,10 @@ def get_player_data(team, opponent, match):
     with open("data/player_match_stats.csv") as file:
         data = pd.read_csv(file)
         
-    team_data = data[(data['My Team'] == team) & (data['Match Number (All Seasons)'] == int(match))].copy()
-    opponent_data = data[(data['My Team'] == opponent) & (data['Match Number (All Seasons)'] == int(match))].copy()
+    team_data = data[(data['My Team'] == team) & (data['Match ID'] == int(match))].copy()
+    opponent_data = data[(data['My Team'] == opponent) & (data['Match ID'] == int(match))].copy()
     
-    dropped_cols = ['Season', 'Match Number (All Seasons)']
+    dropped_cols = ['Season', 'Match ID']
     team_data.drop(dropped_cols, axis=1, inplace=True)
     opponent_data.drop(dropped_cols, axis=1, inplace=True)
     
@@ -147,12 +145,12 @@ def get_player_data(team, opponent, match):
     
     for player_stat in team_data.to_dict(orient='records'):
         if player_stat['External Sub'] == 'Y': team_extended_data[2].append(player_stat)
-        elif player_stat['Start?'] == '0' and player_stat['Played?'] == 'Y': team_extended_data[1].append(player_stat)
+        elif player_stat['Start?'] == '0': team_extended_data[1].append(player_stat)
         else: team_extended_data[0].append(player_stat)
         
     for player_stat in opponent_data.to_dict(orient='records'):
         if player_stat['External Sub'] == 'Y': opponent_extended_data[2].append(player_stat)
-        elif player_stat['Start?'] == '0' and player_stat['Played?'] == 'Y': opponent_extended_data[1].append(player_stat)
+        elif player_stat['Start?'] == '0': opponent_extended_data[1].append(player_stat)
         else: opponent_extended_data[0].append(player_stat)
     
     return {team: team_extended_data, opponent: opponent_extended_data}
