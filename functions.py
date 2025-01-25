@@ -25,10 +25,8 @@ def send_email(email, bccs, subject, message, attachment=None):
             attachments=attachment,
             
         )
-        print('Email sent')    
     except Exception as e:
         print(str(e))
-        print('Email not sent')    
 
     os.remove(temp_filename)
 
@@ -38,14 +36,14 @@ def get_random_potm_images(k):
     
     with open('data/player_match_stats.csv') as file:
         data = pd.read_csv(file)
-    data = data[(data['POTM'] == 1) & (data['Match Number (All Seasons)'].isin(images))]
-    return data[['Name', 'Match Number (All Seasons)']].to_dict(orient='records')
+    data = data[(data['POTM'] == 1) & (data['Match ID'].isin(images))]
+    return data[['Name', 'Match ID']].to_dict(orient='records')
 
 def get_player_potm(player):
     data = pd.read_csv('data/player_match_stats.csv')
     match_data = pd.read_csv('data/Match_Results.csv', usecols=['Team 1', 'Team 2', 'Match ID'])
     
-    data = data.rename(columns={'Match Number (All Seasons)': 'Match ID'})
+    data = data.rename(columns={'Match ID': 'Match ID'})
     data = data[(data['POTM'] == 1) & (data['Name'] == player)][['Name', 'Match ID']]
     
     merged_data = pd.merge(data, match_data, on='Match ID', how='inner')
@@ -55,8 +53,8 @@ def get_player_potm(player):
 import pandas as pd
 
 def get_potm_match(match_id):
-    match_data = pd.read_csv('data/player_match_stats.csv', usecols=['Name', 'Match Number (All Seasons)', 'POTM'])
-    filtered_data = match_data[(match_data['POTM'] == 1) & (match_data['Match Number (All Seasons)'] == int(match_id))]
+    match_data = pd.read_csv('data/player_match_stats.csv', usecols=['Name', 'Match ID', 'POTM'])
+    filtered_data = match_data[(match_data['POTM'] == 1) & (match_data['Match ID'] == int(match_id))]
     
     if not filtered_data.empty:
         return filtered_data.to_dict(orient='records')[0]

@@ -38,7 +38,7 @@
         {% for image in potm_images %}
             <div class='potm-card'>
                 <a href="/players/{{image['Name']}}" target="_blank">
-                        <img src="/static/Images/POTM/{{image['Match Number (All Seasons)'] }}.png" alt='{{image['Name']}}' class='potm-image'>
+                        <img src="/static/Images/POTM/{{image['Match ID'] }}.png" alt='{{image['Name']}}' class='potm-image'>
                 </a>
             </div>
         {% endfor %}
