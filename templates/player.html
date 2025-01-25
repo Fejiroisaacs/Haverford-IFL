@@ -74,10 +74,25 @@
     </div>
 </div>
 
+{% if awards %}
+    <br>
+    <div class='player-card'>
+        <h1>Awards</h1>
+        <div class='awards-images'>
+            {% for award in awards %}
+                <div class='award-card'>
+                    <h3>{{award}}</h3>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <br>
+{% endif %}
+
 {% if potm_images %}
-    <div class='potm'>
+    <div class='player-card'>
         <h1>POTMs</h1>
-        <h2>Click on card to see match details</h2>
+        <h3>Click on card to see match details</h3>
         <br>
         <div class='potm-images'>
             {% for image in potm_images %}
@@ -90,6 +105,63 @@
         </div>
     </div>
 {% endif %}
+
+{% if previous_matches %}
+    <br>
+    <div class='player-card'>
+        <h1>Past Matches</h1>
+        <h3>Click on match to see more info</h3>
+        <br>
+        <div class='previous-matches'>
+            {% for season in previous_matches %}
+                <h2>Season {{season}}</h2>
+                <hr>
+                <br>
+                {% for match in previous_matches[season] %}
+                    <a href="/teams/{{match['My Team']}}/{{match['My Team']}}-{{match['Opponent']}}-{{match['Match ID']}}" target="_blank" style='text-decoration:none; color:#670000;'>
+                        <div style='display:flex; justify-content:space-between; margin:0 1rem; margin-bottom:-1rem;margin-top:-1rem;'>
+                            <h3 style='text-align:left; margin-left:1rem;'>@{{match['Opponent']}} &nbsp &nbsp
+                                {% if match['P'] != '-'%}
+                                    Pos: {{match['P']}}
+                                {% endif %}
+                                &nbsp
+                                {% if match['G'] != 0%}
+                                    Goals: {{match['G']}} &nbsp
+                                {% endif %}
+                                {% if match['A'] != 0%}
+                                    Assists: {{match['A']}} &nbsp
+                                {% endif %}
+                                {% if match['S'] != 0%}
+                                    Saves: {{match['S']}}
+                                {% endif %}
+                                {% if match['Y-R'] != '-'%}
+                                    {% if match['Y-R'] == 'RC'%}
+                                    &nbsp<img src='/static/Images/Elements/red-card.png' alt='Red Card' style='height:1rem;' class='red-card'>
+                                    {% elif match['Y-R'] == 'YC'%}
+                                    &nbsp<img src='/static/Images/Elements/yellow-card.png' alt='Yellow Card' style='height:1rem;' class='red-card'>
+                                    {% endif %}
+                                {% endif %}
+                                
+                            </h3>
+                            <h3 style='margin-right:1rem;'>
+                                {% if match['External Sub'] == 'Y'%}
+                                    (External Sub)
+                                {% endif %}
+                                {% if match['POTM'] == 1%}
+                                    <u>POTM</u>
+                                {% endif %}
+                            </hr>
+                        </div>
+                    </a>
+                    <hr style='border:0.01rem solid #ddd;'>
+                {% endfor %}
+                <br>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+
 <style>
     .player-card {
         width: 100%;
