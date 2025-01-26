@@ -23,7 +23,6 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
     potm_images = get_player_potm(player)
     awards = get_awards(player)
     previous_matches = get_previous_matches(player)
-    print(previous_matches)
     if player_rating_data:
         return templates.TemplateResponse("player.html", {"request": request, 
                                                           "rating_data": player_rating_data,

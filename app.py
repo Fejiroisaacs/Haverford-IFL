@@ -55,7 +55,6 @@ app.add_middleware(ServerErrorMiddleware, handler=http_exception_handler)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    print(exec)
     try:
         if exc.status_code == 404:
             return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
