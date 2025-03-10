@@ -80,8 +80,11 @@ async def get_pdf():
 
 @app.get("/robots.txt", include_in_schema=False)
 async def robots_txt():
-    file_path = os.path.join(os.path.dirname(__file__), "robots.txt")
-    return FileResponse(file_path, media_type="text/plain")
+    content = """User-agent: *
+    Allow: /
+    Sitemap: https://quickest-doralyn-haverford-167803e3.koyeb.app/sitemap.xml
+    """
+    return Response(content=content, media_type="text/plain")
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap():
