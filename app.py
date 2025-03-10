@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
@@ -76,6 +77,35 @@ async def read_root(request: Request):
 @app.get("/pdf")
 async def get_pdf():
     return FileResponse("data/IFL_Rule_Book.pdf")
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    file_path = os.path.join(os.path.dirname(__file__), "robots.txt")
+    return FileResponse(file_path, media_type="text/plain")
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    urls = [
+        "https://quickest-doralyn-haverford-167803e3.koyeb.app/",
+        "https://quickest-doralyn-haverford-167803e3.koyeb.app/teams",
+        "https://quickest-doralyn-haverford-167803e3.koyeb.app/matches",
+        "https://quickest-doralyn-haverford-167803e3.koyeb.app/players"
+    ]
+
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>\n"""
+    xml_content += """<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n"""
+
+    for url in set(urls):  # Ensure no duplicates
+        xml_content += f"""    <url>
+        <loc>{url}</loc>
+        <priority>0.8</priority>
+    </url>\n"""
+
+    xml_content += """</urlset>"""
+
+    return Response(content=xml_content, media_type="application/xml")
+
+
 
 if __name__ == "__main__":
     import uvicorn
