@@ -15,6 +15,7 @@ async def read_matches(request: Request):
     return templates.TemplateResponse("matches.html", {"request": request, 
                                                        "groups": get_table(CURRENT_SEASON),
                                                        "matches_data": get_matches(CURRENT_SEASON),
+                                                       "upcoming_matches_data": get_upcoming_matches(),
                                                        "active_season": CURRENT_SEASON,
                                                        "current_season": CURRENT_SEASON})
 
@@ -24,12 +25,14 @@ async def read_matches(request: Request, season: int):
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(season),
                                                         "matches_data": get_matches(season),
+                                                        "upcoming_matches_data": get_upcoming_matches(),
                                                         "active_season": season,
                                                         "current_season": CURRENT_SEASON})
     else:
         return templates.TemplateResponse("matches.html", {"request": request, 
                                                         "groups": get_table(CURRENT_SEASON),
                                                         "matches_data": get_matches(CURRENT_SEASON),
+                                                        "upcoming_matches_data": get_upcoming_matches(),
                                                         "active_season": CURRENT_SEASON,
                                                         "current_season": CURRENT_SEASON})
 
@@ -54,3 +57,17 @@ def get_matches(season):
         match_data[subset] = data[data['Group'] == subset].to_dict(orient='records')
         
     return match_data
+
+def get_upcoming_matches():
+    match_dict = {}
+    with open("data/S25 Futsal Schedule.csv") as file:
+        data = pd.read_csv(file)[['MD', 'Team 1', 'Team 2', 'Day', 'Time']]
+        
+    for k, gb in data.groupby(by='MD'):
+        match_dict[k] = gb.to_dict(orient='records')
+    
+    print(match_dict)
+    return {
+        "Max": data['MD'].max(),
+        "data": match_dict
+    }
