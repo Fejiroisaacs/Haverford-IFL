@@ -144,8 +144,10 @@
                                         content += `<img src="/static/Images/Elements/win.svg" alt="W">`;
                                     } else if (result === 'L') {
                                         content += `<img src="/static/Images/Elements/loss.svg" alt="L">`;
+                                    } else if (result === 'D') {
+                                        content += `<img src="/static/Images/Elements/dash.svg" alt="L">`;
                                     } else {
-                                        content += `<img src="/static/Images/Elements/dash.svg" alt="-">`;
+                                        content += `<img src="/static/Images/Elements/blank.svg" style="max-width:22px; max-height:22px;"  alt="-">`;
                                     }
                                 });
                                 content += `</b></td>

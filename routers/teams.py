@@ -116,7 +116,7 @@ def get_teams():
 def get_team(team):
     with open('data/team_ratings.csv') as file:
         data = pd.read_csv(file)
-        data = data[data['Name'] == team]
+        data = data[data['Name'] == team]   
     return data.to_dict(orient='records')[0] if data.shape[0] > 0 else None
 
 def get_players(team):

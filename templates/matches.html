@@ -82,8 +82,10 @@
                     <img src="/static/Images/Elements/win.svg" alt="W">
                   {% elif result == 'L' %}
                     <img src="/static/Images/Elements/loss.svg" alt="L">
+                  {% elif result == 'D' %}
+                    <img src="/static/Images/Elements/dash.svg" alt="L">
                   {% else %}
-                    <img src="/static/Images/Elements/dash.svg" alt="-">
+                    <img src="/static/Images/Elements/blank.svg" style="max-width:22px; max-height:22px;" alt="-">
                   {% endif %}
                 {% endfor %}
               </b></td>
