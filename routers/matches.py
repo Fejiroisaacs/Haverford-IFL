@@ -66,7 +66,6 @@ def get_upcoming_matches():
     for k, gb in data.groupby(by='MD'):
         match_dict[k] = gb.to_dict(orient='records')
     
-    print(match_dict)
     return {
         "Max": data['MD'].max(),
         "data": match_dict
