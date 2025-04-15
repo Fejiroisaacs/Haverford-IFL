@@ -10,7 +10,7 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/players", response_class=HTMLResponse)
 async def read_players(request: Request, session_token: str = Cookie(None), db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
-    potm_images = get_random_potm_images(k=20)
+    potm_images = get_random_potm_images(k=5)
     return templates.TemplateResponse("players.html", {"request": request, 
                                                        "Players": [],
                                                        'potm_images': potm_images,
@@ -38,7 +38,7 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
 async def search_players(request: Request, query: str, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     players = get_players()
     filtered_players = [player for player in players if query.lower() in player['Name'].lower()]
-    potm_images = get_random_potm_images(k=20)
+    potm_images = get_random_potm_images(k=5)
 
     return templates.TemplateResponse("players.html", {"request": request, 
                                                        "Players": filtered_players,
