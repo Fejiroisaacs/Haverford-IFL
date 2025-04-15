@@ -5,27 +5,6 @@
 <link rel="stylesheet" href="/static/table.css">
 <link rel="stylesheet" href="/static/displays.css">
 
-<h1>Upcoming Matches </h1>
-<h4>(subject to change)</h4>
-
-<br>
-{% for match_day in upcoming_matches_data['data'] %}
-  <h2>Matchday {{match_day}} of {{upcoming_matches_data['Max']}}</h2>
-  <div class='results'>
-    {% for match in upcoming_matches_data['data'][match_day] %}
-      <div class="individual-match">
-        <div class="team-score"> 
-          <p class="team">{{match['Team 1']}}</p>
-          <p class="team">{{match['Team 2']}}</p> 
-        </div>
-        <div class="separator"></div>  
-        <div class="time size">{{match['Day']}} <br> {{match['Time']}}</div>
-      </div>
-    {% endfor %}
-  </div>
-{% endfor %}
-<br>
-
 <div class="sec-center"> 	
   <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
   <label class="for-dropdown" for="dropdown"> SEASONS &nbsp;<span style='font-size:20px;'>&#8681;</span></i></label>
@@ -101,6 +80,31 @@
 
 <br>
 <hr>
+
+{% if active_season == current_season %}
+  <h1>Upcoming Matches </h1>
+  <h4>(subject to change)</h4>
+
+  <br>
+  {% for match_day in upcoming_matches_data['data'] %}
+    <h2>Matchday {{match_day}} of {{upcoming_matches_data['Max']}}</h2>
+    <div class='results'>
+      {% for match in upcoming_matches_data['data'][match_day] %}
+        <div class="individual-match">
+          <div class="team-score"> 
+            <p class="team">{{match['Team 1']}}</p>
+            <p class="team">{{match['Team 2']}}</p> 
+          </div>
+          <div class="separator"></div>  
+          <div class="time size">{{match['Day']}} <br> {{match['Time']}}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+  <br>
+  <hr>
+{% endif %}
+
 <br>
 
 <h1>Previous Matches</h1>
