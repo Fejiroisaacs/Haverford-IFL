@@ -15,7 +15,7 @@ table {
   background: #f3f3f3;
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 1;
 }
 
 .tbl-col1 {
@@ -79,8 +79,6 @@ td:first-child, th:first-child {
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
-  
-
 .sec-center {
   margin-top: 1rem;
   position: relative;
@@ -113,9 +111,9 @@ td:first-child, th:first-child {
   justify-content: center;
   text-align: center;
   border: none;
-  background-color: #ffeba7;
+  background-color: #970000;
   cursor: pointer;
-  color: #102770;
+  color: #fff;
   box-shadow: 0 12px 35px 0 rgba(255, 235, 167, .15);
 }
 
@@ -207,6 +205,6 @@ td:first-child, th:first-child {
 }
 
 .section-dropdown a:hover {
-  color: #102770;
-  background-color: #ffeba7;
+  color: #fff;
+  background-color: #670000;
 }
