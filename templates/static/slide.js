@@ -6,7 +6,7 @@ const items = document.querySelectorAll('.item'),
   activeDelay = .76,
   interval = 5000;
 
-let current = 0;
+let current = 4;
 
 const slider = {
   init: () => {
