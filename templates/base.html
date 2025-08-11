@@ -58,11 +58,41 @@
 
     <footer class="footer">
         <div class="footer-social">
-            <a id="instagram" href="https://www.instagram.com/ifl_haverford/" target="_blank" class="fa fa-instagram"></a>
+            <a id="instagram" href="https://www.instagram.com/ifl_haverford/" target="_blank" class="fa fa-instagram" aria-label="Follow us on Instagram"></a>
         </div>
         <div class="footer-bottom">
-            <em>&copy; 2024</em>
+            <em>&copy; 2024 Haverford Intramural Futsal League. All rights reserved.</em>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('body');
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolling-active');
+                } else {
+                    header.classList.remove('scrolling-active');
+                }
+            });
+
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.content, .card, .individual-match').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 </html>

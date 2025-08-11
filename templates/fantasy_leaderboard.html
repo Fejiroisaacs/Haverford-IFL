@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Fantasy Leaderboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/table.css">
+<link rel="stylesheet" href="/static/displays.css">
+<link rel="stylesheet" href="/static/fantasy.css">
+
+<div class='container'>
+    <h2 class='title'>Fantasy Leaderboard</h2>
+    
+    {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    <div class="leaderboard-container">
+        <div class="tbl-content">
+            <table>
+                <thead class="tbl-header">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Manager</th>
+                        <th>Total Points</th>
+                        <th>This Week</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in leaderboard %}
+                    <tr {% if loop.index <= 3 %}class="top-three"{% endif %}>
+                        <td>
+                            {% if loop.index == 1 %}
+                                🥇 {{ loop.index }}
+                            {% elif loop.index == 2 %}
+                                🥈 {{ loop.index }}
+                            {% elif loop.index == 3 %}
+                                🥉 {{ loop.index }}
+                            {% else %}
+                                {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td class="manager-name">{{ entry.username }}</td>
+                        <td class="total-points">{{ entry.total_points }}</td>
+                        <td class="week-points">{{ entry.week_points }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="leaderboard-actions">
+        <a href="/fantasy" class="btn btn-primary">Back to Fantasy</a>
+    </div>
+</div>
+
+<style>
+.leaderboard-container {
+    margin: 2rem 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.top-three {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 223, 0, 0.05));
+    font-weight: 600;
+}
+
+.manager-name {
+    font-weight: 500;
+    color: #2C3E50;
+}
+
+.total-points {
+    font-weight: 600;
+    color: #670000;
+    font-size: 1.1em;
+}
+
+.week-points {
+    color: #27AE60;
+    font-weight: 500;
+}
+
+.leaderboard-actions {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.alert {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+</style>
+
+{% endblock %}

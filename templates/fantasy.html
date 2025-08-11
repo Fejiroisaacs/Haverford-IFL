@@ -7,205 +7,2416 @@
 <link rel="stylesheet" href="/static/displays.css">
 <link rel="stylesheet" href="/static/fantasy.css">
 
-{% if user is not none and 'user_id' in user.keys() %}
-    <div class='container'>
-        <h4 class='mw'>Matchweek {{data['MW']}}</h4>
-        <h2 class='title'>IFL Fantasy (Beta)</h2>
-        <h4 class='subtitle'>{{data['Name']}}'s Team</h4>
-        <div class='points-container'>
-            <div class='points'>
-                <h1 class='pt'>{{data['Average']}}</h1>
-                <h4 class='pt-label'>Average</h4>
-            </div>
-            <div class='points'>
-                <h1 class='pt'>{{data['curr_pts']}}</h1>
-                <h4 class='pt-label'>My Points</h4>
-            </div>
-            <div class='points'>
-                <h1 class='pt'>{{data['record']}}</h1>
-                <h4 class='pt-label'>Record</h4>
-            </div>
-        </div>
-        <hr style='margin-top: 1rem;'>
-        <div class='deadline'>
-            <h3>Next - Matchweek {{data['MW']+1}}</h3>
-            <div class='vertic-line'></div>
-            <span class='deadline-time'> Deadline: {{data['Deadline']}} @ Midnight</span>
-        </div>
+<style>
+/* Performance Indicator Styles */
+.player-performance-indicator {
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    border: 2px solid white !important;
+    z-index: 10 !important;
+    display: block !important;
+}
+
+.player-performance-indicator.excellent {
+    background-color: #4CAF50 !important; /* Green */
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6) !important;
+}
+
+.player-performance-indicator.good {
+    background-color: #2196F3 !important; /* Blue */
+    box-shadow: 0 0 6px rgba(33, 150, 243, 0.6) !important;
+}
+
+.player-performance-indicator.average {
+    background-color: #FF9800 !important; /* Orange */
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.6) !important;
+}
+
+.player-performance-indicator.poor {
+    background-color: #f44336 !important; /* Red */
+    box-shadow: 0 0 6px rgba(244, 67, 54, 0.6) !important;
+}
+
+/* Make sure player cards have relative positioning for absolute indicators */
+.player-card {
+    position: relative !important;
+}
+</style>
+
+<div class='container'>
+    <h2 class='title'>IFL Fantasy League</h2>
+    
+    {% if user is not none and 'user_id' in user.keys() %}
         
-        <hr style='margin-bottom: 1rem;'>
+        {% if error %}
+            <div class="alert alert-error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if success %}
+            <div class="alert alert-success">
+                <strong>Success:</strong> {{ success }}
+            </div>
+        {% endif %}
 
-        <div class="options-container">
-            <div class="option" id="team-option" onclick="showContent('team')">My Team</div>
-            <div class="option" id="manage-team-option" onclick="showContent('manage-team')">Manage Team</div>
-            <div class="option" id="standings-option" onclick="showContent('standings')">Standings</div>
-            <div class="option" id="previous-weeks-option" onclick="showContent('previous-weeks')">Previous Weeks</div>
+        <!-- User Dashboard Header -->
+        <div class="fantasy-header">
+            <h3>{{ fantasy_user.username }}'s Team</h3>
+            <div class='points-container'>
+                <div class='points'>
+                    <h1 class='pt'>{{ "%.1f"|format(fantasy_user.total_balance) }}</h1>
+                    <h4 class='pt-label'>Balance</h4>
+                </div>
+                <div class='points'>
+                    <h1 class='pt'>{{ fantasy_user.total_points }}</h1>
+                    <h4 class='pt-label'>Total Points</h4>
+                </div>
+                <div class='points'>
+                    <h1 class='pt'>{{ fantasy_user.week_points }}</h1>
+                    <h4 class='pt-label'>Week Points</h4>
+                </div>
+                <div class='points'>
+                    <h1 class='pt'>{{ fantasy_user.free_transfers }}</h1>
+                    <h4 class='pt-label'>Free Transfers</h4>
+                </div>
+            </div>
         </div>
 
-        <div id="team" class="fantasy-content">
-            <div class='team-section'>
-                <div class="team">
-                    {% for i in range(3)%}
-                    <div class="team-sec">
-                        {% for player in data['starting_team'][i*2:i*2+2] %}
-                        <div class="player">
-                            <div class="shirt">
-                                <img src="/static/Images/Elements/shirt.png" alt="Shirt">
-                                <p class="number">{{ player.mw_points }}</p>
+        <hr style='margin: 2rem 0;'>
+
+        <!-- Current Week Info -->
+        <div class='deadline'>
+            <h3>Matchweek {{ current_week }}</h3>
+            <div class='vertic-line'></div>
+            <span class='deadline-time'>Next Deadline: Check Schedule</span>
+        </div>
+
+        <hr style='margin: 2rem 0;'>
+
+        <!-- Navigation Tabs -->
+        <div class="options-container">
+            {% if not has_team %}
+                <div class="option active" id="create-team-option" onclick="showContent('create-team')">Create Team</div>
+            {% elif not has_starting_team %}
+                <div class="option active" id="select-weekly-option" onclick="showContent('select-weekly')">Select Weekly Team</div>
+                <div class="option" id="my-team-option" onclick="showContent('my-team')">My Squad</div>
+                <div class="option" id="transfer-option" onclick="showContent('transfer')">Transfers</div>
+            {% else %}
+                <div class="option active" id="my-team-option" onclick="showContent('my-team')">My Team</div>
+                <div class="option" id="manage-team-option" onclick="showContent('manage-team')">Manage Team</div>
+                <div class="option" id="transfer-option" onclick="showContent('transfer')">Transfers</div>
+                <div class="option" id="captain-option" onclick="showContent('captain')">
+                    {% if fantasy_user.team.captain %}Change Captain{% else %}Set Captain{% endif %}
+                </div>
+            {% endif %}
+            <div class="option" id="leaderboard-option" onclick="showContent('leaderboard')">Leaderboard</div>
+        </div>
+
+        <!-- Content Sections -->
+
+        <!-- Create Team Section -->
+        {% if not has_team %}
+        <div id="create-team" class="fantasy-content active">
+            <h3>Create Your Fantasy Team</h3>
+            <div class="rules-box">
+                <h4>Team Creation Rules:</h4>
+                <p>{{ fantasy_user.CREATING_TEAM_RULES }}</p>
+                <p><strong>Budget:</strong> 🪙{{ "%.1f"|format(fantasy_user.total_balance) }}</p>
+            </div>
+            
+            <!-- Dynamic Rule Validation -->
+            <div class="rule-validation-container">
+                <h4>Rule Requirements <span class="rules-progress">(0/5 Met)</span></h4>
+                <div class="rule-checklist">
+                    <div class="rule-item" id="rule-player-count">
+                        <div class="rule-icon">⭕</div>
+                        <div class="rule-text">Select exactly 8 players <span class="rule-status">(0/8)</span></div>
+                    </div>
+                    <div class="rule-item" id="rule-budget">
+                        <div class="rule-icon">⭕</div>
+                        <div class="rule-text">Stay within budget <span class="rule-status">(🪙0.0/{{ "%.1f"|format(fantasy_user.total_balance) }})</span></div>
+                    </div>
+                    <div class="rule-item" id="rule-team-diversity">
+                        <div class="rule-icon">⭕</div>
+                        <div class="rule-text">Players from at least 5 different teams <span class="rule-status">(0/5)</span></div>
+                    </div>
+                    <div class="rule-item" id="rule-goalkeepers">
+                        <div class="rule-icon">⭕</div>
+                        <div class="rule-text">At least 2 Goalkeepers <span class="rule-status">(0/2)</span></div>
+                    </div>
+                    <div class="rule-item" id="rule-position-requirements">
+                        <div class="rule-icon">⭕</div>
+                        <div class="rule-text">At least 2 Defenders, 1 Midfielder, 2 Forwards <span class="rule-status">(D:0/2, M:0/1, F:0/2)</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" action="/fantasy/create-team" id="create-team-form">
+                <div class="team-summary">
+                        <h4>Selected Team <span id="selected-count">(0/8)</span></h4>
+                        <div id="selected-players"></div>
+                        <div class="budget-info">
+                            <span>Total Cost: 🪙<span id="total-cost">0.0</span></span>
+                            <span>Remaining: 🪙<span id="remaining-budget">{{ "%.1f"|format(fantasy_user.total_balance) }}</span></span>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="selected_players" id="selected_players_input">
+                    <button type="submit" class="btn btn-primary" id="create-team-btn" disabled>Create Team</button>
+                <div class="player-selection">
+                    <div class="player-selection-header">
+                        <h4>Available Players</h4>
+                        
+                        <!-- Search and Filter Controls -->
+                        <div class="search-filter-container">
+                            <div class="search-box">
+                                <input type="text" id="player-search" placeholder="Search players..." class="search-input">
+                                <i class="fa fa-search"></i>
                             </div>
-                            <p class="name">{{ player.name }}</p>
+                            
+                            <div class="filter-controls">
+                                <select id="position-filter" class="filter-select">
+                                    <option value="">All Positions</option>
+                                    <option value="GK">Goalkeeper</option>
+                                    <option value="D">Defender</option>
+                                    <option value="M">Midfielder</option>
+                                    <option value="F">Forward</option>
+                                </select>
+                                
+                                <select id="team-filter" class="filter-select">
+                                    <option value="">All Teams</option>
+                                    {% for team in teams %}
+                                    <option value="{{ team }}">{{ team }}</option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <select id="price-filter" class="filter-select">
+                                    <option value="">All Prices</option>
+                                    <option value="0-5">🪙0 - 🪙5</option>
+                                    <option value="5-10">🪙5 - 🪙10</option>
+                                    <option value="10-15">🪙10 - 🪙15</option>
+                                    <option value="15+">🪙15+</option>
+                                </select>
+                                
+                                <button type="button" id="clear-filters" class="btn btn-secondary">Clear Filters</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="players-grid" id="players-grid">
+                        {% for player in all_players %}
+                        <div class="player-card" 
+                             data-cost="{{ player['Fantasy Cost'] }}" 
+                             data-position="{{ player['Primary_Position'] }}" 
+                             data-team="{{ player.get('Team', 'Unknown') }}"
+                             data-name="{{ player['First'] }} {{ player['Last'] }}"
+                             data-first="{{ player['First'] }}"
+                             data-last="{{ player['Last'] }}"
+                             data-overall="{{ player.get('OVR Rating', 0) }}"
+                             data-goals="{{ player.get('Goals', 0) }}"
+                             data-assists="{{ player.get('Assists', 0) }}"
+                             data-saves="{{ player.get('Saves', 0) }}">
+                            <input type="checkbox" name="player_selection" value="{{ player['First'] }} {{ player['Last'] }}" id="player_{{ loop.index }}">
+                            <label for="player_{{ loop.index }}">
+                                <div class="player-info">
+                                    <div class="player-header">
+                                        <div class="player-name">{{ player['First'] }} {{ player['Last'] }} </div>
+                                        <button class="player-info-btn" 
+                                           data-player-name="{{ player['First'] }} {{ player['Last'] }}"
+                                           title="View player details">
+                                            <i class="fa fa-info-circle"></i>
+                                        </button>
+                                    </div>
+                                    <div class="player-details">
+                                        <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                        <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                        <span class="cost">🪙{{ player['Fantasy Cost'] }}</span>
+                                        <span class="points">{{ player.get('Total Points', 0) }} pts</span>
+                                        
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                         {% endfor %}
                     </div>
-                    {% endfor %}
+                    
+                    <div id="no-results" class="no-results" style="display: none;">
+                        <p>No players found matching your search criteria.</p>
+                    </div>
                 </div>
 
-                <div class="team-stats">
-                    <h3>Team Stats</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Pos</th>
-                                <th>Team</th>
-                                <th>MW Points</th>
-                                <th>MW Points</th>
-                                <th>Total Points</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6">Starting Team</td>
-                            </tr>
-                            {% for player in data['starting_team'] %}
-                                <tr>
-                                    <td>{{ player.name }}</td>
-                                    <td>{{ player.pos }}</td>
-                                    <td>{{ player.team }}</td>
-                                    <td>{{ player.mw_points }}</td>
-                                    <td>{{ player.mw_points }}</td>
-                                    <td>{{ player.total_points }}</td>
-                                </tr>
-                            {% endfor %}
-                            <tr>
-                                <td colspan="6">Bench</td>
-                            </tr>
-                            {% for player in data['bench'] %}
-                                <tr>
-                                    <td>{{ player.name }}</td>
-                                    <td>{{ player.pos }}</td>
-                                    <td>{{ player.team }}</td>
-                                    <td>{{ player.mw_points }}</td>
-                                    <td>{{ player.mw_points }}</td>
-                                    <td>{{ player.total_points }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Select Weekly Team Section -->
+        {% if has_team and not has_starting_team %}
+        <div id="select-weekly" class="fantasy-content active">
+            <h3>Select Your Starting Team</h3>
+            <div class="rules-box">
+                <h4>Weekly Team Rules:</h4>
+                <p>{{ fantasy_user.WEEKLY_TEAM_RULES }}</p>
+            </div>
+            
+            <form method="post" action="/fantasy/select-weekly-team">
+                <div class="player-selection">
+                    <div class="player-selection-header">
+                        <h4>Your Squad</h4>
+                        
+                        <!-- Search and Filter Controls for Squad -->
+                        <div class="search-filter-container">
+                            <div class="search-box">
+                                <input type="text" id="squad-search" placeholder="Search your squad..." class="search-input">
+                                <i class="fa fa-search"></i>
+                            </div>
+                            
+                            <div class="filter-controls">
+                                <select id="squad-position-filter" class="filter-select">
+                                    <option value="">All Positions</option>
+                                    <option value="GK">Goalkeeper</option>
+                                    <option value="D">Defender</option>
+                                    <option value="M">Midfielder</option>
+                                    <option value="F">Forward</option>
+                                </select>
+                                
+                                <button type="button" id="clear-squad-filters" class="btn btn-secondary">Clear Filters</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="players-grid" id="squad-grid">
+                        {% for player in players_data.all_players %}
+                        <div class="player-card"
+                             data-position="{{ player.get('Primary_Position', 'Unknown') }}"
+                             data-team="{{ player.get('Team', 'Unknown') }}"
+                             data-name="{{ player['First'] }} {{ player['Last'] }}"
+                             data-first="{{ player['First'] }}"
+                             data-last="{{ player['Last'] }}">
+                            <input type="checkbox" name="starting_team" value="{{ player['First'] }} {{ player['Last'] }}" id="weekly_player_{{ loop.index }}">
+                            <label for="weekly_player_{{ loop.index }}">
+                                <div class="player-info">
+                                    <div class="player-header">
+                                        <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                        <button class="player-info-btn" 
+                                           data-player-name="{{ player['First'] }} {{ player['Last'] }}"
+                                           title="View player details">
+                                            <i class="fa fa-info-circle"></i>
+                                        </button>
+                                    </div>
+                                    <div class="player-details">
+                                        <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                        <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                        <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                        <span class="points">{{ player.get('Total Points', 0) }} pts</span>
+                                        <span class="week-points">{{ player.get('Week Points', 0) }} this week</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div id="squad-no-results" class="no-results" style="display: none;">
+                        <p>No players found in your squad matching the criteria.</p>
+                    </div>
                 </div>
                 
-
-            </div>
+                <input type="hidden" name="starting_team" id="starting_team_input">
+                <button type="submit" class="btn btn-primary" id="select-weekly-btn" disabled>Set Starting Team</button>
+            </form>
         </div>
+        {% endif %}
 
-        <div id="manage-team" class="fantasy-content" style="display: none;">
+        <!-- My Team Section -->
+        {% if has_team %}
+        <div id="my-team" class="fantasy-content {% if has_starting_team %}active{% endif %}">
+            <h3>My Fantasy Team</h3>
             
-            <div class='transfers'>
-                <form action="/fantasy/update-team" method="post">
-                    <h3>Make Substitution</h3>
-                    <div class='transfers-container'>
-                        <div class='transfers-section'>
-                            <h4>Starting Team</h4>
-                            <div class='transfers-list'>
-                                <select name='starting_team'>
-                                    {% for player in data['starting_team'] %}
-                                        <option value="{{ player.name }}">{{ player.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+            {% if has_starting_team %}
+            <div class="team-display">
+                <h4>Starting Team</h4>
+                {% if fantasy_user.team.captain %}
+                    <p><strong>Captain:</strong> {{ fantasy_user.team.captain }} (2x points)</p>
+                {% endif %}
+                <div class="starting-team-grid">
+                    <!-- Group players by position for formation display -->
+                    {% set goalkeepers = [] %}
+                    {% set defenders = [] %}
+                    {% set midfielders = [] %}
+                    {% set forwards = [] %}
+                    
+                    {% for player in players_data.starting_team %}
+                        {% set position = player.get('Primary_Position', 'N/A') %}
+                        {% if position == 'GK' %}
+                            {% set _ = goalkeepers.append(player) %}
+                        {% elif position == 'D' %}
+                            {% set _ = defenders.append(player) %}
+                        {% elif position == 'M' %}
+                            {% set _ = midfielders.append(player) %}
+                        {% elif position == 'F' %}
+                            {% set _ = forwards.append(player) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Forwards -->
+                    {% if forwards %}
+                    <div class="formation-layer forwards">
+                        {% for player in forwards %}
+                        <div class="formation-player forward {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}captain{% endif %}" 
+                             data-player-info="{{ player['First'] }} {{ player['Last'] }} | {{ player.get('Team', 'N/A') }} | {{ player.get('Total Points', 0) }} pts">
+                            <div class="formation-player-name">{{ player['First'][:1] }}. {{ player['Last'][:8] }}</div>
+                            <div class="formation-player-position">{{ player.get('Primary_Position', 'F') }}</div>
                         </div>
-                        <div class='transfers-section'>
-                            <h4>Bench</h4>
-                            <div class='transfers-list'>
-                                <select name='bench'>
-                                    {% for player in data['bench'] %}
-                                    <option value="{{ player.name }}">{{ player.name }}</option>
-                                    {% endfor %}
-                                </select>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Midfielders -->
+                    {% if midfielders %}
+                    <div class="formation-layer midfielders">
+                        {% for player in midfielders %}
+                        <div class="formation-player midfielder {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}captain{% endif %}"
+                             data-player-info="{{ player['First'] }} {{ player['Last'] }} | {{ player.get('Team', 'N/A') }} | {{ player.get('Total Points', 0) }} pts">
+                            <div class="formation-player-name">{{ player['First'][:1] }}. {{ player['Last'][:8] }}</div>
+                            <div class="formation-player-position">{{ player.get('Primary_Position', 'M') }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Defenders -->
+                    {% if defenders %}
+                    <div class="formation-layer defenders">
+                        {% for player in defenders %}
+                        <div class="formation-player defender {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}captain{% endif %}"
+                             data-player-info="{{ player['First'] }} {{ player['Last'] }} | {{ player.get('Team', 'N/A') }} | {{ player.get('Total Points', 0) }} pts">
+                            <div class="formation-player-name">{{ player['First'][:1] }}. {{ player['Last'][:8] }}</div>
+                            <div class="formation-player-position">{{ player.get('Primary_Position', 'D') }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Goalkeepers -->
+                    {% if goalkeepers %}
+                    <div class="formation-layer goalkeepers">
+                        {% for player in goalkeepers %}
+                        <div class="formation-player goalkeeper {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}captain{% endif %}"
+                             data-player-info="{{ player['First'] }} {{ player['Last'] }} | {{ player.get('Team', 'N/A') }} | {{ player.get('Total Points', 0) }} pts">
+                            <div class="formation-player-name">{{ player['First'][:1] }}. {{ player['Last'][:8] }}</div>
+                            <div class="formation-player-position">{{ player.get('Primary_Position', 'GK') }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <h4>Bench</h4>
+                <div class="bench-grid">
+                    {% for player in players_data.bench_players %}
+                    <div class="player-card bench">
+                        <div class="player-info">
+                            <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                            <div class="player-details">
+                                <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                <span class="cost">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                <span class="points">{{ player.get('Total Points', 0) }} pts</span>
                             </div>
                         </div>
                     </div>
-                    <button class='btn' id='substitution-btn'>Make Substitution</button>
-                </form>
-
-                <hr class='transfers-hr'>
-                <form action="/fantasy/transfer-team" method="post">
-                    <h3>Make Transfers</h3>
-                    <div class='transfers-container'>
-                        <div class='transfers-section'>
-                            <h4>My players</h4>
-                            <div class='transfers-list'>
-                                <select name='my_player'>
-                                    {% for player in data['starting_team'] + data['bench'] %}
-                                    <option value="{{ player.name }}">{{ player.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class='transfers-section'>
-                            <h4>All Fantasy players</h4>
-                            <div class='transfers-list'>
-                                <select name='new_player'>
-                                    {% for player in data['starting_team'] + data['bench'] %}
-                                    <option value="{{ player.name }}">{{ player.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <button class='btn' id='transfer-btn'>Make Transfer</button>
-                </form>
+                    {% endfor %}
+                </div>
             </div>
+            {% else %}
+            <div class="squad-display">
+                <h4>My Squad</h4>
+                <div class="players-grid">
+                    {% for player in players_data.all_players %}
+                    <div class="player-card">
+                        <div class="player-info">
+                            <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                            <div class="player-details">
+                                <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                <span class="cost">🪙{{ player['Fantasy Cost'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
+        <!-- Manage Team Section (Substitutions) -->
+        {% if has_starting_team %}
+        <div id="manage-team" class="fantasy-content">
+            <h3>Make Substitutions</h3>
+            <p>Select players to substitute between your starting team and bench.</p>
+            
+            <form method="post" action="/fantasy/make-substitution">
+                <div class="substitution-section">
+                    <div class="sub-out">
+                        <h4>Starting Team (Select to substitute out)</h4>
+                        <div class="players-grid">
+                            {% for player in players_data.starting_team %}
+                            <div class="player-card">
+                                <input type="checkbox" name="players_out" value="{{ player['First'] }} {{ player['Last'] }}" id="out_{{ loop.index }}">
+                                <label for="out_{{ loop.index }}">
+                                    <div class="player-info">
+                                        <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                        <div class="player-details">
+                                            <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                            <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                            <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="sub-in">
+                        <h4>Bench (Select to substitute in)</h4>
+                        <div class="players-grid">
+                            {% for player in players_data.bench_players %}
+                            <div class="player-card">
+                                <input type="checkbox" name="players_in" value="{{ player['First'] }} {{ player['Last'] }}" id="in_{{ loop.index }}">
+                                <label for="in_{{ loop.index }}">
+                                    <div class="player-info">
+                                        <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                        <div class="player-details">
+                                            <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                            <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                            <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="players_out" id="players_out_input">
+                <input type="hidden" name="players_in" id="players_in_input">
+                <button type="submit" class="btn btn-primary" id="substitute-btn" disabled>Make Substitutions</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Set Captain Section -->
+        {% if has_starting_team %}
+        <div id="captain" class="fantasy-content">
+            {% if fantasy_user.team.captain %}
+                <h3>Change Your Captain</h3>
+                <div class="current-captain-info">
+                    <p><strong>Current Captain:</strong> {{ fantasy_user.team.captain }} (receiving double points)</p>
+                    <p>Select a new captain from your starting team:</p>
+                </div>
+            {% else %}
+                <h3>Choose Your Captain</h3>
+                <p>Your captain will receive double points. Choose wisely!</p>
+            {% endif %}
+            
+            <form method="post" action="/fantasy/set-captain">
+                <div class="captain-selection">
+                    {% for player in players_data.starting_team %}
+                    <div class="player-card captain-option {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}current-captain{% endif %}">
+                        <input type="radio" name="captain" value="{{ player['First'] }} {{ player['Last'] }}" id="captain_{{ loop.index }}"
+                               {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}checked{% endif %}>
+                        <label for="captain_{{ loop.index }}">
+                            <div class="player-info">
+                                <div class="player-header">
+                                    <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                    {% if player['First'] + ' ' + player['Last'] == fantasy_user.team.captain %}
+                                        <span class="captain-badge">👑 CAPTAIN</span>
+                                    {% endif %}
+                                </div>
+                                <div class="player-details">
+                                    <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                    <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                    <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                    <span class="points">{{ player.get('Total Points', 0) }} pts</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="set-captain-btn" 
+                        {% if not fantasy_user.team.captain %}disabled{% endif %}>
+                    {% if fantasy_user.team.captain %}Change Captain{% else %}Set Captain{% endif %}
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Transfer Section -->
+        {% if has_team %}
+        <div id="transfer" class="fantasy-content">
+            <h3>Make Transfers</h3>
+            {% if fantasy_user.free_transfers == 0 %}
+                <div class="warning-box">
+                    <strong>Warning:</strong> You have 0 free transfers remaining. Each additional transfer will cost 4 points.
+                </div>
+            {% else %}
+                <p>You have {{ fantasy_user.free_transfers }} free transfer(s) remaining.</p>
+            {% endif %}
+            
+            <form method="post" action="/fantasy/make-transfer">
+                <div class="transfer-section">
+                    <div class="transfer-out">
+                        <div class="player-selection-header">
+                            <h4>Select Player to Transfer Out</h4>
+                            
+                            <div class="search-box">
+                                <input type="text" id="transfer-out-search" placeholder="Search your squad..." class="search-input">
+                                <i class="fa fa-search"></i>
+                            </div>
+                            <div class="search-filter-container">
+                                
+                                <div class="filter-controls">
+                                    <select id="transfer-out-position-filter" class="filter-select">
+                                        <option value="">All Positions</option>
+                                        <option value="GK">Goalkeeper</option>
+                                        <option value="D">Defender</option>
+                                        <option value="M">Midfielder</option>
+                                        <option value="F">Forward</option>
+                                    </select>
+                                    
+                                    <button type="button" id="clear-transfer-out-filters" class="btn btn-secondary">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="players-grid" id="transfer-out-grid">
+                            {% for player in players_data.all_players %}
+                            <div class="player-card"
+                                 data-position="{{ player.get('Primary_Position', 'Unknown') }}"
+                                 data-team="{{ player.get('Team', 'Unknown') }}"
+                                 data-name="{{ player['First'] }} {{ player['Last'] }}"
+                                 data-cost="{{ player['Fantasy Cost'] }}">
+                                <input type="radio" name="player_out" value="{{ player['First'] }} {{ player['Last'] }}" id="transfer_out_{{ loop.index }}">
+                                <label for="transfer_out_{{ loop.index }}">
+                                    <div class="player-info">
+                                        <div class="player-header">
+                                            <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                            <button class="player-info-btn" 
+                                               data-player-name="{{ player['First'] }} {{ player['Last'] }}"
+                                               title="View player details">
+                                                <i class="fa fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                        <div class="player-details">
+                                            <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                            <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                            <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                            <span class="cost">🪙{{ player['Fantasy Cost'] }}</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="transfer-summary">
+                            <div id="transfer-cost-info"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="transfer-btn" disabled>Make Transfer</button>
+                        <div id="transfer-out-no-results" class="no-results" style="display: none;">
+                            <p>No players found in your squad.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-in">
+                        <div class="player-selection-header">
+                            <h4>Select Player to Transfer In</h4>
+                            
+                            <div class="search-box">
+                                <input type="text" id="transfer-in-search" placeholder="Search available players..." class="search-input">
+                                <i class="fa fa-search"></i>
+                            </div>
+                            <h3>Filter Players:</h3>
+                            <div class="search-filter-container">
+                                <div class="filter-controls">
+                                    <select id="transfer-in-position-filter" class="filter-select">
+                                        <option value="">All Positions</option>
+                                        <option value="GK">Goalkeeper</option>
+                                        <option value="D">Defender</option>
+                                        <option value="M">Midfielder</option>
+                                        <option value="F">Forward</option>
+                                    </select>
+                                    
+                                    <select id="transfer-in-team-filter" class="filter-select">
+                                        <option value="">All Teams</option>
+                                        {% for team in teams %}
+                                        <option value="{{ team }}">{{ team }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                    <select id="transfer-in-price-filter" class="filter-select">
+                                        <option value="">All Prices</option>
+                                        <option value="0-5">🪙0 - 🪙5</option>
+                                        <option value="5-10">🪙5 - 🪙10</option>
+                                        <option value="10-15">🪙10 - 🪙15</option>
+                                        <option value="15+">🪙15+</option>
+                                    </select>
+                                    
+                                    <button type="button" id="clear-transfer-in-filters" class="btn btn-secondary">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="players-grid" id="transfer-in-grid">
+                            {% for player in all_players %}
+                            {% if player['First']|string + ' ' + player['Last']|string not in fantasy_user.team.all_players %}
+                            <div class="player-card"
+                                 data-position="{{ player.get('Primary_Position', 'Unknown') }}"
+                                 data-team="{{ player.get('Team', 'Unknown') }}"
+                                 data-name="{{ player['First'] }} {{ player['Last'] }}"
+                                 data-cost="{{ player['Fantasy Cost'] }}">
+                                <input type="radio" name="player_in" value="{{ player['First'] }} {{ player['Last'] }}" id="transfer_in_{{ loop.index }}">
+                                <label for="transfer_in_{{ loop.index }}">
+                                    <div class="player-info">
+                                        <div class="player-header">
+                                            <div class="player-name">{{ player['First'] }} {{ player['Last'] }}</div>
+                                            <button class="player-info-btn" 
+                                               data-player-name="{{ player['First'] }} {{ player['Last'] }}"
+                                               title="View player details">
+                                                <i class="fa fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                        <div class="player-details">
+                                            <span class="position">{{ player.get('Primary_Position', 'N/A') }}</span>
+                                            <span class="points">{{ player.get('OVR Rating', 'N/A') }}</span>
+                                            <span class="team">{{ player.get('Team', 'N/A') }}</span>
+                                            <span class="cost">🪙{{ player['Fantasy Cost'] }}</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div id="transfer-in-no-results" class="no-results" style="display: none;">
+                            <p>No available players found matching your criteria.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard" class="fantasy-content">
+            <h3>Fantasy Leaderboard</h3>
+            <div class="leaderboard-link">
+                <a href="/fantasy/leaderboard" class="btn btn-secondary">View Full Leaderboard</a>
+            </div>
         </div>
 
-        <div id="standings" class="fantasy-content" style="display: none;"></div>
-        <div id="previous-weeks" class="fantasy-content" style="display: none;"></div>
-
-    </div>
-    
-{% else %}
-    <h1>Please login to access this page\n</h1>
-    <button class='btn' onclick="window.location.href='/login'">Login</button>
-{% endif %}
+    {% else %}
+        <!-- Not authenticated -->
+        <div class="auth-required">
+            <h3>Please log in to access Fantasy League</h3>
+            <p>You need to be logged in to create and manage your fantasy team.</p>
+            <div class="auth-buttons">
+                <a href="/login" class="btn btn-primary">Login</a>
+                <a href="/signup" class="btn btn-secondary">Sign Up</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
 
 <script>
+// Make player data available to JavaScript
+const allPlayersData = {{ all_players|tojson }};
 
-    let activeContent = 'team';
-
-    function showContent(section) {
-        document.getElementById('team').style.display = 'none';
-        document.getElementById('manage-team').style.display = 'none';
-        document.getElementById('standings').style.display = 'none';
-        document.getElementById('previous-weeks').style.display = 'none';
-
-        document.getElementById(section).style.display = 'block';
-
-        document.getElementById('team-option').classList.remove('active');
-        document.getElementById('manage-team-option').classList.remove('active');
-        document.getElementById('standings-option').classList.remove('active');
-        document.getElementById('previous-weeks-option').classList.remove('active');
-
-        document.getElementById(`${section}-option`).classList.add('active');
+// Utility function to find player by name (reusable)
+function findPlayerByName(playerName) {
+    return allPlayersData.find(p => {
+        const possibleNames = [
+            p.full_name,
+            p.name,
+            p.Name,
+            `${p.First} ${p.Last}`,
+            `${p['First Name']} ${p['Last Name']}`,
+            p.player_name
+        ].filter(Boolean);
         
-        activeContent = section;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        showContent('team');
+        return possibleNames.includes(playerName);
     });
+}
+
+// Cache frequently accessed DOM elements
+const DOMCache = {
+    playerModal: null,
+    comparisonModal: null,
+    quickCompareFab: null,
+    
+    get: function(id) {
+        if (!this[id]) {
+            this[id] = document.getElementById(id);
+        }
+        return this[id];
+    }
+};
+
+// Tab switching functionality
+function showContent(contentId) {
+    // Hide all content
+    const contents = document.querySelectorAll('.fantasy-content');
+    contents.forEach(content => content.classList.remove('active'));
+    
+    // Remove active class from all options
+    const options = document.querySelectorAll('.option');
+    options.forEach(option => option.classList.remove('active'));
+    
+    // Show selected content
+    const selectedContent = document.getElementById(contentId);
+    if (selectedContent) {
+        selectedContent.classList.add('active');
+    }
+    
+    // Add active class to clicked option
+    const selectedOption = document.getElementById(contentId + '-option');
+    if (selectedOption) {
+        selectedOption.classList.add('active');
+    }
+}
+
+function setupTeamCreation() {
+    const checkboxes = document.querySelectorAll('input[name="player_selection"]');
+    const totalCostEl = document.getElementById('total-cost');
+    const remainingBudgetEl = document.getElementById('remaining-budget');
+    const selectedCountEl = document.getElementById('selected-count');
+    const selectedPlayersEl = document.getElementById('selected-players');
+    const createBtn = document.getElementById('create-team-btn');
+    const hiddenInput = document.getElementById('selected_players_input');
+    const budget = {{ fantasy_user.total_balance }};
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateTeamCreation);
+    });
+    
+    // Initialize rule validation with empty state
+    updateRuleValidation([], 0, budget);
+    
+    // Add form submission debugging
+    const form = document.getElementById('create-team-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const currentHiddenValue = hiddenInput.value;
+            
+            if (!currentHiddenValue || currentHiddenValue.trim() === '') {
+                e.preventDefault();
+                alert('No players selected. Please select 8 players before submitting.');
+                return false;
+            }
+            
+            const playerCount = currentHiddenValue.split(',').filter(p => p.trim()).length;
+            
+            if (playerCount !== 8) {
+                e.preventDefault();
+                alert(`You have selected ${playerCount} players. Please select exactly 8 players.`);
+                return false;
+            }
+        });
+    }
+    
+    function updateTeamCreation() {
+        const selected = Array.from(checkboxes).filter(cb => cb.checked);
+        const totalCost = selected.reduce((sum, cb) => {
+            const card = cb.closest('.player-card');
+            return sum + parseFloat(card.dataset.cost);
+        }, 0);
+        
+        const selectedPlayers = selected.map(cb => cb.value);
+        
+        
+        // Update selected players display
+        if (selectedPlayersEl) {
+            if (selected.length === 0) {
+                selectedPlayersEl.innerHTML = '<p class="no-selection">No players selected yet</p>';
+            } else {
+                const playersHtml = selected.map(cb => {
+                    const card = cb.closest('.player-card');
+                    const playerName = cb.value;
+                    const position = card.dataset.position || 'N/A';
+                    const team = card.dataset.team || 'N/A';
+                    const cost = card.dataset.cost || '0';
+                    
+                    return `
+                        <div class="selected-player-item">
+                            <span class="player-name">${playerName}</span>
+                            <span class="player-details">${position} - ${team} - 🪙${cost}</span>
+                            <button type="button" class="remove-player" onclick="removePlayer('${cb.id}')" title="Remove player">×</button>
+                        </div>
+                    `;
+                }).join('');
+                selectedPlayersEl.innerHTML = playersHtml;
+            }
+        }
+        
+        totalCostEl.textContent = totalCost.toFixed(1);
+        remainingBudgetEl.textContent = (budget - totalCost).toFixed(1);
+        selectedCountEl.textContent = `(${selected.length}/8)`;
+        
+        hiddenInput.value = selectedPlayers.join(',');
+        
+        
+        // Update rule validation
+        updateRuleValidation(selected, totalCost, budget);
+        
+        // Check if all rules are met for button enabling
+        const allRulesMet = validateAllRules(selected, totalCost, budget);
+        createBtn.disabled = !allRulesMet;
+        
+        // Update button color and text based on validity
+        if (totalCost > budget) {
+            createBtn.className = 'btn btn-danger';
+            createBtn.textContent = 'Over Budget';
+        } else if (!allRulesMet && selected.length > 0) {
+            createBtn.className = 'btn btn-warning';
+            createBtn.textContent = 'Check Rules';
+        } else if (allRulesMet) {
+            createBtn.className = 'btn btn-success';
+            createBtn.textContent = 'Create Team';
+        } else {
+            createBtn.className = 'btn btn-primary';
+            createBtn.textContent = 'Create Team';
+        }
+    }
+}
+
+// Function to remove a player from selection
+function removePlayer(playerId) {
+    const playerCheckbox = document.getElementById(playerId);
+    if (playerCheckbox) {
+        playerCheckbox.checked = false;
+        // Trigger the change event to update the display
+        playerCheckbox.dispatchEvent(new Event('change'));
+    }
+}
+
+// Function to update rule validation display
+function updateRuleValidation(selectedCheckboxes, totalCost, budget) {
+    const rulePlayerCount = document.getElementById('rule-player-count');
+    const ruleBudget = document.getElementById('rule-budget');
+    const ruleTeamDiversity = document.getElementById('rule-team-diversity');
+    const ruleGoalkeepers = document.getElementById('rule-goalkeepers');
+    const rulePositionRequirements = document.getElementById('rule-position-requirements');
+    const rulesProgress = document.querySelector('.rules-progress');
+    
+    if (!rulePlayerCount) return; // Exit if elements don't exist
+    
+    let metRules = 0;
+    const totalRules = 5;
+    
+    // Rule 1: Player count (exactly 8)
+    const playerCount = selectedCheckboxes.length;
+    const playerCountIcon = rulePlayerCount.querySelector('.rule-icon');
+    const playerCountStatus = rulePlayerCount.querySelector('.rule-status');
+    
+    rulePlayerCount.className = 'rule-item';
+    if (playerCount === 8) {
+        rulePlayerCount.classList.add('met');
+        playerCountIcon.textContent = '✅';
+        metRules++;
+    } else if (playerCount > 8) {
+        rulePlayerCount.classList.add('error');
+        playerCountIcon.textContent = '❌';
+    } else {
+        playerCountIcon.textContent = '⭕';
+    }
+    playerCountStatus.textContent = `(${playerCount}/8)`;
+    
+    // Rule 2: Budget (within limit)
+    const budgetIcon = ruleBudget.querySelector('.rule-icon');
+    const budgetStatus = ruleBudget.querySelector('.rule-status');
+    
+    ruleBudget.className = 'rule-item';
+    if (totalCost <= budget) {
+        ruleBudget.classList.add('met');
+        budgetIcon.textContent = '✅';
+        if (playerCount > 0) metRules++;
+    } else {
+        ruleBudget.classList.add('error');
+        budgetIcon.textContent = '❌';
+    }
+    budgetStatus.textContent = `(🪙${totalCost.toFixed(1)}/🪙${budget.toFixed(1)})`;
+    
+    // Rule 3: Team diversity (at least 5 different teams)
+    const teamCounts = {};
+    selectedCheckboxes.forEach(cb => {
+        const card = cb.closest('.player-card');
+        const team = card.dataset.team || 'Unknown';
+        teamCounts[team] = (teamCounts[team] || 0) + 1;
+    });
+    
+    const uniqueTeams = Object.keys(teamCounts).length;
+    const teamDiversityIcon = ruleTeamDiversity.querySelector('.rule-icon');
+    const teamDiversityStatus = ruleTeamDiversity.querySelector('.rule-status');
+    
+    ruleTeamDiversity.className = 'rule-item';
+    if (uniqueTeams >= 5) {
+        ruleTeamDiversity.classList.add('met');
+        teamDiversityIcon.textContent = '✅';
+        metRules++;
+        const teamList = Object.keys(teamCounts).join(', ');
+        teamDiversityStatus.textContent = `(${uniqueTeams}/5 - ${teamList})`;
+    } else {
+        if (playerCount > 0) {
+            if (uniqueTeams >= 3) {
+                ruleTeamDiversity.classList.add('warning');
+                teamDiversityIcon.textContent = '⚠️';
+            } else {
+                ruleTeamDiversity.classList.add('error');
+                teamDiversityIcon.textContent = '❌';
+            }
+            const teamList = Object.keys(teamCounts).join(', ') || 'None';
+            teamDiversityStatus.textContent = `(${uniqueTeams}/5 - Current: ${teamList})`;
+        } else {
+            teamDiversityIcon.textContent = '⭕';
+            teamDiversityStatus.textContent = '(0/5)';
+        }
+    }
+    
+    // Rule 4: Position counts
+    const positionCounts = { GK: 0, D: 0, M: 0, F: 0 };
+    selectedCheckboxes.forEach(cb => {
+        const card = cb.closest('.player-card');
+        const position = card.dataset.position || 'Unknown';
+        if (positionCounts.hasOwnProperty(position)) {
+            positionCounts[position]++;
+        }
+    });
+    
+    // Rule 4a: Goalkeepers (at least 2)
+    const gkIcon = ruleGoalkeepers.querySelector('.rule-icon');
+    const gkStatus = ruleGoalkeepers.querySelector('.rule-status');
+    
+    ruleGoalkeepers.className = 'rule-item';
+    if (positionCounts.GK >= 2) {
+        ruleGoalkeepers.classList.add('met');
+        gkIcon.textContent = '✅';
+        metRules++;
+        gkStatus.textContent = `(${positionCounts.GK}/2)`;
+    } else {
+        if (playerCount > 0) {
+            if (positionCounts.GK >= 1) {
+                ruleGoalkeepers.classList.add('warning');
+                gkIcon.textContent = '⚠️';
+            } else {
+                ruleGoalkeepers.classList.add('error');
+                gkIcon.textContent = '❌';
+            }
+        } else {
+            gkIcon.textContent = '⭕';
+        }
+        gkStatus.textContent = `(${positionCounts.GK}/2)`;
+    }
+    
+    // Rule 4b: Other positions (2 Defenders, 1 Midfielder, 2 Forwards)
+    const defendersMet = positionCounts.D >= 2;
+    const midfieldersMet = positionCounts.M >= 1;
+    const forwardsMet = positionCounts.F >= 2;
+    const allPositionsMet = defendersMet && midfieldersMet && forwardsMet;
+    
+    const positionIcon = rulePositionRequirements.querySelector('.rule-icon');
+    const positionStatus = rulePositionRequirements.querySelector('.rule-status');
+    
+    rulePositionRequirements.className = 'rule-item';
+    if (allPositionsMet) {
+        rulePositionRequirements.classList.add('met');
+        positionIcon.textContent = '✅';
+        metRules++;
+    } else {
+        if (playerCount > 0) {
+            const partialMet = defendersMet || midfieldersMet || forwardsMet;
+            if (partialMet) {
+                rulePositionRequirements.classList.add('warning');
+                positionIcon.textContent = '⚠️';
+            } else {
+                rulePositionRequirements.classList.add('error');
+                positionIcon.textContent = '❌';
+            }
+        } else {
+            positionIcon.textContent = '⭕';
+        }
+    }
+    
+    // Create status text with indicators
+    const dStatus = defendersMet ? '✓' : '✗';
+    const mStatus = midfieldersMet ? '✓' : '✗';
+    const fStatus = forwardsMet ? '✓' : '✗';
+    positionStatus.textContent = `(D:${positionCounts.D}/2${dStatus}, M:${positionCounts.M}/1${mStatus}, F:${positionCounts.F}/2${fStatus})`;
+    
+    // Update overall progress
+    rulesProgress.textContent = `(${metRules}/${totalRules} Met)`;
+    
+    // Add completion animation when all rules are met
+    if (metRules === totalRules) {
+        document.querySelector('.rule-validation-container').style.animation = 'pulse 0.5s ease-in-out';
+        setTimeout(() => {
+            document.querySelector('.rule-validation-container').style.animation = '';
+        }, 500);
+    }
+}
+
+// Function to validate all rules for button enabling
+function validateAllRules(selectedCheckboxes, totalCost, budget) {
+    // Rule 1: Exactly 8 players
+    if (selectedCheckboxes.length !== 8) return false;
+    
+    // Rule 2: Within budget
+    if (totalCost > budget) return false;
+    
+    // Rule 3: Team diversity (at least 5 different teams)
+    const teamCounts = {};
+    selectedCheckboxes.forEach(cb => {
+        const card = cb.closest('.player-card');
+        const team = card.dataset.team || 'Unknown';
+        teamCounts[team] = (teamCounts[team] || 0) + 1;
+    });
+    
+    if (Object.keys(teamCounts).length < 5) return false;
+    
+    // Rule 4: Position requirements
+    const positionCounts = { GK: 0, D: 0, M: 0, F: 0 };
+    selectedCheckboxes.forEach(cb => {
+        const card = cb.closest('.player-card');
+        const position = card.dataset.position || 'Unknown';
+        if (positionCounts.hasOwnProperty(position)) {
+            positionCounts[position]++;
+        }
+    });
+    
+    // At least 2 GK, 2 D, 1 M, 2 F
+    if (positionCounts.GK < 2) return false;
+    if (positionCounts.D < 2) return false;
+    if (positionCounts.M < 1) return false;
+    if (positionCounts.F < 2) return false;
+    
+    return true;
+}
+
+// Initialize performance indicators for all player cards
+function initializeAllPerformanceIndicators() {
+    const playerCards = document.querySelectorAll('.player-card');
+    playerCards.forEach((card) => {
+        const playerNameElement = card.querySelector('.player-name');
+        if (playerNameElement) {
+            const playerName = playerNameElement.textContent.trim();
+            // Remove any OVR rating from the name (e.g., "John Doe (85)" -> "John Doe")
+            const cleanPlayerName = playerName.replace(/\s*\(\d+\)\s*$/, '');
+            
+            // Only add performance indicator and basic stats from local data (no API calls)
+            addPerformanceIndicator(card, cleanPlayerName);
+            addBasicMiniStats(card, cleanPlayerName);
+            // Mark as loaded to avoid duplicate loading
+            card.dataset.performanceLoaded = 'true';
+        }
+    });
+}
+
+function setupWeeklyTeamSelection() {
+    const weeklyCheckboxes = document.querySelectorAll('input[name="starting_team"]');
+    const weeklyBtn = document.getElementById('select-weekly-btn');
+    const weeklyInput = document.getElementById('starting_team_input');
+    
+    if (weeklyCheckboxes.length === 0) return;
+    
+    weeklyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateWeeklyTeam);
+    });
+    
+    function updateWeeklyTeam() {
+        const selected = Array.from(weeklyCheckboxes).filter(cb => cb.checked);
+        const selectedPlayers = selected.map(cb => cb.value);
+        
+        if (weeklyInput) weeklyInput.value = selectedPlayers.join(',');
+        if (weeklyBtn) weeklyBtn.disabled = selected.length !== 5;
+    }
+}
+
+function setupSubstitutions() {
+    const outCheckboxes = document.querySelectorAll('input[name="players_out"]');
+    const inCheckboxes = document.querySelectorAll('input[name="players_in"]');
+    const subBtn = document.getElementById('substitute-btn');
+    const outInput = document.getElementById('players_out_input');
+    const inInput = document.getElementById('players_in_input');
+    
+    if (outCheckboxes.length === 0) return;
+    
+    function updateSubstitutions() {
+        const selectedOut = Array.from(outCheckboxes).filter(cb => cb.checked);
+        const selectedIn = Array.from(inCheckboxes).filter(cb => cb.checked);
+        
+        if (outInput) outInput.value = selectedOut.map(cb => cb.value).join(',');
+        if (inInput) inInput.value = selectedIn.map(cb => cb.value).join(',');
+        
+        if (subBtn) {
+            subBtn.disabled = !(selectedOut.length > 0 && selectedOut.length === selectedIn.length);
+        }
+    }
+    
+    outCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSubstitutions);
+    });
+    
+    inCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSubstitutions);
+    });
+}
+
+function setupCaptainSelection() {
+    const captainRadios = document.querySelectorAll('input[name="captain"]');
+    const captainBtn = document.getElementById('set-captain-btn');
+    
+    if (captainRadios.length === 0) return;
+    
+    captainRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (captainBtn) captainBtn.disabled = false;
+        });
+    });
+}
+
+function setupTransfers() {
+    const transferOutRadios = document.querySelectorAll('input[name="player_out"]');
+    const transferInRadios = document.querySelectorAll('input[name="player_in"]');
+    const transferBtn = document.getElementById('transfer-btn');
+    const transferCostInfo = document.getElementById('transfer-cost-info');
+    
+    if (transferOutRadios.length === 0) return;
+    
+    function updateTransfer() {
+        const selectedOut = Array.from(transferOutRadios).find(r => r.checked);
+        const selectedIn = Array.from(transferInRadios).find(r => r.checked);
+        
+        if (transferBtn) {
+            transferBtn.disabled = !(selectedOut && selectedIn);
+        }
+        
+        if (selectedOut && selectedIn && transferCostInfo) {
+            const outCard = selectedOut.closest('.player-card');
+            const inCard = selectedIn.closest('.player-card');
+            const outCost = parseFloat(outCard.querySelector('.cost').textContent.replace('🪙', ''));
+            const inCost = parseFloat(inCard.querySelector('.cost').textContent.replace('🪙', ''));
+            const difference = inCost - outCost;
+            
+            transferCostInfo.innerHTML = `
+                <p>Transfer Cost: ${difference >= 0 ? '+' : ''}🪙${difference.toFixed(1)}</p>
+                <p>New Balance: 🪙${({{ fantasy_user.total_balance }} - difference).toFixed(1)}</p>
+            `;
+        }
+    }
+    
+    transferOutRadios.forEach(radio => {
+        radio.addEventListener('change', updateTransfer);
+    });
+    
+    transferInRadios.forEach(radio => {
+        radio.addEventListener('change', updateTransfer);
+    });
+}
+
+// Search and Filter Functionality
+function setupSearchAndFilter() {
+    // Main player selection search and filter
+    setupPlayerSearchFilter(
+        'player-search',
+        'position-filter', 
+        'team-filter',
+        'price-filter',
+        'clear-filters',
+        'players-grid',
+        'no-results'
+    );
+    
+    // Squad search and filter
+    setupPlayerSearchFilter(
+        'squad-search',
+        'squad-position-filter',
+        null,
+        null,
+        'clear-squad-filters',
+        'squad-grid',
+        'squad-no-results'
+    );
+    
+    // Transfer out search and filter
+    setupPlayerSearchFilter(
+        'transfer-out-search',
+        'transfer-out-position-filter',
+        null,
+        null,
+        'clear-transfer-out-filters',
+        'transfer-out-grid',
+        'transfer-out-no-results'
+    );
+    
+    // Transfer in search and filter
+    setupPlayerSearchFilter(
+        'transfer-in-search',
+        'transfer-in-position-filter',
+        'transfer-in-team-filter',
+        'transfer-in-price-filter',
+        'clear-transfer-in-filters',
+        'transfer-in-grid',
+        'transfer-in-no-results'
+    );
+}
+
+function setupPlayerSearchFilter(searchId, positionFilterId, teamFilterId, priceFilterId, clearButtonId, gridId, noResultsId) {
+    const searchInput = document.getElementById(searchId);
+    const positionFilter = document.getElementById(positionFilterId);
+    const teamFilter = teamFilterId ? document.getElementById(teamFilterId) : null;
+    const priceFilter = priceFilterId ? document.getElementById(priceFilterId) : null;
+    const clearButton = document.getElementById(clearButtonId);
+    const grid = document.getElementById(gridId);
+    const noResults = document.getElementById(noResultsId);
+    
+    if (!searchInput || !grid) {
+        return; // Silently skip if elements missing
+    }
+    function filterPlayers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedPosition = positionFilter ? positionFilter.value : '';
+        const selectedTeam = teamFilter ? teamFilter.value : '';
+        const selectedPriceRange = priceFilter ? priceFilter.value : '';
+        
+        // Add visual feedback for active search
+        if (searchTerm || selectedPosition || selectedTeam || selectedPriceRange) {
+            searchInput.classList.add('search-active');
+        } else {
+            searchInput.classList.remove('search-active');
+        }
+        
+        const playerCards = grid.querySelectorAll('.player-card');
+        let visibleCount = 0;
+        
+        
+        playerCards.forEach((card, index) => {
+            const playerName = (card.dataset.name || '').toLowerCase();
+            const playerPosition = card.dataset.position || '';
+            const playerTeam = card.dataset.team || '';
+            const playerCost = parseFloat(card.dataset.cost || '0');
+            
+            let shouldShow = true;
+            
+            // Search filter
+            if (searchTerm && !playerName.includes(searchTerm)) {
+                shouldShow = false;
+            }
+            
+            // Position filter
+            if (selectedPosition && playerPosition !== selectedPosition) {
+                shouldShow = false;
+            }
+            
+            // Team filter
+            if (selectedTeam && playerTeam !== selectedTeam) {
+                shouldShow = false;
+            }
+            
+            // Price filter
+            if (selectedPriceRange) {
+                if (selectedPriceRange === '15+') {
+                    if (playerCost < 15) {
+                        shouldShow = false;
+                    }
+                } else {
+                    const [min, max] = selectedPriceRange.split('-').map(val => parseFloat(val));
+                    if (playerCost < min || playerCost >= max) {
+                        shouldShow = false;
+                    }
+                }
+            }
+            
+            if (shouldShow) {
+                card.classList.remove('hidden');
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
+                card.style.display = 'none';
+            }
+        });
+        
+        if (noResults) {
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+    }
+    
+    function clearFilters() {
+        searchInput.value = '';
+        searchInput.classList.remove('search-active');
+        if (positionFilter) positionFilter.value = '';
+        if (teamFilter) teamFilter.value = '';
+        if (priceFilter) priceFilter.value = '';
+        filterPlayers();
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', filterPlayers);
+    if (positionFilter) positionFilter.addEventListener('change', filterPlayers);
+    if (teamFilter) teamFilter.addEventListener('change', filterPlayers);
+    if (priceFilter) priceFilter.addEventListener('change', filterPlayers);
+    if (clearButton) clearButton.addEventListener('click', clearFilters);
+}
+
+// Mobile-specific optimizations (run once)
+function setupMobileOptimizations() {
+    // Check if already initialized to prevent duplicate listeners
+    if (document.body.dataset.mobileOptimized) return;
+    document.body.dataset.mobileOptimized = 'true';
+    
+    // Prevent double-tap zoom on buttons and interactive elements
+    const interactiveElements = document.querySelectorAll('.btn, .player-card, .option, .player-info-btn, .remove-player');
+    interactiveElements.forEach(element => {
+        element.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            element.click();
+        }, { passive: false });
+    });
+    
+    // Improve scrolling performance for large lists
+    const scrollableElements = document.querySelectorAll('.players-grid, .options-container, #selected-players');
+    scrollableElements.forEach(element => {
+        element.style.webkitOverflowScrolling = 'touch';
+    });
+    
+    // Add visual feedback for touch interactions
+    const touchElements = document.querySelectorAll('.player-card, .btn, .option');
+    touchElements.forEach(element => {
+        element.addEventListener('touchstart', function() {
+            this.style.opacity = '0.7';
+        });
+        
+        element.addEventListener('touchend', function() {
+            setTimeout(() => {
+                this.style.opacity = '';
+            }, 150);
+        });
+        
+        element.addEventListener('touchcancel', function() {
+            this.style.opacity = '';
+        });
+    });
+    
+    // Optimize search input for mobile
+    const searchInputs = document.querySelectorAll('.search-input');
+    searchInputs.forEach(input => {
+        // Prevent zoom on focus for iOS
+        input.addEventListener('touchstart', function() {
+            this.style.fontSize = '16px';
+        });
+        
+        // Add mobile-friendly clear functionality
+        input.addEventListener('input', function() {
+            if (this.value) {
+                if (!this.parentElement.querySelector('.clear-search-btn')) {
+                    const clearBtn = document.createElement('button');
+                    clearBtn.type = 'button';
+                    clearBtn.className = 'clear-search-btn';
+                    clearBtn.innerHTML = '×';
+                    clearBtn.style.cssText = `
+                        position: absolute;
+                        right: 14px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background: none;
+                        border: none;
+                        font-size: 18px;
+                        color: #999;
+                        cursor: pointer;
+                        z-index: 2;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    clearBtn.addEventListener('click', () => {
+                        input.value = '';
+                        input.dispatchEvent(new Event('input'));
+                        clearBtn.remove();
+                    });
+                    this.parentElement.appendChild(clearBtn);
+                }
+            } else {
+                const clearBtn = this.parentElement.querySelector('.clear-search-btn');
+                if (clearBtn) clearBtn.remove();
+            }
+        });
+    });
+    
+    // Improve horizontal scrolling for navigation tabs on mobile
+    const optionsContainer = document.querySelector('.options-container');
+    if (optionsContainer && window.innerWidth <= 768) {
+        let isScrolling = false;
+        optionsContainer.addEventListener('scroll', function() {
+            if (!isScrolling) {
+                window.requestAnimationFrame(function() {
+                    isScrolling = false;
+                });
+                isScrolling = true;
+            }
+        });
+    }
+    
+    // Add haptic feedback for supported devices
+    function addHapticFeedback(element) {
+        element.addEventListener('touchstart', function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(10); // Very short vibration
+            }
+        });
+    }
+    
+    const hapticElements = document.querySelectorAll('.btn, .player-card input[type="checkbox"], .player-card input[type="radio"]');
+    hapticElements.forEach(addHapticFeedback);
+    
+    // Player Info Modal Functionality
+    initializePlayerModal();
+    
+    // Initialize new features
+    initializePlayerComparison();
+    initializeDragAndDrop();
+    
+    // Initialize FAB
+    const fabButton = DOMCache.get('quickCompareFab');
+    if (fabButton) {
+        fabButton.addEventListener('click', function() {
+            const modal = DOMCache.get('playerComparisonModal');
+            if (modal) modal.style.display = 'block';
+        });
+    }
+}
+
+// Player Comparison Functionality
+function initializePlayerComparison() {
+    const comparisonModal = DOMCache.get('playerComparisonModal');
+    const comparisonClose = document.querySelector('.comparison-close');
+    const comparePlayer1 = DOMCache.get('comparePlayer1');
+    const comparePlayer2 = DOMCache.get('comparePlayer2');
+    
+    if (!comparisonModal || !comparePlayer1 || !comparePlayer2) return;
+    
+    // Close modal events
+    comparisonClose.addEventListener('click', closeComparisonModal);
+    comparisonModal.addEventListener('click', function(e) {
+        if (e.target === comparisonModal) {
+            closeComparisonModal();
+        }
+    });
+    
+    // Populate player dropdowns
+    populatePlayerDropdowns();
+    
+    // Listen for player selection changes
+    comparePlayer1.addEventListener('change', handlePlayerSelection);
+    comparePlayer2.addEventListener('change', handlePlayerSelection);
+    
+    // Add compare buttons to player cards
+    addCompareButtons();
+    
+    function populatePlayerDropdowns() {
+        const playerCards = document.querySelectorAll('.player-card');
+        const players = [];
+        
+        playerCards.forEach(card => {
+            const nameElement = card.querySelector('.player-name');
+            if (nameElement) {
+                const playerName = nameElement.textContent.trim();
+                players.push(playerName);
+            }
+        });
+        
+        // Clear and populate dropdowns
+        [comparePlayer1, comparePlayer2].forEach(select => {
+            select.innerHTML = '<option value="">Choose a player...</option>';
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player;
+                option.textContent = player;
+                select.appendChild(option);
+            });
+        });
+    }
+    
+    function addCompareButtons() {
+        const playerCards = document.querySelectorAll('.player-card');
+        playerCards.forEach(card => {
+            if (!card.querySelector('.quick-compare-btn')) {
+                const compareBtn = document.createElement('button');
+                compareBtn.className = 'quick-compare-btn';
+                compareBtn.textContent = 'Compare';
+                compareBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const playerName = card.querySelector('.player-name').textContent.trim();
+                    openComparisonModal(playerName);
+                });
+                card.appendChild(compareBtn);
+            }
+        });
+    }
+    
+    function openComparisonModal(preSelectedPlayer = null) {
+        comparisonModal.style.display = 'block';
+        if (preSelectedPlayer) {
+            comparePlayer1.value = preSelectedPlayer;
+            handlePlayerSelection();
+        }
+    }
+    
+    function closeComparisonModal() {
+        comparisonModal.style.display = 'none';
+        document.getElementById('comparisonGrid').style.display = 'none';
+        document.getElementById('comparisonSummary').style.display = 'none';
+        comparePlayer1.value = '';
+        comparePlayer2.value = '';
+    }
+    
+    async function handlePlayerSelection() {
+        const player1 = comparePlayer1.value;
+        const player2 = comparePlayer2.value;
+        
+        if (player1 && player2 && player1 !== player2) {
+            try {
+                const [data1, data2] = await Promise.all([
+                    fetch(`/api/players/${encodeURIComponent(player1)}`).then(r => r.json()),
+                    fetch(`/api/players/${encodeURIComponent(player2)}`).then(r => r.json())
+                ]);
+                
+                displayComparison(data1, data2);
+            } catch (error) {
+                console.error('Error fetching comparison data:', error);
+            }
+        }
+    }
+    
+    function displayComparison(data1, data2) {
+        // Show comparison grid
+        document.getElementById('comparisonGrid').style.display = 'grid';
+        
+        // Populate player 1
+        document.getElementById('comparisonName1').textContent = data1.name;
+        document.getElementById('comparisonDetails1').innerHTML = 
+            `${data1.team} | ${data1.position} | OVR: ${data1.overall}`;
+        
+        // Populate player 2
+        document.getElementById('comparisonName2').textContent = data2.name;
+        document.getElementById('comparisonDetails2').innerHTML = 
+            `${data2.team} | ${data2.position} | OVR: ${data2.overall}`;
+        
+        // Create comparison stats
+        const stats = [
+            { label: 'Overall', key: 'overall', value1: data1.overall, value2: data2.overall },
+            { label: 'Attack', key: 'attack', value1: data1.ratings.attack, value2: data2.ratings.attack },
+            { label: 'Assist', key: 'assist', value1: data1.ratings.assist, value2: data2.ratings.assist },
+            { label: 'Defense', key: 'defense', value1: data1.ratings.defense, value2: data2.ratings.defense },
+            { label: 'Goals', key: 'goals', value1: data1.season_stats.goals, value2: data2.season_stats.goals },
+            { label: 'Assists', key: 'assists', value1: data1.season_stats.assists, value2: data2.season_stats.assists },
+            { label: 'POTM', key: 'potm', value1: data1.potm_count, value2: data2.potm_count },
+            { label: 'Matches', key: 'matches', value1: data1.season_stats.matches_played, value2: data2.season_stats.matches_played }
+        ];
+        
+        // Generate stats HTML
+        const stats1HTML = stats.map(stat => {
+            const isWinner = stat.value1 > stat.value2;
+            return `
+                <div class="comparison-stat ${isWinner ? 'winner' : ''}">
+                    <div class="comparison-stat-label">${stat.label}</div>
+                    <div class="comparison-stat-value">${stat.value1}</div>
+                </div>
+            `;
+        }).join('');
+        
+        const stats2HTML = stats.map(stat => {
+            const isWinner = stat.value2 > stat.value1;
+            return `
+                <div class="comparison-stat ${isWinner ? 'winner' : ''}">
+                    <div class="comparison-stat-label">${stat.label}</div>
+                    <div class="comparison-stat-value">${stat.value2}</div>
+                </div>
+            `;
+        }).join('');
+        
+        document.getElementById('comparisonStats1').innerHTML = stats1HTML;
+        document.getElementById('comparisonStats2').innerHTML = stats2HTML;
+        
+        // Generate recommendation
+        generateRecommendation(data1, data2, stats);
+        document.getElementById('comparisonSummary').style.display = 'block';
+    }
+    
+    function generateRecommendation(data1, data2, stats) {
+        let player1Wins = 0;
+        let player2Wins = 0;
+        
+        stats.forEach(stat => {
+            if (stat.value1 > stat.value2) player1Wins++;
+            else if (stat.value2 > stat.value1) player2Wins++;
+        });
+        
+        const recommendedPlayer = player1Wins > player2Wins ? data1 : data2;
+        const winCount = player1Wins > player2Wins ? player1Wins : player2Wins;
+        
+        document.getElementById('comparisonRecommendation').innerHTML = `
+            <div class="recommendation-player">${recommendedPlayer.name}</div>
+            <div class="recommendation-reason">
+                Recommended based on superior performance in ${winCount} out of ${stats.length} key metrics.
+                ${recommendedPlayer.name} offers better value with stronger overall statistics.
+            </div>
+        `;
+    }
+}
+
+// Drag and Drop Functionality
+function initializeDragAndDrop() {
+    const formationPlayers = document.querySelectorAll('.formation-player');
+    const formationLayers = document.querySelectorAll('.formation-layer');
+    
+    formationPlayers.forEach(player => {
+        if (!player.classList.contains('empty-slot')) {
+            player.draggable = true;
+            player.classList.add('draggable');
+            
+            player.addEventListener('dragstart', handleDragStart);
+            player.addEventListener('dragend', handleDragEnd);
+        }
+    });
+    
+    formationLayers.forEach(layer => {
+        layer.addEventListener('dragover', handleDragOver);
+        layer.addEventListener('drop', handleDrop);
+        layer.addEventListener('dragenter', handleDragEnter);
+        layer.addEventListener('dragleave', handleDragLeave);
+    });
+    
+    let draggedElement = null;
+    
+    function handleDragStart(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.outerHTML);
+    }
+    
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        draggedElement = null;
+        
+        // Clean up drag states
+        document.querySelectorAll('.drag-over').forEach(el => {
+            el.classList.remove('drag-over');
+        });
+        document.querySelectorAll('.drop-target').forEach(el => {
+            el.classList.remove('drop-target');
+        });
+    }
+    
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    
+    function handleDragEnter(e) {
+        this.classList.add('drag-over');
+    }
+    
+    function handleDragLeave(e) {
+        this.classList.remove('drag-over');
+    }
+    
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        
+        this.classList.remove('drag-over');
+        
+        if (draggedElement && this !== draggedElement.parentElement) {
+            const draggedPosition = draggedElement.querySelector('.formation-player-position')?.textContent;
+            const targetLayerClass = Array.from(this.classList).find(c => 
+                ['goalkeepers', 'defenders', 'midfielders', 'forwards'].includes(c)
+            );
+            
+            // Check if position is compatible
+            if (isPositionCompatible(draggedPosition, targetLayerClass)) {
+                // Find empty slot or swap with existing player
+                const emptySlot = this.querySelector('.formation-player.empty-slot');
+                if (emptySlot) {
+                    // Replace empty slot
+                    this.replaceChild(draggedElement, emptySlot);
+                } else {
+                    // Swap with existing player (optional)
+                    this.appendChild(draggedElement);
+                }
+                
+                // Update formation in backend (you'll need to implement this)
+                updateFormation();
+            }
+        }
+        
+        return false;
+    }
+    
+    function isPositionCompatible(position, layer) {
+        const compatibility = {
+            'GK': ['goalkeepers'],
+            'D': ['defenders'],
+            'M': ['midfielders'],
+            'F': ['forwards']
+        };
+        
+        return compatibility[position]?.includes(layer) || false;
+    }
+    
+    function updateFormation() {
+        // TODO: Implement backend formation update
+        // For now, formation changes are visual only
+    }
+}
+
+// On-demand Performance Data Loading
+function loadPlayerPerformanceData(playerName) {
+    // Find all player cards with this player name
+    const playerCards = document.querySelectorAll('.player-card');
+    
+    playerCards.forEach(async (card) => {
+        const cardPlayerName = card.querySelector('.player-name')?.textContent.trim();
+        if (cardPlayerName === playerName) {
+            // Only load data if not already loaded
+            if (!card.dataset.performanceLoaded) {
+                addPerformanceIndicator(card, playerName);
+                await addMiniStats(card, playerName);
+                // Mark as loaded to avoid duplicate loading
+                card.dataset.performanceLoaded = 'true';
+            }
+        }
+    });
+}
+
+// Performance Indicators (kept for individual use)
+function addPerformanceIndicator(card, playerName) {
+    if (!card.querySelector('.player-performance-indicator')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'player-performance-indicator';
+        
+        // Get performance rating
+        const performance = calculatePerformance(playerName);
+        indicator.classList.add(performance);
+        
+        card.appendChild(indicator);
+    }
+}
+
+async function addMiniStats(card, playerName) {
+    const playerInfo = card.querySelector('.player-info');
+    if (playerInfo && !playerInfo.querySelector('.player-stats-mini')) {
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'player-stats-mini';
+        
+        // Get mini stats (with API fallback for detailed views)
+        const stats = await getMiniStats(playerName);
+        stats.forEach(stat => {
+            const statElement = document.createElement('div');
+            statElement.className = 'stat-mini';
+            statElement.textContent = stat;
+            statsContainer.appendChild(statElement);
+        });
+        
+        playerInfo.appendChild(statsContainer);
+    }
+}
+
+function addBasicMiniStats(card, playerName) {
+    const playerInfo = card.querySelector('.player-info');
+    if (playerInfo && !playerInfo.querySelector('.player-stats-mini')) {
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'player-stats-mini';
+        
+        // Get basic stats from local data only (no API calls)
+        const stats = getBasicMiniStats(playerName);
+        stats.forEach(stat => {
+            const statElement = document.createElement('div');
+            statElement.className = 'stat-mini';
+            statElement.textContent = stat;
+            statsContainer.appendChild(statElement);
+        });
+        
+        playerInfo.appendChild(statsContainer);
+    }
+}
+
+function calculatePerformance(playerName) {
+    const player = findPlayerByName(playerName);
+    
+    if (!player) {
+        return 'average';
+    }
+    
+    // Get data from player object
+    const overall = parseInt(player['OVR Rating'] || 0);
+    const goals = parseInt(player['Goals'] || 0);
+    const assists = parseInt(player['Assists'] || 0);
+    const saves = parseInt(player['Saves'] || 0);
+    const position = player['Primary_Position'] || '';
+    
+    // Performance rating based on overall rating and contribution
+    const totalContribution = goals + assists + (position === 'GK' ? saves : 0);
+    
+    // Different thresholds for different positions
+    if (position === 'GK') {
+        // Goalkeeper performance based on saves and overall
+        if (overall >= 85 || saves >= 50) {
+            return 'excellent';
+        } else if (overall >= 75 || saves >= 30) {
+            return 'good';
+        } else if (overall >= 65 || saves >= 15) {
+            return 'average';
+        } else {
+            return 'poor';
+        }
+    } else {
+        // Outfield player performance
+        if (overall >= 85 || totalContribution >= 15) {
+            return 'excellent';
+        } else if (overall >= 80 || totalContribution >= 10) {
+            return 'good';
+        } else if (overall >= 75 || totalContribution >= 5) {
+            return 'average';
+        } else {
+            return 'poor';
+        }
+    }
+}
+
+async function getMiniStats(playerName) {
+    const player = findPlayerByName(playerName);
+    if (player) {
+        return [
+            `${player.Goals || 0}G`,
+            `${player.Assists || 0}A`,
+            `${player.Saves || 0}S`
+        ];
+    }
+    
+    // If not found in allPlayersData, try API fallback
+    try {
+        const response = await fetch(`/api/players/${encodeURIComponent(playerName)}`);
+        if (response.ok) {
+            const data = await response.json();
+            return [
+                `${data.season_stats.goals || 0}G`,
+                `${data.season_stats.assists || 0}A`,
+                `${data.season_stats.saves || 0}S`
+            ];
+        }
+    } catch (error) {
+        // Silently handle API errors in production
+    }
+    
+    // Fallback if both methods fail
+    return ['0G', '0A', '0S'];
+}
+
+function getBasicMiniStats(playerName) {
+    // Only use local data, no API calls
+    const player = findPlayerByName(playerName);
+    if (player) {
+        return [
+            `${player.Goals || 0}G`,
+            `${player.Assists || 0}A`,
+            `${player.Saves || 0}S`
+        ];
+    }
+    
+    // Fallback for players not found in local data
+    return ['0G', '0A', '0S'];
+}
+
+
+function initializePlayerModal() {
+    const modal = document.getElementById('playerModal');
+    const modalClose = document.querySelector('.player-modal-close');
+    const modalLoading = document.querySelector('.player-modal-loading');
+    const modalData = document.querySelector('.player-modal-data');
+    
+    // Close modal when clicking X
+    modalClose.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        }
+    });
+    
+    // Add click handlers to all player info buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.player-info-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const button = e.target.closest('.player-info-btn');
+            const playerName = button.getAttribute('data-player-name');
+            openPlayerModal(playerName);
+        }
+    });
+    
+    // Add click handlers to player cards in My Team section
+    document.addEventListener('click', function(e) {
+        const playerCard = e.target.closest('.player-card');
+        if (playerCard && playerCard.closest('#my-team, .starting-team-grid, .bench-grid')) {
+            // Check if click is not on a checkbox, radio button, or other interactive element
+            if (!e.target.matches('input, button, .remove-player, .player-info-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Get player name from the card
+                const playerNameElement = playerCard.querySelector('.player-name');
+                if (playerNameElement) {
+                    const playerName = playerNameElement.textContent.trim();
+                    openPlayerModal(playerName);
+                }
+            }
+        }
+    });
+    
+    function openPlayerModal(playerName) {
+        modal.style.display = 'block';
+        modalLoading.style.display = 'block';
+        modalData.style.display = 'none';
+        
+        document.getElementById('modalPlayerName').textContent = playerName;
+        
+        // Load performance indicators for this specific player if not already loaded
+        loadPlayerPerformanceData(playerName);
+        
+        // Fetch player data
+        fetch(`/api/players/${encodeURIComponent(playerName)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateModalData(data);
+                modalLoading.style.display = 'none';
+                modalData.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching player data:', error);
+                modalLoading.innerHTML = `
+                    <div class="error-message">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <p>Error loading player information</p>
+                        <p class="error-details">${error.message}</p>
+                    </div>
+                `;
+            });
+    }
+    
+    function populateModalData(data) {
+        // Basic info
+        document.getElementById('modalPlayerTeam').textContent = data.team;
+        document.getElementById('modalPlayerPosition').textContent = data.position;
+        document.getElementById('modalPlayerOverall').textContent = data.overall;
+        
+        // Ratings
+        document.getElementById('modalAttackRating').textContent = data.ratings.attack;
+        document.getElementById('modalAssistRating').textContent = data.ratings.assist;
+        document.getElementById('modalDefenseRating').textContent = data.ratings.defense;
+        document.getElementById('modalGoalkeepingRating').textContent = data.ratings.goalkeeping;
+        
+        // Season stats
+        document.getElementById('modalGoals').textContent = data.season_stats.goals;
+        document.getElementById('modalAssists').textContent = data.season_stats.assists;
+        document.getElementById('modalSaves').textContent = data.season_stats.saves;
+        document.getElementById('modalMatches').textContent = data.season_stats.matches_played;
+        document.getElementById('modalPOTM').textContent = data.potm_count;
+        document.getElementById('modalRecord').textContent = data.season_stats.record;
+        
+        // Recent matches
+        const recentMatchesContainer = document.querySelector('.recent-matches-container');
+        const recentMatchesSection = document.getElementById('modalRecentMatches');
+        
+        if (data.recent_matches && data.recent_matches.length > 0) {
+            recentMatchesContainer.innerHTML = data.recent_matches.map(match => `
+                <div class="recent-match">
+                    <div class="match-info">
+                        <span class="match-teams">${match['My Team']} vs ${match.Opponent}</span>
+                        <span class="match-season">S${match.Season}</span>
+                    </div>
+                    <div class="match-stats">
+                        <span class="match-stat">G: ${match.G || 0}</span>
+                        <span class="match-stat">A: ${match.A || 0}</span>
+                        <span class="match-stat">S: ${match.S || 0}</span>
+                        ${match.POTM === 1 ? '<span class="potm-badge">POTM</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+            recentMatchesSection.style.display = 'block';
+        } else {
+            recentMatchesSection.style.display = 'none';
+        }
+        
+        // Awards
+        const awardsContainer = document.querySelector('.awards-container');
+        const awardsSection = document.getElementById('modalAwards');
+        
+        if (data.awards && data.awards.length > 0) {
+            awardsContainer.innerHTML = data.awards.map(award => 
+                `<div class="award-item">${award}</div>`
+            ).join('');
+            awardsSection.style.display = 'block';
+        } else {
+            awardsSection.style.display = 'none';
+        }
+    }
+    
+    function closeModal() {
+        modal.style.display = 'none';
+        modalLoading.style.display = 'block';
+        modalData.style.display = 'none';
+        modalLoading.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p>Loading player information...</p>
+        `;
+    }
+}
+
+// Set up all interactions when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    {% if not has_team %}
+        showContent('create-team'); // Show team creation if user doesn't have a team
+    {% elif has_team and not has_starting_team %}
+        showContent('select-weekly'); // Show weekly selection if team exists but no starting team
+    {% else %}
+        showContent('my-team'); // Show My Team if user has a complete team
+    {% endif %}
+    
+    setupTeamCreation();
+    setupWeeklyTeamSelection();
+    setupSearchAndFilter();
+    setupSubstitutions();
+    setupCaptainSelection();
+    setupTransfers();
+    setupMobileOptimizations();
+    
+    // Initialize performance indicators for all player cards
+    initializeAllPerformanceIndicators();
+    
+    // Add loading states to forms
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn && !submitBtn.disabled) {
+                // Store original button content
+                submitBtn.dataset.originalText = submitBtn.textContent;
+                
+                // Add loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+                submitBtn.classList.add('loading');
+                
+                // Re-enable after a delay if form fails to submit
+                setTimeout(() => {
+                    if (submitBtn.classList.contains('loading')) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = submitBtn.dataset.originalText;
+                        submitBtn.classList.remove('loading');
+                    }
+                }, 10000); // 10 second timeout
+            }
+        });
+    });
+    
+    // Auto-hide success messages after 5 seconds
+    const successAlert = document.querySelector('.alert-success');
+    if (successAlert) {
+        setTimeout(() => {
+            successAlert.style.opacity = '0';
+            successAlert.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+            }, 300);
+        }, 5000);
+    }
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // ESC to close modals
+        if (e.key === 'Escape') {
+            // Close player modal
+            const playerModal = document.getElementById('playerModal');
+            if (playerModal && playerModal.style.display === 'block') {
+                playerModal.style.display = 'none';
+                e.preventDefault();
+            }
+            
+            // Close comparison modal
+            const comparisonModal = document.getElementById('playerComparisonModal');
+            if (comparisonModal && comparisonModal.style.display === 'block') {
+                comparisonModal.style.display = 'none';
+                e.preventDefault();
+            }
+        }
+        
+        // Ctrl/Cmd + K for quick search focus
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            const searchInput = document.querySelector('.search-input:not([style*="display: none"])');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+                e.preventDefault();
+            }
+        }
+        
+        // Ctrl/Cmd + Enter to compare players (if comparison modal is open)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            const comparisonModal = document.getElementById('playerComparisonModal');
+            if (comparisonModal && comparisonModal.style.display === 'block') {
+                const player1 = document.getElementById('comparePlayer1').value;
+                const player2 = document.getElementById('comparePlayer2').value;
+                if (player1 && player2) {
+                    // Trigger comparison
+                    document.getElementById('comparePlayer2').dispatchEvent(new Event('change'));
+                    e.preventDefault();
+                }
+            }
+        }
+    });
+    
+    // Initialize mobile search enhancements
+    document.querySelectorAll('input[type="text"]').forEach(input => {
+        // Prevent zoom on focus for iOS
+        input.addEventListener('touchstart', function() {
+            this.style.fontSize = '16px';
+        });
+        
+        // Add mobile-friendly clear functionality
+        input.addEventListener('input', function() {
+            if (this.value) {
+                if (!this.parentElement.querySelector('.clear-search-btn')) {
+                    const clearBtn = document.createElement('button');
+                    clearBtn.type = 'button';
+                    clearBtn.className = 'clear-search-btn';
+                    clearBtn.innerHTML = '×';
+                    clearBtn.style.cssText = `
+                        position: absolute;
+                        right: 14px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background: none;
+                        border: none;
+                        font-size: 18px;
+                        color: #999;
+                        cursor: pointer;
+                        z-index: 2;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    clearBtn.addEventListener('click', () => {
+                        this.value = '';
+                        this.focus();
+                        clearBtn.remove();
+                    });
+                    this.parentElement.appendChild(clearBtn);
+                }
+            } else {
+                const clearBtn = this.parentElement.querySelector('.clear-search-btn');
+                if (clearBtn) clearBtn.remove();
+            }
+        });
+    });
+});
 </script>
 
+<!-- Player Info Modal -->
+<div id="playerModal" class="player-modal">
+    <div class="player-modal-content">
+        <div class="player-modal-header">
+            <h3 id="modalPlayerName">Loading...</h3>
+            <span class="player-modal-close">&times;</span>
+        </div>
+        <div class="player-modal-body">
+            <div class="player-modal-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading player information...</p>
+            </div>
+            <div class="player-modal-data" style="display: none;">
+                <div class="player-basic-info">
+                    <div class="player-team-position">
+                        <span id="modalPlayerTeam">Team</span> | 
+                        <span id="modalPlayerPosition">Position</span>
+                    </div>
+                    <div class="player-overall">
+                        <span class="ovr-label">OVR:</span>
+                        <span id="modalPlayerOverall">0</span>
+                    </div>
+                </div>
+                
+                <div class="player-ratings-grid">
+                    <h4>Player Ratings</h4>
+                    <div class="ratings-container">
+                        <div class="rating-item">
+                            <span class="rating-label">ATT</span>
+                            <span id="modalAttackRating" class="rating-value">0</span>
+                        </div>
+                        <div class="rating-item">
+                            <span class="rating-label">AST</span>
+                            <span id="modalAssistRating" class="rating-value">0</span>
+                        </div>
+                        <div class="rating-item">
+                            <span class="rating-label">DEF</span>
+                            <span id="modalDefenseRating" class="rating-value">0</span>
+                        </div>
+                        <div class="rating-item">
+                            <span class="rating-label">GLK</span>
+                            <span id="modalGoalkeepingRating" class="rating-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="player-season-stats">
+                    <h4>Season Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Goals</span>
+                            <span id="modalGoals" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Assists</span>
+                            <span id="modalAssists" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Saves</span>
+                            <span id="modalSaves" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Matches</span>
+                            <span id="modalMatches" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">POTM</span>
+                            <span id="modalPOTM" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Record</span>
+                            <span id="modalRecord" class="stat-value">N/A</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="player-recent-matches" id="modalRecentMatches" style="display: none;">
+                    <h4>Recent Matches</h4>
+                    <div class="recent-matches-container">
+                        <!-- Recent matches will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="player-awards" id="modalAwards" style="display: none;">
+                    <h4>Awards</h4>
+                    <div class="awards-container">
+                        <!-- Awards will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Floating Action Button for Quick Compare -->
+<button class="fab" id="quickCompareFab" title="Compare Players">
+    <i class="fa fa-balance-scale"></i>
+</button>
+
+<!-- Player Comparison Modal -->
+<div id="playerComparisonModal" class="player-comparison-modal">
+    <div class="player-comparison-content">
+        <div class="comparison-header">
+            <h3>Player Comparison</h3>
+            <span class="comparison-close">&times;</span>
+        </div>
+        <div class="comparison-body">
+            <div class="comparison-player-selector">
+                <div class="player-select-dropdown">
+                    <label for="comparePlayer1">Select First Player:</label>
+                    <select id="comparePlayer1">
+                        <option value="">Choose a player...</option>
+                    </select>
+                </div>
+                <div class="player-select-dropdown">
+                    <label for="comparePlayer2">Select Second Player:</label>
+                    <select id="comparePlayer2">
+                        <option value="">Choose a player...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="comparison-grid" id="comparisonGrid" style="display: none;">
+                <div class="player-comparison-card" id="comparisonCard1">
+                    <div class="comparison-player-name" id="comparisonName1"></div>
+                    <div class="comparison-player-details" id="comparisonDetails1"></div>
+                    <div class="comparison-stats-grid" id="comparisonStats1">
+                        <!-- Stats will be populated here -->
+                    </div>
+                </div>
+                <div class="player-comparison-card" id="comparisonCard2">
+                    <div class="comparison-player-name" id="comparisonName2"></div>
+                    <div class="comparison-player-details" id="comparisonDetails2"></div>
+                    <div class="comparison-stats-grid" id="comparisonStats2">
+                        <!-- Stats will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-summary" id="comparisonSummary" style="display: none;">
+                <h4>Comparison Summary</h4>
+                <div class="comparison-recommendation" id="comparisonRecommendation">
+                    <!-- Recommendation will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

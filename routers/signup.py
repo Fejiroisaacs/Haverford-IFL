@@ -27,14 +27,15 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         users_ref = db.reference('Users')
         all_users = users_ref.get()
         
-        if username.lower() in [name.lower() for name in all_users.keys()]:
-            raise UserNameAlreadyExists()
+        if all_users:
+            if username.lower() in [name.lower() for name in all_users.keys() if all_users]:
+                raise UserNameAlreadyExists()
+            if email.lower() in [all_users[userdata]['Email'].lower() for userdata in all_users]:
+                raise EmailAlreadyExists()
         
         if not username.isalnum():
             raise InvalidUserName()
         
-        if email.lower() in [all_users[userdata]['Email'].lower() for userdata in all_users]:
-            raise EmailAlreadyExists()
         
         fb_auth.create_user(email=email, password=password, display_name=username)
         verification_link = fb_auth.generate_email_verification_link(email=email)
@@ -59,5 +60,5 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         
         return RedirectResponse("/login", status_code=303)
     except Exception as e:
-        print(str(e))
+        print(str(e), "I am here btw")
         return templates.TemplateResponse("login.html", {"request": request, "error": str(e), "user": None, "Login": False})
