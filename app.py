@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin
 import json, os
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
@@ -42,6 +42,7 @@ app.include_router(fantasy.router, dependencies=[Depends(lambda: db), Depends(la
 app.include_router(players.router, dependencies=[Depends(lambda: db)])
 app.include_router(settings.router)
 app.include_router(teams.router, dependencies=[Depends(lambda: db)])
+app.include_router(admin.router)
 
 
 @app.exception_handler(StarletteHTTPException)

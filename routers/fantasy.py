@@ -2,10 +2,7 @@ from fastapi import Request, Form, APIRouter, Depends, Cookie, HTTPException
 from firebase_admin import auth, db
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
-from models.user import User
 from models.fantasy import FantasyUser, FantasyService
-from typing import List, Optional
-import json
 from datetime import datetime
 import urllib.parse
 from functools import lru_cache

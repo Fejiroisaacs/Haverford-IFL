@@ -23,14 +23,17 @@
             <a href="/teams" class="menuOptions">Teams</a>
             <a href="/players" class="menuOptions">Players</a>
             <a href="/contact" class="menuOptions">Contact</a>
-            <a href="/fantasy" class="menuOptions">Fantasy (Beta)</a>
+            <a href="/fantasy" class="menuOptions">Fantasy</a>
         </div>
         <div class="menu-right">
-            {% if user is not none and 'idToken' in user %}
+            {% if user is not none and ('user_id' in user or 'uid' in user) %}
                 <a href="/settings" class="menuOptions">Settings</a>
                 <a href="/logout" class="menuOptions">Logout</a>
+            {% else %}
+                <a href="/login" class="menuOptions">Log In</a>
+                <a href="/signup" class="menuOptions">Sign Up</a>
             {% endif %}
-          </div>
+        </div>
         </div>
       </header>
 
@@ -43,10 +46,13 @@
             <a href="/teams">Teams</a>
             <a href="/players">Players</a>
             <a href="/contact">Contact</a>
-            <a href="/fantasy">Fantasy (Beta)</a>
-            {% if user is not none and 'idToken' in user %}
+            <a href="/fantasy">Fantasy</a>
+            {% if user is not none and ('user_id' in user or 'uid' in user) %}
                 <a href="/settings" class="menuOptions">Settings</a>
                 <a href="/logout" class="menuOptions">Logout</a>
+            {% else %}
+                <a href="/login" class="menuOptions">Log In</a>
+                <a href="/signup" class="menuOptions">Sign Up</a>
             {% endif %}
         </div>
         <span id="navIcon" style="font-size:30px; cursor:pointer; margin-left:3%; color: #670000; z-index:1000;" class="openMenuMobile" onclick="openMobileNav()">&#9776;</span>

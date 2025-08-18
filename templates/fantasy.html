@@ -8,6 +8,12 @@
 <link rel="stylesheet" href="/static/fantasy.css">
 
 <style>
+.fantasy-nav {
+    display:flex;
+    justify-content:flex-end;
+    gap:16px;
+    margin-bottom:24px;
+}
 /* Performance Indicator Styles */
 .player-performance-indicator {
     position: absolute !important;
@@ -19,6 +25,10 @@
     border: 2px solid white !important;
     z-index: 10 !important;
     display: block !important;
+}
+
+.fantasy-nav a {
+    text-decoration: none !important;
 }
 
 .player-performance-indicator.excellent {
@@ -115,6 +125,13 @@
                 </div>
             {% endif %}
             <div class="option" id="leaderboard-option" onclick="showContent('leaderboard')">Leaderboard</div>
+        </div>
+
+        <div class="fantasy-nav">
+            <a href="/settings" class="btn btn-outline-secondary">User Settings</a>
+            {% if fantasy_user.admin %}
+            <a href="/admin" class="btn btn-outline-danger">Admin Portal</a>
+            {% endif %}
         </div>
 
         <!-- Content Sections -->
@@ -740,6 +757,9 @@
             </div>
         </div>
     {% endif %}
+</div>
+<div style="width:100%;display:flex;justify-content:center;margin:32px 0 0 0;">
+    <a href="/logout" class="btn btn-outline-secondary">Logout</a>
 </div>
 
 <script>

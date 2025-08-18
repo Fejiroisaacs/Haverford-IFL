@@ -31,6 +31,7 @@ class FantasyTeam(BaseModel):
 class FantasyUser(BaseModel):
     user_id: str
     username: str
+    admin: bool = False
     total_balance: float = 100.0
     total_points: int = 0
     week_points: int = 0
@@ -53,6 +54,7 @@ class FantasyUser(BaseModel):
         """Save user data to Firebase"""
         user_data = {
             'username': self.username,
+            'admin': self.admin,
             'total_balance': self.total_balance,
             'total_points': self.total_points,
             'week_points': self.week_points,
@@ -61,7 +63,6 @@ class FantasyUser(BaseModel):
             'all_players': self.team.all_players,
             'captain': self.team.captain
         }
-        
         db.reference(f'Fantasy/Users/{self.user_id}').set(user_data)
     
     @classmethod
@@ -69,9 +70,10 @@ class FantasyUser(BaseModel):
         """Load user data from Firebase"""
         user_ref = db.reference(f'Fantasy/Users/{user_id}')
         user_data = user_ref.get()
+        admin_ref = db.reference(f'Users/{username}').get()
         
         if not user_data:
-            # Create new user
+            # Create new Fantasy user
             return cls(user_id=user_id, username=username)
         
         team = FantasyTeam(
@@ -83,6 +85,7 @@ class FantasyUser(BaseModel):
         return cls(
             user_id=user_id,
             username=username,
+            admin=admin_ref.get("Admin", False),
             total_balance=user_data.get('total_balance', 100.0),
             total_points=user_data.get('total_points', 0),
             week_points=user_data.get('week_points', 0),

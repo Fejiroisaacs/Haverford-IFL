@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.admin-panel-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 32px 24px;
+}
+.admin-panel-container h2 {
+    text-align: center;
+    margin-bottom: 32px;
+    color: #2c3e50;
+}
+.admin-panel-container form {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.admin-panel-container label {
+    font-weight: 500;
+    color: #34495e;
+}
+.admin-panel-container input {
+    margin-bottom: 12px;
+}
+.admin-panel-container button {
+    min-width: 180px;
+}
+.admin-panel-container hr {
+    margin: 32px 0;
+}
+.alert {
+    margin-top: 16px;
+}
+</style>
+<div class="admin-panel-container">
+    <h2>Admin Panel</h2>
+    <form id="week-form" method="post" action="/admin/update-week">
+        <div class="form-group">
+            <label for="current-week">Set New Week:</label>
+            <input type="number" id="current-week" name="current_week" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="deadline">Deadline (YYYY-MM-DD HH:MM):</label>
+            <input type="text" id="deadline" name="deadline" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Set New Week & Deadline</button>
+    </form>
+    <hr>
+    <form id="update-week-performance-form" method="post" action="/admin/update-week-performance">
+        <div class="form-group">
+            <label for="update-week">Update Week Performance:</label>
+            <input type="number" id="update-week" name="current_week" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Update All Users' Teams for This Week</button>
+    </form>
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+</div>
+{% endblock %}
