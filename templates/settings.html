@@ -52,16 +52,37 @@
         <a href="/fantasy" class="btn btn-outline-secondary">Back to Fantasy</a>
     </div>
     <h2>User Settings</h2>
-    <form method="post" action="/settings/update">
+    <form method="post" action="/settings/update" style="margin-bottom:32px;">
         <div class="form-group">
-            <label for="display-name">Display Name:</label>
-            <input type="text" id="display-name" name="display_name" class="form-control" value="{{ user.name }}" required>
+            <label for="display-name">Change Display Name</label>
+            <input type="text" id="display-name" name="display_name" class="form-control" value="{{ user.name }}" placeholder="New display name">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-bottom:12px;">Update Name</button>
+    </form>
+    <form method="post" action="/settings/update" style="margin-bottom:32px;">
+        <div class="form-group">
+            <label for="email">Change Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" placeholder="New email">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-bottom:12px;">Update Email</button>
+    </form>
+    <form method="post" action="/settings/update" style="margin-bottom:32px;">
+        <div class="form-group">
+            <label for="old-password">Current Password</label>
+            <input type="password" id="old-password" name="old_password" class="form-control" placeholder="Current password">
         </div>
         <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" name="new_password" class="form-control" placeholder="New password">
         </div>
-        <button type="submit" class="btn btn-primary">Update Settings</button>
+        <div class="form-group">
+            <label for="confirm-password">Confirm New Password</label>
+            <input type="password" id="confirm-password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-bottom:12px;">Change Password</button>
+    </form>
+    <form method="post" action="/settings/delete" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+        <button type="submit" class="btn btn-danger" style="width:100%;margin-bottom:12px;">Delete Account</button>
     </form>
     {% if success %}
         <div class="alert alert-success">{{ success }}</div>
