@@ -1,8 +1,73 @@
 {% extends "base.html" %}
-
-{% block title %}Settings{% endblock %}
-
 {% block content %}
-<h1>Manage Account</h1>
-<p>User account settings go here</p>
+<style>
+.settings-container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 32px 24px;
+}
+.settings-container h2 {
+    text-align: center;
+    margin-bottom: 32px;
+    color: #2c3e50;
+}
+.settings-container form {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.settings-container label {
+    font-weight: 500;
+    color: #34495e;
+}
+.settings-container input {
+    margin-bottom: 12px;
+}
+.settings-container button {
+    min-width: 180px;
+}
+.settings-container hr {
+    margin: 32px 0;
+}
+.alert {
+    margin-top: 16px;
+}
+.settings-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+</style>
+<div class="settings-container">
+    <div class="settings-nav">
+        {% if user and user.is_admin %}
+        <a href="/admin" class="btn btn-outline-danger">Admin Portal</a>
+        {% endif %}
+        <a href="/fantasy" class="btn btn-outline-secondary">Back to Fantasy</a>
+    </div>
+    <h2>User Settings</h2>
+    <form method="post" action="/settings/update">
+        <div class="form-group">
+            <label for="display-name">Display Name:</label>
+            <input type="text" id="display-name" name="display_name" class="form-control" value="{{ user.name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Settings</button>
+    </form>
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+</div>
 {% endblock %}
