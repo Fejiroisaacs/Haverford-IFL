@@ -78,8 +78,7 @@ async def get_player_data(player: str, request: Request, db: firebase_db.Referen
                 status_code=404,
                 content={"error": f"Player {player} not found"}
             )
-        
-        latest_season_data = season_data[-1] if season_data else {}
+        latest_season_data = season_data[-2] if season_data else {}
         
         recent_matches = []
         if previous_matches:

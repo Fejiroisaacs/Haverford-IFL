@@ -129,13 +129,7 @@ class FantasyService:
                 self.players_df['full_name'] = self.players_df['First'] + ' ' + self.players_df['Last']
                 stats_df['full_name'] = stats_df['Name']
                 
-                # Aggregate stats by player name (sum across all seasons)
-                stats_aggregated = stats_df.groupby('full_name').agg({
-                    'Goals': 'sum',
-                    'Assists': 'sum', 
-                    'Saves': 'sum'
-                }).reset_index()
-                
+                stats_aggregated = stats_df[stats_df['Season'] == 'Total'][['full_name', 'Goals', 'Assists', 'Saves']]
                 # Merge the stats with fantasy data
                 self.players_df = self.players_df.merge(
                     stats_aggregated, 
