@@ -128,7 +128,6 @@ NPC,HBD,3,Playoff,125,1(1),1(3),Playoff/OT,S3,0,0,0,1
 BXB,BNC,3,Playoff,126,1,3,Playoff/FT,S3,0,0,0,1
 MCH,HBD,3,Playoff,127,8,0,Playoff/FT,S3,0,0,1,0
 MCH,BNC,3,Playoff,128,3,0,Playoff/FT,S3,0,0,1,0
-MCH,BBL,4,Playoff,169,2,3,Playoff/FT,S4,0,0,0,1
 TOE,NPC,4,A,129,1,17,Final,S4,0,0,0,1
 MCH,SWF,4,A,130,4,0,Final,S4,0,0,1,0
 BBL,DTF,4,B,131,7,3,Final,S4,0,0,1,0
@@ -169,6 +168,7 @@ MCH,DTF,4,Playoff,165,3,1,Playoff/FT,S4,0,0,1,0
 ASB,BBL,4,Playoff,166,1,6,Playoff/FT,S4,0,0,0,1
 MCH,BNC,4,Playoff,167,10,1,Playoff/FT,S4,0,0,1,0
 NPC,BBL,4,Playoff,168,1,3,Playoff/FT,S4,0,0,0,1
+MCH,BBL,4,Playoff,169,2,3,Playoff/FT,S4,0,0,0,1
 WCS,GFC,5,B,170,2,10,Final,S5,0,0,0,1
 TGS,SEX,5,A,171,5,0,Forfeit,S5,0,0,1,0
 ASB,SHT,5,B,172,1,6,Final,S5,0,0,0,1
@@ -212,3 +212,5 @@ NPC,SSS,5,Playoff,209,11,1,Playoff/FT,S5,0,0,1,0
 BBL,SEX,5,Playoff,210,2,6,Playoff/FT,S5,0,0,0,1
 NPC,HFC,5,Playoff,211,4,1,Playoff/FT,S5,0,0,1,0
 NPC,SEX,5,Playoff,212,1,0,Playoff/FT,S5,0,0,1,0
+TOE,LBJ,6,C,213,1,3,Final,S6,0,0,0,1
+NFC,DTF,6,A,214,2,0,Final,S6,0,1,1,0

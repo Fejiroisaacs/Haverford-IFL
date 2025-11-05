@@ -73,11 +73,14 @@ def get_standings(team):
         
         groupA = sub_data[sub_data["Group"] == 'A']
         groupB = sub_data[sub_data["Group"] == 'B']
+        groupC = sub_data[sub_data["Group"] == 'C']
         
         if groupA['Team'].isin([team]).any():
             table = groupA.to_dict(orient='records')
         elif groupB['Team'].isin([team]).any():
             table = groupB.to_dict(orient='records')
+        elif groupC['Team'].isin([team]).any():
+            table = groupC.to_dict(orient='records')
             
         if table: team_data[season] = table
         
