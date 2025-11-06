@@ -60,5 +60,4 @@ async def post_signup(request: Request, email: str = Form(...), username: str = 
         
         return RedirectResponse("/login", status_code=303)
     except Exception as e:
-        print(str(e), "I am here btw")
         return templates.TemplateResponse("login.html", {"request": request, "error": str(e), "user": None, "Login": False})

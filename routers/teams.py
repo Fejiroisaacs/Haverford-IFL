@@ -33,7 +33,7 @@ async def team_page(request: Request, team: str):
             "seasons_played": seasons_played
         })
     else:
-        return templates.TemplateResponse("404error.html", {"request": request})
+        return templates.TemplateResponse("404error.html", {"request": request, "error": "Team doesn't exist or team hasn't played a game yet"})
 
 @router.get("/teams/{team_name}/{match_details}", response_class=HTMLResponse)
 async def team_page(request: Request, team_name: str, match_details: str):

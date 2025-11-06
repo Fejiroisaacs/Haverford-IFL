@@ -9,7 +9,7 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
 CURRENT_SEASON = max(pd.read_csv("data/season_standings.csv")['Season'].tolist())
-print(CURRENT_SEASON, "yo")
+
 @router.get("/matches", response_class=HTMLResponse)
 async def read_matches(request: Request):
     return templates.TemplateResponse("matches.html", {"request": request, 
@@ -57,7 +57,7 @@ def get_matches(season):
     for subset in subsets:
         sub_data = data[data['Group'] == subset].to_dict(orient='records')
         if len(sub_data) > 0: match_data[subset] = sub_data
-        
+
     return match_data
 
 def get_upcoming_matches():

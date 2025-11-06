@@ -21,67 +21,207 @@
 
 <h1> Season {{ active_season }} </h1>
 <br>
-<h2> Standings</h2>
 <br>
+
+<style>
+  .group-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .group-btn { padding:8px 14px; border-radius:6px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; font-weight:600; }
+  .group-btn.active { background:linear-gradient(90deg,#a70000,#870000); color:#fff; border-color:transparent; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .group-panel { transition:opacity .22s ease; }
+</style>
+
 <div class="table1">
+  <div class="group-tabs" id="groupTabs">
+    {% for group in groups %}
+      <button type="button" class="group-btn {% if loop.first %}active{% endif %}" data-group="{{ group[0]['Group'] }}">
+        Group {{ group[0]['Group'] }}
+      </button>
+    {% endfor %}
+  </div>
+
   {% for group in groups %}
-    <h2>Group {{ group[0]['Group'] }}</h2>
-    <br>
-    <div class="tbl-content">
-      <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-        <thead class='tbl-header'> 
-          <tr>
-            <th class='tbl-col1'>Club</th>
-            <th>MP</th>
-            <th>W</th>
-            <th>D</th>
-            <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
-            <th>GD</th>
-            <th><b>PTS</b></th>
-            <th>Last 5</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for team in group %}
-            <tr onclick="window.open('/teams/{{team['Team']}}', '_blank')">
-              <td class='tbl-col1'>{{ team["Team"] }}</td>
-              <td>{{ team["MP"] }}</td>
-              <td>{{ team["W"] }}</td>
-              <td>{{ team["D"] }}</td>
-              <td>{{ team["L"] }}</td>
-              <td>{{ team["GF"] }}</td>
-              <td>{{ team["GA"] }}</td>
-              <td>{{ team["GD"] }}</td>
-              <td><b>{{ team["PTS"] }}</b></td>
-              <td><b>
-                {% for result in team['L5'] %}
-                  {% if result == 'W' %}
-                    <img src="/static/Images/Elements/win.svg" alt="W">
-                  {% elif result == 'L' %}
-                    <img src="/static/Images/Elements/loss.svg" alt="L">
-                  {% elif result == 'D' %}
-                    <img src="/static/Images/Elements/dash.svg" alt="L">
-                  {% else %}
-                    <img src="/static/Images/Elements/blank.svg" style="max-width:22px; max-height:22px;" alt="-">
-                  {% endif %}
-                {% endfor %}
-              </b></td>
+    <div class="group-panel" id="group-{{ group[0]['Group'] }}" {% if not loop.first %}style="display:none"{% endif %}>
+      <h2>Group {{ group[0]['Group'] }}</h2>
+      <br>
+      <div class="tbl-content">
+        <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+          <thead class='tbl-header'> 
+            <tr>
+              <th class='tbl-col1'>Club</th>
+              <th>MP</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
+              <th>GD</th>
+              <th><b>PTS</b></th>
+              <th>Last 5</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for team in group %}
+              <tr onclick="window.open('/teams/{{team['Team']}}', '_blank')">
+                <td class='tbl-col1'>{{ team["Team"] }}</td>
+                <td>{{ team["MP"] }}</td>
+                <td>{{ team["W"] }}</td>
+                <td>{{ team["D"] }}</td>
+                <td>{{ team["L"] }}</td>
+                <td>{{ team["GF"] }}</td>
+                <td>{{ team["GA"] }}</td>
+                <td>{{ team["GD"] }}</td>
+                <td><b>{{ team["PTS"] }}</b></td>
+                <td><b>
+                  {% for result in team['L5'] %}
+                    {% if result == 'W' %}
+                      <img src="/static/Images/Elements/win.svg" alt="W">
+                    {% elif result == 'L' %}
+                      <img src="/static/Images/Elements/loss.svg" alt="L">
+                    {% elif result == 'D' %}
+                      <img src="/static/Images/Elements/dash.svg" alt="D">
+                    {% else %}
+                      <img src="/static/Images/Elements/blank.svg" style="max-width:22px; max-height:22px;" alt="-">
+                    {% endif %}
+                  {% endfor %}
+                </b></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <br><br>
     </div>
-    <br>
-    <br>
   {% endfor %}
 </div>
+
 
 <br>
 <hr>
 
-<!--{% if active_season == current_season %}
+<br>
+
+{% set first_group = groups[0][0]['Group'] %}
+<h1>Previous Matches</h1>
+
+{% for match_type, matches in matches_data.items() %}
+  {% if match_type != 'Playoff' %}
+    <div class="matches-panel" id="matches-{{ match_type }}"
+         {% if match_type != first_group %}style="display:none"{% endif %}>
+      <h2>Group {{ match_type }} Matches</h2>
+      <div class="results">
+        {% for match in matches %}
+          <a href="/teams/{{ match['Team 1'] }}/{{ match['Team 1'] }}-{{ match['Team 2'] }}-{{ match['Match ID'] }}" 
+             style="text-decoration: none; color: inherit;" target="_blank">
+            <div class="individual-match">
+              <div class="team-score"> 
+                {% if match['Win Team 1'] == 1 %} 
+                  <b><p class="team">{{match['Team 1']}}</p></b> 
+                  <p class="team">{{match['Team 2']}}</p> 
+                {% elif match['Win Team 2'] == 1 %} 
+                  <p class="team">{{match['Team 1']}}</p> 
+                  <b><p class="team">{{match['Team 2']}}</p></b> 
+                {% else %} 
+                  <p class="team">{{match['Team 1']}}</p> 
+                  <p class="team">{{match['Team 2']}}</p> 
+                {% endif %} 
+              </div>
+
+              <div class='team-score'>
+                {% if match['Red Card Team 1'] == 1 %}
+                  <img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% else %}
+                  <img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% endif %}
+                <br><br>
+                {% if match['Red Card Team 2'] == 1 %}
+                  <img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% else %}
+                  <img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% endif %}
+              </div>
+
+              <div class="separator"></div>
+              <div class="team-score"> 
+                {% if match['Win Team 1'] == 1 %} 
+                  <b><p class="score">{{match['Score Team 1']}}&#9666;</p></b> 
+                  <p class="score">{{match['Score Team 2']}}<span class="invisible">&#9666;</span></p> 
+                {% elif match['Win Team 2'] == 1 %} 
+                  <p class="score">{{match['Score Team 1']}}<span class="invisible">&#9666;</span></p> 
+                  <b><p class="score">{{match['Score Team 2']}}&#9666;</p></b> 
+                {% else %} 
+                  <p class="score">{{match['Score Team 1']}}</p> 
+                  <p class="score">{{match['Score Team 2']}}</p> 
+                {% endif %} 
+              </div>
+
+              <div class="time">{{match['Time']}}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="matches-panel-playoff">
+      <h2>{{ match_type }} Matches</h2>
+      <div class="results">
+        {% for match in matches %}
+          <a href="/teams/{{ match['Team 1'] }}/{{ match['Team 1'] }}-{{ match['Team 2'] }}-{{ match['Match ID'] }}" 
+             style="text-decoration: none; color: inherit;" target="_blank">
+            <div class="individual-match">
+              <div class="team-score"> 
+                {% if match['Win Team 1'] == 1 %} 
+                  <b><p class="team">{{match['Team 1']}}</p></b> 
+                  <p class="team">{{match['Team 2']}}</p> 
+                {% elif match['Win Team 2'] == 1 %} 
+                  <p class="team">{{match['Team 1']}}</p> 
+                  <b><p class="team">{{match['Team 2']}}</p></b> 
+                {% else %} 
+                  <p class="team">{{match['Team 1']}}</p> 
+                  <p class="team">{{match['Team 2']}}</p> 
+                {% endif %} 
+              </div>
+
+              <div class='team-score'>
+                {% if match['Red Card Team 1'] == 1 %}
+                  <img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% else %}
+                  <img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% endif %}
+                <br><br>
+                {% if match['Red Card Team 2'] == 1 %}
+                  <img class='team red-card' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% else %}
+                  <img class='invisible' src='/static/Images/Elements/red-card.png' alt="&#9632;">
+                {% endif %}
+              </div>
+
+              <div class="separator"></div>
+              <div class="team-score"> 
+                {% if match['Win Team 1'] == 1 %} 
+                  <b><p class="score">{{match['Score Team 1']}}&#9666;</p></b> 
+                  <p class="score">{{match['Score Team 2']}}<span class="invisible">&#9666;</span></p> 
+                {% elif match['Win Team 2'] == 1 %} 
+                  <p class="score">{{match['Score Team 1']}}<span class="invisible">&#9666;</span></p> 
+                  <b><p class="score">{{match['Score Team 2']}}&#9666;</p></b> 
+                {% else %} 
+                  <p class="score">{{match['Score Team 1']}}</p> 
+                  <p class="score">{{match['Score Team 2']}}</p> 
+                {% endif %} 
+              </div>
+
+              <div class="time">{{match['Time']}}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}
+
+<br>
+<hr>
+
+{% if active_season == current_season %}
   <h1>Upcoming Matches </h1>
   <h4>(subject to change)</h4>
 
@@ -101,72 +241,35 @@
       {% endfor %}
     </div>
   {% endfor %}
-  <br>
-  <hr>
-{% endif %}-->
+  
+{% endif %}
 
-<br>
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = Array.from(document.querySelectorAll('.group-btn'));
+  const standingPanels = Array.from(document.querySelectorAll('.group-panel'));
+  const matchPanels = Array.from(document.querySelectorAll('.matches-panel'));
 
-<h1>Previous Matches</h1>
-{% for match_type in matches_data %}
-  <br>
-  {% if match_type != 'Playoff'%}
-    <h2>Group {{ match_type }} Matches</h2>
-  {%else%}
-    <h2>{{ match_type }} Matches</h2>
-  {% endif %}
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const group = tab.dataset.group; 
 
-  <div class="results">
-    {% for match in matches_data[match_type] %}
-      <a href="/teams/{{ match['Team 1'] }}/{{ match['Team 1'] }}-{{ match['Team 2'] }}-{{ match['Match ID'] }}" style="text-decoration: none; color: inherit;" target="_blank">
-        <div class="individual-match">
-          <div class="team-score"> 
-            {% if match['Win Team 1'] == 1 %} 
-              <b><p class="team">{{match['Team 1']}}</p></b> 
-              <p class="team">{{match['Team 2']}}</p> 
-            {% elif match['Win Team 2'] == 1 %} 
-              <p class="team">{{match['Team 1']}}</p> 
-              <b><p class="team">{{match['Team 2']}}</p></b> 
-            {% else %} 
-              <p class="team">{{match['Team 1']}}</p> 
-              <p class="team">{{match['Team 2']}}</p> 
-            {% endif %} 
-          </div>
+      tabs.forEach(t => t.classList.toggle('active', t === tab));
 
-          <div class='team-score'>
-            {% if match['Red Card Team 1'] == 1 %}
-              <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-            {% else %}
-              <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-            {% endif %}
-            <br>
-            <br>
-            {% if match['Red Card Team 2'] == 1 %}
-              <img class='team red-card' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-            {% else %}
-              <img class='invisible' src='/static/Images/Elements/red-card.png'alt="&#9632;"></span>
-            {% endif %}
-          </div>
+      standingPanels.forEach(p => {
+        p.style.display = (p.id === `group-${group}`) ? '' : 'none';
+      });
 
-          <div class="separator"></div>
-          <div class="team-score"> 
-            {% if match['Win Team 1'] == 1 %} 
-              <b><p class="score">{{match['Score Team 1']}}&#9666;</p></b> 
-              <p class="score">{{match['Score Team 2']}}<span class="invisible">&#9666;</span></p> 
-            {% elif match['Win Team 2'] == 1 %} 
-              <p class="score">{{match['Score Team 1']}}<span class="invisible">&#9666;</span></p> <b>
-              <p class="score">{{match['Score Team 2']}}&#9666;</p></b> 
-            {% else %} 
-              <p class="score">{{match['Score Team 1']}}</p> 
-              <p class="score">{{match['Score Team 2']}}</p> 
-            {% endif %} 
-          </div>
-          
-          <div class="time">{{match['Time']}}</div>
-        </div>
-      </a>
-    {% endfor %}
-  </div>
-{% endfor %}
+      matchPanels.forEach(p => {
+        p.style.display = (p.id === `matches-${group}`) ? '' : 'none';
+      });
+
+      document.querySelector('.table1').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+});
+</script>
+{% endblock %}
 
 {% endblock %}
