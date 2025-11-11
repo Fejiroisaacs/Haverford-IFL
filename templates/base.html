@@ -549,6 +549,13 @@
                 document.getElementById('rateFeatureForm').style.display = 'block';
                 document.getElementById('requestFeatureForm').style.display = 'none';
                 document.getElementById('otherFeatureGroup').style.display = 'none';
+
+                // Reset submit button
+                const submitBtn = document.querySelector('#feedbackForm button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Feedback';
+                }
             }, 300);
         }
 
@@ -594,6 +601,12 @@
         function submitFeedback(event) {
             event.preventDefault();
 
+            // Get submit button and disable it
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
             const feedbackType = document.querySelector('input[name="feedbackType"]:checked').value;
             const name = document.getElementById('userName').value;
             const email = document.getElementById('userEmail').value;
@@ -613,6 +626,8 @@
 
                 if (!rating) {
                     alert('Please select a rating');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
                     return;
                 }
 
@@ -621,6 +636,8 @@
                     const otherFeatureName = document.getElementById('otherFeatureName').value;
                     if (!otherFeatureName) {
                         alert('Please specify the feature name');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
                         return;
                     }
                     feature = otherFeatureName;
@@ -653,11 +670,15 @@
                     document.getElementById('feedbackSuccess').style.display = 'block';
                 } else {
                     alert('Error submitting feedback: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
                 }
             })
             .catch(error => {
                 console.error('Error submitting feedback:', error);
                 alert('Error submitting feedback. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             });
         }
 
