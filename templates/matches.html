@@ -227,22 +227,597 @@
 
   <br>
   {% for match_day in upcoming_matches_data['data'] %}
-    <h2>Matchday {{match_day}} of {{upcoming_matches_data['Max']}}</h2>
+    <h2>Matchday {{match_day|int}} of {{upcoming_matches_data['Max']|int}}</h2>
     <div class='results'>
       {% for match in upcoming_matches_data['data'][match_day] %}
-        <div class="individual-match">
-          <div class="team-score"> 
+        <div class="individual-match upcoming-match-preview"
+             onclick="showMatchPreview('{{match['Team 1']}}', '{{match['Team 2']}}', {{match_day}}, '{{match['Time']}}')"
+             style="cursor: pointer;">
+          <div class="team-score">
             <p class="team">{{match['Team 1']}}</p>
-            <p class="team">{{match['Team 2']}}</p> 
+            <p class="team">{{match['Team 2']}}</p>
           </div>
-          <div class="separator"></div>  
+          <div class="separator"></div>
           <div class="time size">{{match['Day']}} <br> {{match['Time']}}</div>
+          <div class="preview-icon">
+            <i class="fas fa-eye"></i> Preview
+          </div>
         </div>
       {% endfor %}
     </div>
   {% endfor %}
-  
+
 {% endif %}
+
+<!-- Match Preview Modal -->
+<div id="matchPreviewModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeMatchPreview()">&times;</span>
+    <div id="modalLoading" style="text-align: center; padding: 2rem;">
+      <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+      <p>Loading match preview...</p>
+    </div>
+    <div id="modalBody" style="display: none;">
+      <!-- Essential Information -->
+      <div class="modal-header">
+        <h1 id="modalMatchTitle"></h1>
+        <p id="modalMatchDetails"></p>
+      </div>
+
+      <div class="teams-comparison">
+        <div class="team-info">
+          <h2 id="team1Name"></h2>
+          <div class="rating">Rating: <span id="team1Rating"></span></div>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="team-info">
+          <h2 id="team2Name"></h2>
+          <div class="rating">Rating: <span id="team2Rating"></span></div>
+        </div>
+      </div>
+
+      <!-- Head-to-Head Section -->
+      <div class="modal-section">
+        <h2><i class="fas fa-history"></i> Head-to-Head</h2>
+        <div class="h2h-record">
+          <div class="h2h-stat">
+            <strong>Total Matches:</strong> <span id="h2hTotal">0</span>
+          </div>
+          <div class="h2h-record-display">
+            <span id="h2hTeam1Wins">0</span> - <span id="h2hDraws">0</span> - <span id="h2hTeam2Wins">0</span>
+          </div>
+          <div class="h2h-goals">
+            <div>
+              <strong id="h2hTeam1Name"></strong>: <span id="h2hTeam1Goals">0</span> goals
+            </div>
+            <div>
+              <strong id="h2hTeam2Name"></strong>: <span id="h2hTeam2Goals">0</span> goals
+            </div>
+          </div>
+        </div>
+        <div id="h2hLast5Container"></div>
+      </div>
+
+      <!-- Current Form & Standings -->
+      <div class="modal-section">
+        <h2><i class="fas fa-chart-line"></i> Current Form & Standings</h2>
+        <div class="form-comparison">
+          <div class="team-form">
+            <h3 id="formTeam1Name"></h3>
+            <div class="form-indicators" id="team1FormIndicators"></div>
+            <div class="standings-info">
+              <p><strong>Table Position:</strong> <span id="team1Position"></span></p>
+              <p><strong>Points:</strong> <span id="team1Points"></span></p>
+              <p><strong>Goal Difference:</strong> <span id="team1GD"></span></p>
+              <p><strong>Games Played:</strong> <span id="team1GP"></span></p>
+            </div>
+          </div>
+          <div class="team-form">
+            <h3 id="formTeam2Name"></h3>
+            <div class="form-indicators" id="team2FormIndicators"></div>
+            <div class="standings-info">
+              <p><strong>Position:</strong> <span id="team2Position"></span></p>
+              <p><strong>Points:</strong> <span id="team2Points"></span></p>
+              <p><strong>Goal Difference:</strong> <span id="team2GD"></span></p>
+              <p><strong>Games Played:</strong> <span id="team2GP"></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistical Comparison -->
+      <div class="modal-section">
+        <h2><i class="fas fa-bar-chart"></i> Statistical Comparison</h2>
+        <div class="stats-grid">
+          <div class="stat-row">
+            <div class="stat-label">Goals Scored (Avg/Game)</div>
+            <div class="stat-value" id="team1GoalsScored"></div>
+            <div class="stat-bar-container">
+              <div class="stat-bar team1-bar" id="team1GoalsScoredBar"></div>
+              <div class="stat-bar team2-bar" id="team2GoalsScoredBar"></div>
+            </div>
+            <div class="stat-value" id="team2GoalsScored"></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Goals Conceded (Avg/Game)</div>
+            <div class="stat-value" id="team1GoalsConceded"></div>
+            <div class="stat-bar-container">
+              <div class="stat-bar team1-bar" id="team1GoalsConcededBar"></div>
+              <div class="stat-bar team2-bar" id="team2GoalsConcededBar"></div>
+            </div>
+            <div class="stat-value" id="team2GoalsConceded"></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Clean Sheets</div>
+            <div class="stat-value" id="team1CleanSheets"></div>
+            <div class="stat-bar-container">
+              <div class="stat-bar team1-bar" id="team1CleanSheetsBar"></div>
+              <div class="stat-bar team2-bar" id="team2CleanSheetsBar"></div>
+            </div>
+            <div class="stat-value" id="team2CleanSheets"></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Win Percentage</div>
+            <div class="stat-value" id="team1WinPct"></div>
+            <div class="stat-bar-container">
+              <div class="stat-bar team1-bar" id="team1WinPctBar"></div>
+              <div class="stat-bar team2-bar" id="team2WinPctBar"></div>
+            </div>
+            <div class="stat-value" id="team2WinPct"></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">POTM Awards</div>
+            <div class="stat-value" id="team1POTM"></div>
+            <div class="stat-bar-container">
+              <div class="stat-bar team1-bar" id="team1POTMBar"></div>
+              <div class="stat-bar team2-bar" id="team2POTMBar"></div>
+            </div>
+            <div class="stat-value" id="team2POTM"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Players -->
+      <div class="modal-section">
+        <h2><i class="fas fa-star"></i> Key Players</h2>
+        <div class="players-comparison">
+          <div class="team-players">
+            <h3 id="playersTeam1Name"></h3>
+            <div class="top-scorers">
+              <h4>Top Scorers</h4>
+              <div id="team1TopScorers"></div>
+            </div>
+            <div class="recent-potm">
+              <h4>Recent POTM Winners</h4>
+              <div id="team1RecentPOTM"></div>
+            </div>
+          </div>
+          <div class="team-players">
+            <h3 id="playersTeam2Name"></h3>
+            <div class="top-scorers">
+              <h4>Top Scorers</h4>
+              <div id="team2TopScorers"></div>
+            </div>
+            <div class="recent-potm">
+              <h4>Recent POTM Winners</h4>
+              <div id="team2RecentPOTM"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  margin: 2% auto;
+  padding: 0;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+.close-modal {
+  color: #aaa;
+  float: right;
+  font-size: 32px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: color 0.3s;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+  color: #000;
+}
+
+.modal-header {
+  background: linear-gradient(90deg, #a70000, #870000);
+  color: white;
+  padding: 2rem;
+  border-radius: 15px 15px 0 0;
+  text-align: center;
+}
+
+.modal-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.modal-header p {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+}
+
+#modalBody {
+  padding: 2rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.teams-comparison {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.team-info {
+  flex: 1;
+  text-align: center;
+}
+
+.team-info h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.rating {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: bold;
+}
+
+.vs-divider {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #a70000;
+  padding: 0 1rem;
+}
+
+.modal-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.3s ease;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.modal-section:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.modal-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  border-bottom: 3px solid #a70000;
+  padding-bottom: 0.5rem;
+}
+
+.modal-section h2 i {
+  margin-right: 0.5rem;
+  color: #a70000;
+}
+
+/* Head-to-Head Styles */
+.h2h-record {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.h2h-record-display {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
+.h2h-goals {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  text-align: center;
+}
+
+.h2h-results {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.h2h-result {
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.h2h-result.team1-win {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.h2h-result.team2-win {
+  background: linear-gradient(135deg, #f44336, #da190b);
+  color: white;
+}
+
+.h2h-result.draw {
+  background: linear-gradient(135deg, #FFC107, #FFB300);
+  color: white;
+}
+
+.result-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Form & Standings Styles */
+.form-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.team-form h3 {
+  margin: 0 0 1rem 0;
+  color: #a70000;
+  text-align: center;
+}
+
+.form-indicators {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.form-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.standings-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.standings-info p {
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Statistical Comparison Styles */
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 3fr 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-value {
+  text-align: center;
+  font-weight: bold;
+  color: #666;
+}
+
+.stat-bar-container {
+  display: flex;
+  gap: 4px;
+  height: 30px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  transition: width 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: width;
+  transform: translateZ(0);
+}
+
+.team1-bar {
+  background: linear-gradient(90deg, #2196F3, #1976D2);
+}
+
+.team2-bar {
+  background: linear-gradient(90deg, #FF5722, #E64A19);
+}
+
+/* Key Players Styles */
+.players-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.team-players h3 {
+  margin: 0 0 1rem 0;
+  color: #a70000;
+  text-align: center;
+}
+
+.top-scorers,
+.recent-potm {
+  margin-bottom: 1.5rem;
+}
+
+.top-scorers h4,
+.recent-potm h4 {
+  margin: 0 0 0.8rem 0;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.player-stat {
+  padding: 0.6rem 1rem;
+  margin: 0.5rem 0;
+  background: #f8f9fa;
+  border-left: 4px solid #a70000;
+  border-radius: 4px;
+  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.2s ease;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.player-stat:hover {
+  transform: translateX(5px) translateZ(0);
+  background: #e9ecef;
+}
+
+/* Preview Icon */
+.preview-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.upcoming-match-preview {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.upcoming-match-preview:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(167, 0, 0, 0.3);
+}
+
+.upcoming-match-preview:hover .preview-icon {
+  color: #a70000;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
+
+  .teams-comparison {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-comparison,
+  .players-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-bar-container {
+    grid-column: 1;
+  }
+
+  .h2h-goals {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+</style>
 
 {% block scripts %}
 <script>
@@ -253,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      const group = tab.dataset.group; 
+      const group = tab.dataset.group;
 
       tabs.forEach(t => t.classList.toggle('active', t === tab));
 
@@ -267,6 +842,193 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
   });
+});
+
+async function showMatchPreview(team1, team2, matchday, time) {
+  const modal = document.getElementById('matchPreviewModal');
+  const loading = document.getElementById('modalLoading');
+  const body = document.getElementById('modalBody');
+
+  modal.style.display = 'block';
+  loading.style.display = 'block';
+  body.style.display = 'none';
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+  try {
+    const response = await fetch(`/api/match-preview?team1=${encodeURIComponent(team1)}&team2=${encodeURIComponent(team2)}&matchday=${matchday}&time=${encodeURIComponent(time)}`);
+    const data = await response.json();
+
+    populateModal(data);
+
+    loading.style.display = 'none';
+    body.style.display = 'block';
+  } catch (error) {
+    console.error('Error fetching match preview:', error);
+    loading.innerHTML = '<p style="color: red;">Error loading match preview. Please try again.</p>';
+  }
+}
+
+function closeMatchPreview() {
+  document.getElementById('matchPreviewModal').style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function populateModal(data) {
+  const { essential_info, head_to_head, current_form, stats_comparison, key_players } = data;
+
+  // Essential Information
+  document.getElementById('modalMatchTitle').textContent = `${essential_info.team1} vs ${essential_info.team2}`;
+  document.getElementById('modalMatchDetails').textContent = `Matchday ${essential_info.matchday} - ${essential_info.time}`;
+
+  document.getElementById('team1Name').textContent = essential_info.team1;
+  document.getElementById('team2Name').textContent = essential_info.team2;
+  document.getElementById('team1Rating').textContent = essential_info.team1_rating || 'N/A';
+  document.getElementById('team2Rating').textContent = essential_info.team2_rating || 'N/A';
+
+  // Head-to-Head
+  document.getElementById('h2hTotal').textContent = head_to_head.total_matches;
+  document.getElementById('h2hTeam1Wins').textContent = head_to_head.team1_wins;
+  document.getElementById('h2hDraws').textContent = head_to_head.draws;
+  document.getElementById('h2hTeam2Wins').textContent = head_to_head.team2_wins;
+
+  document.getElementById('h2hTeam1Name').textContent = essential_info.team1;
+  document.getElementById('h2hTeam2Name').textContent = essential_info.team2;
+  document.getElementById('h2hTeam1Goals').textContent = head_to_head.team1_goals_scored;
+  document.getElementById('h2hTeam2Goals').textContent = head_to_head.team2_goals_scored;
+
+  // Last 5 H2H
+  const h2hContainer = document.getElementById('h2hLast5Container');
+  if (head_to_head.last_5.length > 0) {
+    h2hContainer.innerHTML = '<h4>Last 5 Meetings</h4><div class="h2h-results">' +
+      head_to_head.last_5.map(match => {
+        let resultClass = match.winner === essential_info.team1 ? 'team1-win' :
+                         (match.winner === essential_info.team2 ? 'team2-win' : 'draw');
+        return `<div class="h2h-result ${resultClass}">
+          ${match.team1_score} - ${match.team2_score}
+          <span class="result-label">${match.winner === 'Draw' ? 'D' : match.winner}</span>
+        </div>`;
+      }).join('') + '</div>';
+  } else {
+    h2hContainer.innerHTML = '<p>No previous matches between these teams.</p>';
+  }
+
+  // Current Form & Standings
+  document.getElementById('formTeam1Name').textContent = essential_info.team1;
+  document.getElementById('formTeam2Name').textContent = essential_info.team2;
+
+  if (current_form.team1) {
+    document.getElementById('team1FormIndicators').innerHTML = current_form.team1.last_5.map(result => {
+      const color = result === 'W' ? '#4CAF50' : (result === 'L' ? '#f44336' : '#FFC107');
+      return `<span class="form-dot" style="background: ${color};" title="${result}">${result}</span>`;
+    }).join('');
+
+    document.getElementById('team1Position').textContent = current_form.team1.position || 'N/A';
+    document.getElementById('team1Points').textContent = current_form.team1.points;
+    document.getElementById('team1GD').textContent = current_form.team1.goal_difference;
+    document.getElementById('team1GP').textContent = current_form.team1.games_played;
+  }
+
+  if (current_form.team2) {
+    document.getElementById('team2FormIndicators').innerHTML = current_form.team2.last_5.map(result => {
+      const color = result === 'W' ? '#4CAF50' : (result === 'L' ? '#f44336' : '#FFC107');
+      return `<span class="form-dot" style="background: ${color};" title="${result}">${result}</span>`;
+    }).join('');
+
+    document.getElementById('team2Position').textContent = current_form.team2.position || 'N/A';
+    document.getElementById('team2Points').textContent = current_form.team2.points;
+    document.getElementById('team2GD').textContent = current_form.team2.goal_difference;
+    document.getElementById('team2GP').textContent = current_form.team2.games_played;
+  }
+
+  // Statistical Comparison
+  if (stats_comparison.team1 && stats_comparison.team2) {
+    // Goals Scored
+    document.getElementById('team1GoalsScored').textContent =
+      `${stats_comparison.team1.goals_scored} (${stats_comparison.team1.goals_per_game})`;
+    document.getElementById('team2GoalsScored').textContent =
+      `${stats_comparison.team2.goals_scored} (${stats_comparison.team2.goals_per_game})`;
+    setStatBar('GoalsScored', stats_comparison.team1.goals_per_game, stats_comparison.team2.goals_per_game);
+
+    // Goals Conceded
+    document.getElementById('team1GoalsConceded').textContent =
+      `${stats_comparison.team1.goals_conceded} (${stats_comparison.team1.goals_conceded_per_game})`;
+    document.getElementById('team2GoalsConceded').textContent =
+      `${stats_comparison.team2.goals_conceded} (${stats_comparison.team2.goals_conceded_per_game})`;
+    setStatBar('GoalsConceded', stats_comparison.team1.goals_conceded_per_game, stats_comparison.team2.goals_conceded_per_game);
+
+    // Clean Sheets
+    document.getElementById('team1CleanSheets').textContent = stats_comparison.team1.clean_sheets;
+    document.getElementById('team2CleanSheets').textContent = stats_comparison.team2.clean_sheets;
+    setStatBar('CleanSheets', stats_comparison.team1.clean_sheets, stats_comparison.team2.clean_sheets);
+
+    // Win Percentage
+    document.getElementById('team1WinPct').textContent = stats_comparison.team1.win_percentage + '%';
+    document.getElementById('team2WinPct').textContent = stats_comparison.team2.win_percentage + '%';
+    setStatBar('WinPct', stats_comparison.team1.win_percentage, stats_comparison.team2.win_percentage);
+
+    // POTM Awards
+    document.getElementById('team1POTM').textContent = stats_comparison.team1_potm_count;
+    document.getElementById('team2POTM').textContent = stats_comparison.team2_potm_count;
+    setStatBar('POTM', stats_comparison.team1_potm_count, stats_comparison.team2_potm_count);
+  }
+
+  // Key Players
+  document.getElementById('playersTeam1Name').textContent = essential_info.team1;
+  document.getElementById('playersTeam2Name').textContent = essential_info.team2;
+
+  // Team 1
+  const team1Scorers = key_players.team1.top_scorers
+    .filter(player => player.Goals > 0 || player.Assists > 0) 
+    .map(player => `<div class="player-stat">${player.Name} - ${player.Goals}G, ${player.Assists}A</div>`)
+    .join('');
+
+  document.getElementById('team1TopScorers').innerHTML = team1Scorers || '<p>No data available</p>';
+
+  // Team 2
+  const team2Scorers = key_players.team2.top_scorers
+    .filter(player => player.Goals > 0 || player.Assists > 0)
+    .map(player => `<div class="player-stat">${player.Name} - ${player.Goals}G, ${player.Assists}A</div>`)
+    .join('');
+
+  document.getElementById('team2TopScorers').innerHTML = team2Scorers || '<p>No data available</p>';
+
+
+  document.getElementById('team1RecentPOTM').innerHTML = key_players.team1.recent_potm.length > 0 ?
+    key_players.team1.recent_potm.map(player =>
+      `<div class="player-stat">${player.Name}</div>`
+    ).join('') : '<p>No recent POTM winners</p>';
+
+  document.getElementById('team2RecentPOTM').innerHTML = key_players.team2.recent_potm.length > 0 ?
+    key_players.team2.recent_potm.map(player =>
+      `<div class="player-stat">${player.Name}</div>`
+    ).join('') : '<p>No recent POTM winners</p>';
+}
+
+function setStatBar(statName, team1Value, team2Value) {
+  const maxValue = Math.max(team1Value, team2Value);
+  const team1Pct = maxValue > 0 ? (team1Value / maxValue) * 100 : 0;
+  const team2Pct = maxValue > 0 ? (team2Value / maxValue) * 100 : 0;
+
+  document.getElementById(`team1${statName}Bar`).style.width = team1Pct + '%';
+  document.getElementById(`team2${statName}Bar`).style.width = team2Pct + '%';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('matchPreviewModal');
+  if (event.target === modal) {
+    closeMatchPreview();
+  }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const modal = document.getElementById('matchPreviewModal');
+    if (modal.style.display === 'block') {
+      closeMatchPreview();
+    }
+  }
 });
 </script>
 {% endblock %}
