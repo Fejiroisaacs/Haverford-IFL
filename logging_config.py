@@ -89,7 +89,7 @@ class FirebaseLogger:
                 self.db_ref.child('errors').push(log_entry)
 
             # Periodic cleanup
-            self._cleanup_old_logs()
+            # self._cleanup_old_logs()
 
         except Exception as e:
             logger.error(f"Failed to write to Firebase: {e}")
@@ -195,12 +195,27 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
             })
 
         elif route.startswith('/teams/') and len(route) > 7:
-            team_name = route.replace('/teams/', '').split('?')[0]
-            log_queue.put({
-                'log_type': 'counter',
-                'path': f'team_views/{team_name}',
-                'increment': 1
-            })
+            parts = route.replace('/teams/', '').split('/')
+            
+            # Case 1: /teams/<team_name>
+            if len(parts) == 1:
+                team_name = parts[0].split('?')[0]
+                log_queue.put({
+                    'log_type': 'counter',
+                    'path': f'team_views/{team_name}',
+                    'increment': 1
+                })
+
+            # Case 2: /teams/<team_name>/<match_id>
+            elif len(parts) == 2:
+                team_name = parts[0]
+                match_id = parts[1].split('?')[0]
+                log_queue.put({
+                    'log_type': 'counter',
+                    'path': f'match_views/{team_name}/{match_id}',
+                    'increment': 1
+                })
+
 
         elif route == '/players':
             log_queue.put({
