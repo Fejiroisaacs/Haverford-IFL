@@ -14,6 +14,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
+from middleware import RequestLoggingMiddleware
 
 load_dotenv()
 
@@ -34,6 +35,8 @@ app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 user = None
 templates = Jinja2Templates(directory="templates")
 
+# Add middleware (order matters - logging should be first)
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=secret_key)
 
 app.include_router(matches.router, dependencies=[Depends(lambda: db)])
