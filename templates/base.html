@@ -71,6 +71,431 @@
         </div>
     </footer>
 
+    <!-- Feedback Button & Modal -->
+    <button class="feedback-btn" id="feedbackBtn" onclick="openFeedbackModal()">
+        Feedback
+    </button>
+
+    <div id="feedbackModal" class="feedback-modal">
+        <div class="feedback-modal-content">
+            <span class="close-feedback" onclick="closeFeedbackModal()">&times;</span>
+            <h2> Share Your Feedback</h2>
+
+            <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                <!-- Feedback Type Selection -->
+                <div class="feedback-type-selection">
+                    <label class="radio-option">
+                        <input type="radio" name="feedbackType" value="rate" checked onchange="toggleFeedbackForm()">
+                        <span>Rate a Feature</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="feedbackType" value="request" onchange="toggleFeedbackForm()">
+                        <span>Request a Feature</span>
+                    </label>
+                </div>
+
+                <!-- Rate Feature Form -->
+                <div id="rateFeatureForm" class="feedback-form-section">
+                    <div class="form-group">
+                        <label for="featureSelect">Select Feature</label>
+                        <select id="featureSelect" required onchange="toggleOtherFeatureInput()">
+                            <option value="">Choose a feature...</option>
+                            <option value="match-preview">Match Preview</option>
+                            <option value="player-profiles">Player Profiles</option>
+                            <option value="team-pages">Team Pages</option>
+                            <option value="standings">Standings & Tables</option>
+                            <option value="statistics">Statistics & Leaders</option>
+                            <option value="navigation">Site Navigation</option>
+                            <option value="mobile-experience">Mobile Experience</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="otherFeatureGroup" style="display: none;">
+                        <label for="otherFeatureName">Feature Name</label>
+                        <input type="text" id="otherFeatureName" placeholder="Please specify the feature">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="star-rating">
+                            <input type="radio" name="rating" value="5" id="star5">
+                            <label for="star5" title="5 stars">★</label>
+                            <input type="radio" name="rating" value="4" id="star4">
+                            <label for="star4" title="4 stars">★</label>
+                            <input type="radio" name="rating" value="3" id="star3">
+                            <label for="star3" title="3 stars">★</label>
+                            <input type="radio" name="rating" value="2" id="star2">
+                            <label for="star2" title="2 stars">★</label>
+                            <input type="radio" name="rating" value="1" id="star1">
+                            <label for="star1" title="1 star">★</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ratingFeedback">Your Feedback</label>
+                        <textarea id="ratingFeedback" rows="4" placeholder="Tell us what you think about this feature..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Request Feature Form -->
+                <div id="requestFeatureForm" class="feedback-form-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="featureName">Feature Name</label>
+                        <input type="text" id="featureName" placeholder="What feature would you like to see?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="featureDescription">Description</label>
+                        <textarea id="featureDescription" rows="5" placeholder="Describe your feature request in detail..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="featurePriority">Priority</label>
+                        <select id="featurePriority">
+                            <option value="low">Low - Nice to have</option>
+                            <option value="medium" selected>Medium - Would be useful</option>
+                            <option value="high">High - Really need this</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div class="form-group">
+                    <label for="userName">Name (optional)</label>
+                    <input type="text" id="userName" placeholder="Your name">
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail">Email (optional)</label>
+                    <input type="email" id="userEmail" placeholder="your.email@example.com">
+                    <small>We'll only use this to follow up on your feedback</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeFeedbackModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit Feedback</button>
+                </div>
+            </form>
+
+            <div id="feedbackSuccess" class="feedback-success" style="display: none;">
+                <i class="fa fa-check-circle"></i>
+                <h3>Thank you for your feedback!</h3>
+                <p>We appreciate you taking the time to help us improve.</p>
+                <button class="btn-primary" onclick="closeFeedbackModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Feedback Button Styles */
+        .feedback-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 997;
+            background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 0.9rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(103, 0, 0, 0.3);
+            transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.2s ease;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .feedback-btn:hover {
+            transform: translateY(-2px) translateZ(0);
+            box-shadow: 0 5px 18px rgba(103, 0, 0, 0.4);
+        }
+
+        /* Position above What's New button on index page */
+        body.index-page .feedback-btn {
+            bottom: 90px;
+            right: 30px;
+        }
+
+        /* Feedback Modal Styles */
+        .feedback-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+            will-change: opacity;
+        }
+
+        .feedback-modal-content {
+            position: relative;
+            background: white;
+            margin: 3% auto;
+            padding: 2rem;
+            width: 90vw;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+        }
+
+        .feedback-modal-content h2 {
+            color: #670000;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .close-feedback {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            line-height: 1;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .close-feedback:hover {
+            color: #670000;
+            transform: scale(1.1) translateZ(0);
+        }
+
+        /* Feedback Type Selection */
+        .feedback-type-selection {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .radio-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #670000;
+            background: #fff5f5;
+        }
+
+        .radio-option input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"]:checked + span,
+        .radio-option:has(input[type="radio"]:checked) {
+            color: #670000;
+            font-weight: bold;
+        }
+
+        .radio-option:has(input[type="radio"]:checked) {
+            border-color: #670000;
+            background: #fff5f5;
+        }
+
+        /* Form Styles */
+        .feedback-form-section {
+            transition: opacity 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #670000;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.25rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.25rem;
+            font-size: 2.5rem;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            color: #d1d5db;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #fbbf24;
+            transform: scale(1.1);
+        }
+
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #fbbf24;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(103, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* Success Message */
+        .feedback-success {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .feedback-success i {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-success h3 {
+            color: #374151;
+            margin: 1rem 0;
+        }
+
+        .feedback-success p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .feedback-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 0.65rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            body.index-page .feedback-btn {
+                bottom: 70px;
+                right: 20px;
+            }
+            .form-group input[type="text"],
+            .form-group input[type="email"],
+            .form-group select,
+            .form-group textarea {
+                width: 90%;
+            }
+
+            .feedback-modal-content {
+                width: 85%;
+                margin: 2% auto;
+                padding: 1rem;
+            }
+
+            .feedback-modal-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             window.addEventListener('scroll', function() {
@@ -98,6 +523,160 @@
             document.querySelectorAll('.content, .card, .individual-match').forEach(el => {
                 observer.observe(el);
             });
+
+            // Detect if on index page and add class to body
+            const currentPath = window.location.pathname;
+            if (currentPath === '/' || currentPath === '/index') {
+                document.body.classList.add('index-page');
+            }
+        });
+
+        // Feedback Modal Functions
+        function openFeedbackModal() {
+            document.getElementById('feedbackModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+
+            // Reset form
+            setTimeout(() => {
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('feedbackForm').style.display = 'block';
+                document.getElementById('feedbackSuccess').style.display = 'none';
+                document.getElementById('rateFeatureForm').style.display = 'block';
+                document.getElementById('requestFeatureForm').style.display = 'none';
+                document.getElementById('otherFeatureGroup').style.display = 'none';
+            }, 300);
+        }
+
+        function toggleFeedbackForm() {
+            const feedbackType = document.querySelector('input[name="feedbackType"]:checked').value;
+            const rateForm = document.getElementById('rateFeatureForm');
+            const requestForm = document.getElementById('requestFeatureForm');
+
+            if (feedbackType === 'rate') {
+                rateForm.style.display = 'block';
+                requestForm.style.display = 'none';
+                // Set required fields
+                document.getElementById('featureSelect').required = true;
+                document.getElementById('ratingFeedback').required = true;
+                document.getElementById('featureName').required = false;
+                document.getElementById('featureDescription').required = false;
+            } else {
+                rateForm.style.display = 'none';
+                requestForm.style.display = 'block';
+                // Set required fields
+                document.getElementById('featureSelect').required = false;
+                document.getElementById('ratingFeedback').required = false;
+                document.getElementById('featureName').required = true;
+                document.getElementById('featureDescription').required = true;
+            }
+        }
+
+        function toggleOtherFeatureInput() {
+            const featureSelect = document.getElementById('featureSelect');
+            const otherFeatureGroup = document.getElementById('otherFeatureGroup');
+            const otherFeatureInput = document.getElementById('otherFeatureName');
+
+            if (featureSelect.value === 'other') {
+                otherFeatureGroup.style.display = 'block';
+                otherFeatureInput.required = true;
+            } else {
+                otherFeatureGroup.style.display = 'none';
+                otherFeatureInput.required = false;
+                otherFeatureInput.value = ''; // Clear the input
+            }
+        }
+
+        function submitFeedback(event) {
+            event.preventDefault();
+
+            const feedbackType = document.querySelector('input[name="feedbackType"]:checked').value;
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+
+            let feedbackData = {
+                type: feedbackType,
+                name: name,
+                email: email,
+                timestamp: new Date().toISOString(),
+                page: window.location.pathname
+            };
+
+            if (feedbackType === 'rate') {
+                let feature = document.getElementById('featureSelect').value;
+                const rating = document.querySelector('input[name="rating"]:checked')?.value;
+                const feedback = document.getElementById('ratingFeedback').value;
+
+                if (!rating) {
+                    alert('Please select a rating');
+                    return;
+                }
+
+                // If "other" is selected, use the custom feature name
+                if (feature === 'other') {
+                    const otherFeatureName = document.getElementById('otherFeatureName').value;
+                    if (!otherFeatureName) {
+                        alert('Please specify the feature name');
+                        return;
+                    }
+                    feature = otherFeatureName;
+                }
+
+                feedbackData.feature = feature;
+                feedbackData.rating = rating;
+                feedbackData.feedback = feedback;
+            } else {
+                const featureName = document.getElementById('featureName').value;
+                const description = document.getElementById('featureDescription').value;
+                const priority = document.getElementById('featurePriority').value;
+
+                feedbackData.featureName = featureName;
+                feedbackData.description = description;
+                feedbackData.priority = priority;
+            }
+
+            // Send to backend API
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(feedbackData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    document.getElementById('feedbackForm').style.display = 'none';
+                    document.getElementById('feedbackSuccess').style.display = 'block';
+                } else {
+                    alert('Error submitting feedback: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting feedback:', error);
+                alert('Error submitting feedback. Please try again.');
+            });
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('feedbackModal');
+            if (event.target === modal) {
+                closeFeedbackModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const feedbackModal = document.getElementById('feedbackModal');
+                if (feedbackModal && feedbackModal.style.display === 'block') {
+                    closeFeedbackModal();
+                }
+            }
         });
     </script>
 </body>
