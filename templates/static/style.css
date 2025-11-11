@@ -57,10 +57,6 @@ body {
   transition: background 0.3s ease-in-out;
 }
 
-.scrolling-active .menuOptions {
-  color: black;
-  transition: color 0.3s ease-in-out;
-}
 
 .logo {
   text-decoration: none;
