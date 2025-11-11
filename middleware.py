@@ -27,6 +27,10 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         user_agent = request.headers.get('user-agent', '')
         query_params = dict(request.query_params)
 
+        response = None
+        status_code = None
+        error_details = None
+
         # Process request
         try:
             response = await call_next(request)
