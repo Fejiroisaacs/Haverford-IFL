@@ -4,6 +4,7 @@
 
 {% block content %}
 <link rel="stylesheet" href="/static/slides.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="/static/message-form.css">
 
 <script src="/static/slide.js" defer></script>
@@ -410,7 +411,7 @@
 <div id="whatsNewModal" class="whats-new-modal">
     <div class="whats-new-content">
         <span class="close-whats-new" onclick="closeWhatsNew()">&times;</span>
-        <h2>🎉 What's New in IFL 🎉</h2>
+        <h2><i class="fas fa-trophy feature-icon"></i> What's New in IFL <i class="fas fa-trophy feature-icon"></i></h2>
         
         <div class="feature-item">
           <div class="feature-date">November 11th, 2025</div>
@@ -420,7 +421,7 @@
           <a href="/matches" class="feature-link">View Matches →</a>
         </div>
         
-        <h2>⏳ Upcoming Features ⏳</h2>
+        <h2><i class="fas fa-clock-o feature-icon"></i> Upcoming Features <i class="fas fa-clock-o feature-icon"></i></h2>
         <div class="feature-item">
           <div class="feature-date">November 13th, 2025</div>
 
@@ -439,7 +440,7 @@
           <p>Head-to-Head (H2H) record for every team faced.</p>
         </div>
 
-        <h2>🚀 Future Changes 🚀</h2>
+        <h2><i class="fas fa-hourglass-half feature-icon"></i> Future Changes <i class="fas fa-hourglass-half feature-icon"></i></h2>
         <div class="feature-item">
           <div class="feature-date">November 2025</div>
 
@@ -460,9 +461,11 @@
 .stats{
     margin-top: -10vw;
 }
-/* ========== HERO SECTION STYLES ========== */
-
-/* Base Hero Styles */
+.feature-icon {
+    font-size: 2rem;
+    color: #870000;
+    margin: 0 0.5rem; /* optional spacing */
+}
 .hero {
     position: relative;
     height: 85vh;

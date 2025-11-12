@@ -88,8 +88,9 @@ async def get_match_preview(team1: str, team2: str, matchday: int = None, time: 
     standings_df['L5'] = standings_df['L5'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
     
     # Get current season data
-    current_standings = standings_df[standings_df['Season'] == CURRENT_SEASON]
-    current_standings = current_standings.reset_index(drop=True)
+    current_standings = standings_df[standings_df["Season"] == CURRENT_SEASON]
+    group = current_standings.loc[current_standings["Team"] == team1, "Group"].iat[0]
+    current_standings = current_standings[current_standings["Group"] == group].reset_index(drop=True)
 
     current_player_stats = player_stats_df[player_stats_df['Season'] == str(CURRENT_SEASON)]
 
