@@ -70,6 +70,7 @@ def get_upcoming_matches():
 
     return {
         "Max": data['MD'].max(),
+        "Min": data['MD'].min(),
         "data": match_dict
     }
 
@@ -82,7 +83,6 @@ async def get_match_preview(team1: str, team2: str, matchday: int = None, time: 
     standings_df = pd.read_csv("data/season_standings.csv")
     player_stats_df = pd.read_csv("data/season_player_stats.csv")
     team_ratings_df = pd.read_csv("data/team_ratings.csv")
-    awards_df = pd.read_csv("data/IFL_Awards.csv")
 
     # Convert L5 string to list for standings
     standings_df['L5'] = standings_df['L5'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)

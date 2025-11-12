@@ -227,24 +227,37 @@
   <h4>(subject to change)</h4>
 
   <br>
+
+  <!-- Matchday Filter Buttons -->
+  <div class="matchday-filters">
+    <button class="matchday-filter-btn" onclick="filterMatchday('all')">All</button>
+    {% for match_day in upcoming_matches_data['data'] %}
+      <button class="matchday-filter-btn {% if match_day|int == upcoming_matches_data['Min']|int %}active{% endif %}" onclick="filterMatchday({{match_day|int}})">Matchday {{match_day|int}}</button>
+    {% endfor %}
+  </div>
+
+  <br>
+
   {% for match_day in upcoming_matches_data['data'] %}
-    <h2>Matchday {{match_day|int}} of {{upcoming_matches_data['Max']|int}}</h2>
-    <div class='results'>
-      {% for match in upcoming_matches_data['data'][match_day] %}
-        <div class="individual-match upcoming-match-preview"
-             onclick="showMatchPreview('{{match['Team 1']}}', '{{match['Team 2']}}', {{match_day}}, '{{match['Time']}}')"
-             style="cursor: pointer;">
-          <div class="team-score">
-            <p class="team">{{match['Team 1']}}</p>
-            <p class="team">{{match['Team 2']}}</p>
+    <div class="matchday-section {% if match_day|int != upcoming_matches_data['Min']|int %}hidden{% endif %}" data-matchday="{{match_day|int}}">
+      <h2>Matchday {{match_day|int}} of {{upcoming_matches_data['Max']|int}}</h2>
+      <div class='results'>
+        {% for match in upcoming_matches_data['data'][match_day] %}
+          <div class="individual-match upcoming-match-preview"
+               onclick="showMatchPreview('{{match['Team 1']}}', '{{match['Team 2']}}', {{match_day}}, '{{match['Time']}}')"
+               style="cursor: pointer;">
+            <div class="team-score">
+              <p class="team">{{match['Team 1']}}</p>
+              <p class="team">{{match['Team 2']}}</p>
+            </div>
+            <div class="separator"></div>
+            <div class="time size">{{match['Day']}} <br> {{match['Time']}}</div>
+            <div class="preview-icon">
+              <i class="fas fa-eye"></i> Preview
+            </div>
           </div>
-          <div class="separator"></div>
-          <div class="time size">{{match['Day']}} <br> {{match['Time']}}</div>
-          <div class="preview-icon">
-            <i class="fas fa-eye"></i> Preview
-          </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
   {% endfor %}
 
@@ -264,7 +277,7 @@
         <h1 id="modalMatchTitle"></h1>
         <p id="modalMatchDetails"></p>
       </div>
-
+      <h3><i class="fas fa-info-circle"></i> Based On Current Season (Except Head-to-Head)</h3>
       <div class="teams-comparison">
         <div class="team-info">
           <h2 id="team1Name"></h2>
@@ -278,9 +291,9 @@
       </div>
 
       <!-- Head-to-Head Section -->
-      <div class="modal-section" id="h2h-record">
+      <div class="modal-section">
         <h2><i class="fas fa-history"></i> Head-to-Head</h2>
-        <div class="h2h-record" >
+        <div class="h2h-record" id="h2h-record">
           <div class="h2h-stat">
             <strong>Total Matches:</strong> <span id="h2hTotal">0</span>
           </div>
@@ -824,6 +837,56 @@
     gap: 0.5rem;
   }
 }
+
+/* Matchday Filter Buttons */
+.matchday-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.matchday-filter-btn {
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 2px solid #870000;
+  background: white;
+  color: #870000;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.matchday-filter-btn:hover {
+  background: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.matchday-filter-btn.active {
+  background: linear-gradient(135deg, #a70000 0%, #870000 100%);
+  color: white;
+  border-color: #870000;
+  box-shadow: 0 4px 12px rgba(135, 0, 0, 0.3);
+}
+
+.matchday-section {
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+.matchday-section.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .matchday-filter-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
 </style>
 
 {% block scripts %}
@@ -850,6 +913,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// Matchday Filter Function
+function filterMatchday(matchday) {
+  const allSections = document.querySelectorAll('.matchday-section');
+  const allButtons = document.querySelectorAll('.matchday-filter-btn');
+
+  // Remove active class from all buttons
+  allButtons.forEach(btn => btn.classList.remove('active'));
+
+  // Add active class to clicked button
+  event.target.classList.add('active');
+
+  if (matchday === 'all') {
+    // Show all matchday sections
+    allSections.forEach(section => {
+      section.classList.remove('hidden');
+    });
+  } else {
+    // Show only the selected matchday
+    allSections.forEach(section => {
+      const sectionMatchday = parseInt(section.dataset.matchday);
+      if (sectionMatchday === matchday) {
+        section.classList.remove('hidden');
+      } else {
+        section.classList.add('hidden');
+      }
+    });
+  }
+}
 
 async function showMatchPreview(team1, team2, matchday, time) {
   const modal = document.getElementById('matchPreviewModal');
@@ -905,7 +997,10 @@ function populateModal(data) {
 
   // Last 5 H2H
   const h2hContainer = document.getElementById('h2hLast5Container');
+  const innerH2hContainer = document.getElementById('h2h-record');
+
   if (head_to_head.last_5.length > 0) {
+    innerH2hContainer.style.display = 'block';
     h2hContainer.innerHTML = '<h4>Last 5 Meetings</h4><div class="h2h-results">' +
       head_to_head.last_5.map(match => {
         let resultClass = match.winner === essential_info.team1 ? 'team1-win' :
@@ -916,8 +1011,8 @@ function populateModal(data) {
         </div>`;
       }).join('') + '</div>';
   } else {
-    const mainh2hContainer = document.getElementById('h2h-record');
-    mainh2hContainer.innerHTML = 'No head-to-head data available.';
+    innerH2hContainer.style.display = 'none';
+    h2hContainer.innerHTML = 'No head-to-head data available.';
   }
 
   // Current Form & Standings
@@ -949,36 +1044,60 @@ function populateModal(data) {
   }
 
   // Statistical Comparison
-  if (stats_comparison.team1 && stats_comparison.team2) {
-    // Goals Scored
+  // Handle team1 data
+  if (stats_comparison.team1) {
     document.getElementById('team1GoalsScored').textContent =
       `${stats_comparison.team1.goals_scored} (${stats_comparison.team1.goals_per_game})`;
-    document.getElementById('team2GoalsScored').textContent =
-      `${stats_comparison.team2.goals_scored} (${stats_comparison.team2.goals_per_game})`;
-    setStatBar('GoalsScored', stats_comparison.team1.goals_per_game, stats_comparison.team2.goals_per_game);
-
-    // Goals Conceded
     document.getElementById('team1GoalsConceded').textContent =
       `${stats_comparison.team1.goals_conceded} (${stats_comparison.team1.goals_conceded_per_game})`;
+    document.getElementById('team1CleanSheets').textContent = stats_comparison.team1.clean_sheets;
+    document.getElementById('team1WinPct').textContent = stats_comparison.team1.win_percentage + '%';
+    document.getElementById('team1POTM').textContent = stats_comparison.team1_potm_count || 0;
+  } else {
+    document.getElementById('team1GoalsScored').textContent = 'N/A';
+    document.getElementById('team1GoalsConceded').textContent = 'N/A';
+    document.getElementById('team1CleanSheets').textContent = 'N/A';
+    document.getElementById('team1WinPct').textContent = 'N/A';
+    document.getElementById('team1POTM').textContent = 'N/A';
+  }
+
+  // Handle team2 data
+  if (stats_comparison.team2) {
+    document.getElementById('team2GoalsScored').textContent =
+      `${stats_comparison.team2.goals_scored} (${stats_comparison.team2.goals_per_game})`;
     document.getElementById('team2GoalsConceded').textContent =
       `${stats_comparison.team2.goals_conceded} (${stats_comparison.team2.goals_conceded_per_game})`;
-    setStatBar('GoalsConceded', stats_comparison.team1.goals_conceded_per_game, stats_comparison.team2.goals_conceded_per_game);
-
-    // Clean Sheets
-    document.getElementById('team1CleanSheets').textContent = stats_comparison.team1.clean_sheets;
     document.getElementById('team2CleanSheets').textContent = stats_comparison.team2.clean_sheets;
-    setStatBar('CleanSheets', stats_comparison.team1.clean_sheets, stats_comparison.team2.clean_sheets);
-
-    // Win Percentage
-    document.getElementById('team1WinPct').textContent = stats_comparison.team1.win_percentage + '%';
     document.getElementById('team2WinPct').textContent = stats_comparison.team2.win_percentage + '%';
-    setStatBar('WinPct', stats_comparison.team1.win_percentage, stats_comparison.team2.win_percentage);
-
-    // POTM Awards
-    document.getElementById('team1POTM').textContent = stats_comparison.team1_potm_count;
-    document.getElementById('team2POTM').textContent = stats_comparison.team2_potm_count;
-    setStatBar('POTM', stats_comparison.team1_potm_count, stats_comparison.team2_potm_count);
+    document.getElementById('team2POTM').textContent = stats_comparison.team2_potm_count || 0;
+  } else {
+    document.getElementById('team2GoalsScored').textContent = 'N/A';
+    document.getElementById('team2GoalsConceded').textContent = 'N/A';
+    document.getElementById('team2CleanSheets').textContent = 'N/A';
+    document.getElementById('team2WinPct').textContent = 'N/A';
+    document.getElementById('team2POTM').textContent = 'N/A';
   }
+
+  // Update stat bars (works even if only one team has data)
+  const team1Goals = stats_comparison.team1?.goals_per_game || 0;
+  const team2Goals = stats_comparison.team2?.goals_per_game || 0;
+  setStatBar('GoalsScored', team1Goals, team2Goals);
+
+  const team1Conceded = stats_comparison.team1?.goals_conceded_per_game || 0;
+  const team2Conceded = stats_comparison.team2?.goals_conceded_per_game || 0;
+  setStatBar('GoalsConceded', team1Conceded, team2Conceded);
+
+  const team1Sheets = stats_comparison.team1?.clean_sheets || 0;
+  const team2Sheets = stats_comparison.team2?.clean_sheets || 0;
+  setStatBar('CleanSheets', team1Sheets, team2Sheets);
+
+  const team1Win = stats_comparison.team1?.win_percentage || 0;
+  const team2Win = stats_comparison.team2?.win_percentage || 0;
+  setStatBar('WinPct', team1Win, team2Win);
+
+  const team1POTM = stats_comparison.team1_potm_count || 0;
+  const team2POTM = stats_comparison.team2_potm_count || 0;
+  setStatBar('POTM', team1POTM, team2POTM);
 
   // Key Players
   document.getElementById('playersTeam1Name').textContent = essential_info.team1;
