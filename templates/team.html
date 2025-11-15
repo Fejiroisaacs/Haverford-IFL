@@ -5,9 +5,48 @@
 {% block content %}
 <link rel="stylesheet" href="/static/table.css">
 <link rel="stylesheet" href="/static/displays.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <h1>{{team}} TEAM</h1>
-<h2>Rating: {{data["Rating"]}}/Rank: {{data["Rank"]}}</h2>
+<h2>Rating: {{data["Rating"]}} / Rank: {{data["Rank"]}}</h2>
+
+<!-- Quick Stats Cards -->
+<br>
+<h1>All Time Stats</h1>
+<div class="quick-stats-container">
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['matches_played']}}</div>
+        <div class="stat-label">Matches</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['wins']}}</div>
+        <div class="stat-label">Wins</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['draws']}}</div>
+        <div class="stat-label">Draws</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['losses']}}</div>
+        <div class="stat-label">Losses</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['win_percentage']}}%</div>
+        <div class="stat-label">Win Rate</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['goals_for']}}</div>
+        <div class="stat-label">Goals For</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['goals_against']}}</div>
+        <div class="stat-label">Goals Against</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{team_stats['all_time']['goal_difference']}}</div>
+        <div class="stat-label">Goal Diff</div>
+    </div>
+</div>
 
 <div class="sec-center">    
     <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
@@ -24,6 +63,9 @@
     <div class="option" id="results-option" onclick="showContent('results')">Match Results</div>
     <div class="option" id="standings-option" onclick="showContent('standings')">Standings</div>
     <div class="option" id="players-option" onclick="showContent('players')">Players</div>
+    <div class="option" id="stats-option" onclick="showContent('stats')">Statistics</div>
+    <div class="option" id="awards-option" onclick="showContent('awards')">Awards</div>
+    <div class="option" id="h2h-option" onclick="showContent('h2h')">Head-to-Head</div>
 </div>
 
 <hr>
@@ -31,27 +73,43 @@
 <div id="results" class="content"></div>
 <div id="standings" class="content" style="display: none;"></div>
 <div id="players" class="content" style="display: none;"></div>
+<div id="stats" class="content" style="display: none;"></div>
+<div id="awards" class="content" style="display: none;"></div>
+<div id="h2h" class="content" style="display: none;"></div>
 
 <script>
     const standingsData = {{ standings_data | tojson }};
     const matchesData = {{ matches_data | tojson }};
     const playersData = {{ players_data | tojson }};
+    const playerStatsData = {{ player_stats | tojson }};
+    const teamStatsData = {{ team_stats | tojson }};
+    const awardsData = {{ awards_data | tojson }};
+    const headToHeadData = {{ head_to_head | tojson }};
     let activeSeason = '{{ seasons_played|max }}';
     let activeContent = 'results';
 
     function showContent(section) {
+        // Hide all sections
         document.getElementById('results').style.display = 'none';
         document.getElementById('standings').style.display = 'none';
         document.getElementById('players').style.display = 'none';
+        document.getElementById('stats').style.display = 'none';
+        document.getElementById('awards').style.display = 'none';
+        document.getElementById('h2h').style.display = 'none';
 
+        // Show selected section
         document.getElementById(section).style.display = 'block';
 
+        // Update active class
         document.getElementById('results-option').classList.remove('active');
         document.getElementById('standings-option').classList.remove('active');
         document.getElementById('players-option').classList.remove('active');
+        document.getElementById('stats-option').classList.remove('active');
+        document.getElementById('awards-option').classList.remove('active');
+        document.getElementById('h2h-option').classList.remove('active');
 
         document.getElementById(`${section}-option`).classList.add('active');
-        
+
         activeContent = section;
         updateContent(section);
     }
@@ -156,16 +214,249 @@
             content += `</tbody></table></div></div>`;
             document.getElementById('standings').innerHTML = content;
         } else if (section === 'players') {
-            const players = playersData[activeSeason];
-            let content = `<h2>Season ${activeSeason} Players</h2>
-                <div class="results">`;
-            players.forEach(player => {
-                content += `<a href="/players/${player}" style="text-decoration: none; color: inherit;">
-                    <h4 class='individual-match'>${player}</h4>
-                </a>`;
-            });
-            content += `</div>`;
+            // Try both string and number keys for season
+            const seasonPlayers = playerStatsData.by_season[activeSeason] ||
+                                 playerStatsData.by_season[parseInt(activeSeason)] || [];
+            let content = `<h2>Season ${activeSeason} Players</h2>`;
+
+            if (seasonPlayers.length > 0) {
+                content += `<br>
+                <div class="tbl-content">
+                    <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+                        <div class="tbl-header">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>MP</th>
+                                    <th>Goals</th>
+                                    <th>Assists</th>
+                                    <th>Saves</th>
+                                    <th>POTM</th>
+                                    <th>Cards (Y-R)</th>
+                                </tr>
+                            </thead>
+                        </div>
+                        <tbody>`;
+
+                seasonPlayers.forEach(player => {
+                    content += `<tr onclick="window.open('/players/${player.Name}', '_blank')">
+                        <td><b>${player.Name}</b></td>
+                        <td>${player.MP}</td>
+                        <td>${player.Goals}</td>
+                        <td>${player.Assists}</td>
+                        <td>${player.Saves}</td>
+                        <td>${player.POTM}</td>
+                        <td>${player['Y-R']}</td>
+                    </tr>`;
+                });
+
+                content += `</tbody></table></div>`;
+            } else {
+                content += `<p>No player data available for this season.</p>`;
+            }
+
+            // Add top performers all-time section
+            content += `<br>
+            <h2>All-Time Top Performers</h2>
+                <div class="top-performers">
+                    <div class="performer-card">
+                        <h3>Top Scorer</h3>
+                        ${playerStatsData.top_scorer ? `
+                            <p class="performer-name">${playerStatsData.top_scorer.Name}</p>
+                            <p class="performer-stat">${playerStatsData.top_scorer.Goals} goals</p>
+                        ` : '<p>No data</p>'}
+                    </div>
+                    <div class="performer-card">
+                        <h3>Top Assists</h3>
+                        ${playerStatsData.top_assists ? `
+                            <p class="performer-name">${playerStatsData.top_assists.Name}</p>
+                            <p class="performer-stat">${playerStatsData.top_assists.Assists} assists</p>
+                        ` : '<p>No data</p>'}
+                    </div>
+                    <div class="performer-card">
+                        <h3>Top Saves</h3>
+                        ${playerStatsData.top_saves ? `
+                            <p class="performer-name">${playerStatsData.top_saves.Name}</p>
+                            <p class="performer-stat">${playerStatsData.top_saves.Saves} assists</p>
+                        ` : '<p>No data</p>'}
+                    </div>
+                </div>`;
+
             document.getElementById('players').innerHTML = content;
+
+        } else if (section === 'stats') {
+            let content = `<h2>Team Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stats-section">
+                        <h3>Overall Performance</h3>
+                        <div class="stat-row">
+                            <span>Average Goals For:</span>
+                            <span><b>${teamStatsData.all_time.avg_goals_for}</b></span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Average Goals Against:</span>
+                            <span><b>${teamStatsData.all_time.avg_goals_against}</b></span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Clean Sheets:</span>
+                            <span><b>${teamStatsData.all_time.clean_sheets}</b></span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Total Points:</span>
+                            <span><b>${teamStatsData.all_time.points}</b></span>
+                        </div>
+                    </div>
+
+                    <div class="stats-section">
+                        <h3>Disciplinary Record</h3>
+                        <div class="stat-row">
+                            <span>Yellow Cards:</span>
+                            <span><b>${teamStatsData.all_time.yellow_cards}</b></span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Red Cards:</span>
+                            <span><b>${teamStatsData.all_time.red_cards}</b></span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Fair Play Score:</span>
+                            <span><b>${(teamStatsData.all_time.yellow_cards + teamStatsData.all_time.red_cards * 3)}</b></span>
+                        </div>
+                    </div>
+                </div>`;
+
+            // Add season progression chart
+            if (teamStatsData.season_progression.length > 0) {
+                content += `<h3 style="margin-top: 2rem;">Season Progression</h3>
+                    <canvas id="progressionChart" style="max-height: 300px; margin-top: 1rem;"></canvas>`;
+            }
+
+            document.getElementById('stats').innerHTML = content;
+
+            // Create chart if data exists
+            if (teamStatsData.season_progression.length > 0) {
+                const ctx = document.getElementById('progressionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: teamStatsData.season_progression.map(s => 'Season ' + s.season),
+                        datasets: [{
+                            label: 'Points',
+                            data: teamStatsData.season_progression.map(s => s.pts),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }, {
+                            label: 'Goals For',
+                            data: teamStatsData.season_progression.map(s => s.gf),
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        }, {
+                            label: 'Goals Against',
+                            data: teamStatsData.season_progression.map(s => s.ga),
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+        } else if (section === 'awards') {
+            // Filter awards by active season
+            const seasonAwards = awardsData.awards_list.filter(award => award.Season == activeSeason);
+
+            let content = `<h2>Season ${activeSeason} Awards & Achievements</h2>`;
+
+            if (seasonAwards.length > 0) {
+                content += `<p><b>Total Awards: ${seasonAwards.length}</b></p>
+                    <div class="awards-list">`;
+
+                // Group awards by type for this season
+                const awardsByType = {};
+                seasonAwards.forEach(award => {
+                    if (!awardsByType[award.Award]) {
+                        awardsByType[award.Award] = [];
+                    }
+                    awardsByType[award.Award].push(award.Name);
+                });
+
+                // Display grouped awards
+                Object.keys(awardsByType).forEach(awardType => {
+                    content += `<div class="award-section">
+                        <h3>${awardType}</h3>
+                        <ul>`;
+
+                    awardsByType[awardType].forEach(name => {
+                        content += `<li>${name}</li>`;
+                    });
+
+                    content += `</ul></div>`;
+                });
+
+                content += `</div>`;
+            } else {
+                content += `<p>No awards won in Season ${activeSeason}.</p>`;
+            }
+
+            // Add all-time awards summary
+            if (awardsData.total_awards > 0) {
+                content += `<hr style="margin: 2rem 0;">
+                    <h2>All-Time Awards Summary</h2>
+                    <p><b>Total Awards (All Seasons): ${awardsData.total_awards}</b></p>`;
+            }
+
+            document.getElementById('awards').innerHTML = content;
+
+        } else if (section === 'h2h') {
+            let content = `<h2>Head-to-Head Records</h2>
+                <div class="tbl-content">
+                    <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
+                        <div class="tbl-header">
+                            <thead>
+                                <tr>
+                                    <th>Opponent</th>
+                                    <th>Played</th>
+                                    <th>W</th>
+                                    <th>D</th>
+                                    <th>L</th>
+                                    <th>GF</th>
+                                    <th>GA</th>
+                                    <th>GD</th>
+                                </tr>
+                            </thead>
+                        </div>
+                        <tbody>`;
+
+            headToHeadData.forEach(h2h => {
+                content += `<tr onclick="window.open('/teams/${h2h.opponent}', '_blank')">
+                    <td><b>${h2h.opponent}</b></td>
+                    <td>${h2h.played}</td>
+                    <td>${h2h.won}</td>
+                    <td>${h2h.drawn}</td>
+                    <td>${h2h.lost}</td>
+                    <td>${h2h.gf}</td>
+                    <td>${h2h.ga}</td>
+                    <td>${h2h.gf - h2h.ga}</td>
+                </tr>`;
+            });
+
+            content += `</tbody></table></div>`;
+            document.getElementById('h2h').innerHTML = content;
         }
     }
 
@@ -173,5 +464,156 @@
         showContent('results');
     });
 </script>
+
+<style>
+    /* Quick Stats Cards */
+    .quick-stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #470000 0%, #a30000 100%);
+        border-radius: 10px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    /* Top Performers */
+    .top-performers {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .performer-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 2px solid #e9ecef;
+    }
+
+    .performer-card h3 {
+        color: #495057;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .performer-name {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #212529;
+        margin: 0.5rem 0;
+    }
+
+    .performer-stat {
+        font-size: 1.5rem;
+        color: #870000;
+        font-weight: bold;
+        margin: 0.5rem 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .stats-section {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .stats-section h3 {
+        color: #495057;
+        border-bottom: 2px solid #870000;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Awards Section */
+    .awards-list {
+        margin-top: 1.5rem;
+    }
+
+    .award-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #870000;
+    }
+
+    .award-section h3 {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .award-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .award-section li {
+        padding: 0.5rem 0;
+        color: #495057;
+        font-size: 1rem;
+    }
+
+    .award-section li:before {
+        margin-right: 0.5rem;
+    }
+
+
+
+
+    /* Table enhancements */
+    .tbl-content table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .tbl-content table tbody tr:hover {
+        background-color: #f8f9fa !important;
+    }
+</style>
 
 {% endblock %}

@@ -12,9 +12,8 @@
 <!-- NEW: Feature Announcement Banner -->
 <div class="feature-announcement" id="featureBanner">
     <div class="announcement-content">
-        <span class="announcement-icon">✨</span>
-        <div class="announcement-text">
-            <strong>NEW:</strong> Match Preview feature now available! Click any upcoming match to see detailed head-to-head stats, form analysis, and key player comparisons.
+      <div class="announcement-text">
+            <strong>NEW:</strong> Team Pages Update! Explore new filters, stats, and insights for all teams.
         </div>
         <button class="announcement-close" onclick="dismissBanner()">×</button>
     </div>
@@ -325,7 +324,7 @@
               <b style='font-size:2rem;'>Season 5</b>
             </span>
             <span class="vertical-part">
-              <b>In a surprise to pretty much everyone, NPC Team manages to pull off a shocking 1-0 upset against Soccer Extraordinaires. Going in as the heavy underdogs facing Varsity Soccer, they were just trying to keep the game close. However, NPC demonstrates a masterclass in defense, keeping a clean sheet against a stacked team who put 6 away just a day before on reigning IFL Champions Brixton. Grant takes the POTM, making 10 crucial saves in NPC’s second-ever clean sheet.</b>
+              <b>In a surprise to pretty much everyone, NPC Team manages to pull off a shocking 1-0 upset against Soccer Extraordinaires. Going in as the heavy underdogs facing Varsity Soccer, they were just trying to keep the game close. However, NPC demonstrates a masterclass in defense, keeping a clean sheet against a stacked team who put 6 away just a day before on reigning IFL Champions Brixton. Grant takes the POTM, making 10 crucial saves in NPC's second-ever playoff clean sheet.</b>
             </span>
           </div>
         </div>
@@ -414,23 +413,14 @@
         <h2><i class="fas fa-trophy feature-icon"></i> What's New in IFL <i class="fas fa-trophy feature-icon"></i></h2>
         
         <div class="feature-item">
-          <div class="feature-date">November 11th, 2025</div>
-          <h3>Match Preview Feature</h3>
-          <p>Feedback form! Share your thoughts, rate features, and suggest new ideas.</p>
-          <p>Matches are now organized by match day with buttons to quickly view each day's games.</p>
-          <p>Get detailed insights for upcoming matches with head-to-head stats, form analysis, and key player comparisons.</p>
-          <a href="/matches" class="feature-link">View Matches →</a>
-        </div>
-        
-        <h2><i class="fas fa-clock-o feature-icon"></i> Upcoming Features <i class="fas fa-clock-o feature-icon"></i></h2>
-        <div class="feature-item">
-          <div class="feature-date">November 13th, 2025</div>
+          <div class="feature-date">November 15th, 2025</div>
 
           <h3>Base Team Pages Changes</h3>
           <p>New filters for team stats and performance insights.</p>
           <p>Sort teams by season, group, rating, goals scored, and more.</p>
           <p>Updated team cards with current form, record, and points.</p>
           <p>Seasonal and all-time metrics and awards section.</p>
+          <a href="/teams" class="feature-link">View Teams →</a>
           <br>
           <hr>
           <br>
@@ -440,6 +430,18 @@
           <p>Players menu with individual player stats per season.</p>
           <p>Head-to-Head (H2H) record for every team faced.</p>
         </div>
+        
+        <div class="feature-item">
+          <div class="feature-date">November 11th, 2025</div>
+          <h3>Match Preview Feature</h3>
+          <p>Feedback form! Share your thoughts, rate features, and suggest new ideas.</p>
+          <p>Matches are now organized by match day with buttons to quickly view each day's games.</p>
+          <p>Get detailed insights for upcoming matches with head-to-head stats, form analysis, and key player comparisons.</p>
+          <a href="/matches" class="feature-link">View Matches →</a>
+        </div>
+        
+
+        <!--<h2><i class="fas fa-clock-o feature-icon"></i> Upcoming Features <i class="fas fa-clock-o feature-icon"></i></h2>-->
 
         <h2><i class="fas fa-hourglass-half feature-icon"></i> Future Changes <i class="fas fa-hourglass-half feature-icon"></i></h2>
         <div class="feature-item">
@@ -1797,10 +1799,6 @@
   margin: 0 auto;
 }
 
-.announcement-icon {
-  font-size: 1.5rem;
-}
-
 .announcement-text {
   flex: 1;
   text-align: left;
@@ -2108,8 +2106,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showSlides();
     }
 
-    // Check if banner should be shown
-    if (localStorage.getItem('featureBannerDismissed') !== 'true') {
+    const bannerVersion = '1';
+    const dismissedVersion = localStorage.getItem('featureBannerDismissedVersion');
+
+    if (dismissedVersion !== bannerVersion) {
         document.getElementById('featureBanner').style.display = 'block';
     } else {
         document.getElementById('featureBanner').style.display = 'none';
@@ -2119,10 +2119,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // Feature Announcement Banner Functions
 function dismissBanner() {
     const banner = document.getElementById('featureBanner');
+    const bannerVersion = '1'; // Must match the version above
     banner.style.animation = 'slideDown 0.3s ease-out reverse';
     setTimeout(() => {
         banner.style.display = 'none';
-        localStorage.setItem('featureBannerDismissed', 'true');
+        localStorage.setItem('featureBannerDismissedVersion', bannerVersion);
     }, 300);
 }
 
