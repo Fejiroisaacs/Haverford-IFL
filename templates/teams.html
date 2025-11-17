@@ -242,7 +242,7 @@
                         {% for team in performance_metrics['current_season']['best_defense'] %}
                         <li>
                             <span class="team-name">{{team['Team']}}</span>
-                            <span class="team-stat">{{team['GA']}} goals allowed ({{team['MP']}} games)</span>
+                            <span class="team-stat">{{team['GA']}} goals in {{team['MP']}} games ({{team['Avg_GA']}}/game)</span>
                         </li>
                         {% endfor %}
                     </ol>
@@ -280,12 +280,12 @@
 
                 <!-- Best Defense -->
                 <div class="performance-category">
-                    <h3><i class="fas fa-shield-alt"></i> Best Defense</h3>
+                    <h3><i class="fas fa-shield-alt"></i> Best Defense (MP > 10)</h3>
                     <ol class="performance-list">
                         {% for team in performance_metrics['all_time']['best_defense'] %}
                         <li>
                             <span class="team-name">{{team['Team']}}</span>
-                            <span class="team-stat">{{team['GA']}} goals allowed ({{team['Avg_GA']}} per game)</span>
+                            <span class="team-stat">{{team['GA']}} goals in {{team['MP']}} games ({{team['Avg_GA']}}/game)</span>
                         </li>
                         {% endfor %}
                     </ol>
@@ -893,6 +893,15 @@
         .season-stats-row {
             grid-template-columns: 1fr;
         }
+        .section {
+            margin: 3rem 0;
+            padding: 2rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
     }
 
 

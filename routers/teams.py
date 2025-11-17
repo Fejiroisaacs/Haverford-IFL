@@ -57,7 +57,9 @@ def load_team_match_stats():
     return pd.read_csv('data/team_match_stats.csv')
 
 def load_season_player_stats():
-    return pd.read_csv('data/season_player_stats.csv')
+    data = pd.read_csv('data/season_player_stats.csv')
+    data = data[data["Season"] != "Total"]
+    return data
 
 def load_ifl_awards():
     return pd.read_csv('data/IFL_Awards.csv', encoding='utf-8-sig')
@@ -549,9 +551,10 @@ def get_performance_metrics(season=None):
         'all_time': {
             'highest_win_pct': team_totals.nlargest(5, 'Win_Pct')[['Team', 'Win_Pct', 'W', 'MP']].to_dict(orient='records'),
             'most_goals_scored': team_totals.nlargest(5, 'GF')[['Team', 'GF', 'Avg_GF']].to_dict(orient='records'),
-            'best_defense': team_totals[team_totals['MP'] > 0]
-                .nsmallest(5, 'GA')[['Team', 'GA', 'Avg_GA']]
-                .to_dict(orient='records'),
+            'best_defense': team_totals[team_totals['MP'] > 10]
+                            .nsmallest(5, 'Avg_GA')[['Team', 'GA', 'Avg_GA', 'MP']]
+                            .sort_values(by=['Avg_GA', 'GA'])
+                            .to_dict(orient='records'),
             'most_wins': team_totals.nlargest(5, 'W')[['Team', 'W', 'MP']].to_dict(orient='records'),
             'best_goal_diff': team_totals.nlargest(5, 'GD')[['Team', 'GD', 'GF', 'GA']].to_dict(orient='records')
         },
@@ -559,8 +562,11 @@ def get_performance_metrics(season=None):
             'top_teams': season_df.nlargest(5, 'PTS')[['Team', 'PTS', 'W', 'D', 'L', 'GF', 'GA', 'GD']].to_dict(orient='records'),
             'best_attack': season_df.nlargest(5, 'GF')[['Team', 'GF', 'MP']].to_dict(orient='records'),
             'best_defense': season_df[season_df['MP'] > 0]
-                .nsmallest(5, 'GA')[['Team', 'GA', 'MP']]
-                .to_dict(orient='records')
+                            .assign(Avg_GA=lambda x: round(x['GA'] / x['MP'], 1))
+                            .nsmallest(5, 'Avg_GA')
+                            .sort_values(by=['Avg_GA', 'GA'])
+                            [['Team', 'GA', 'MP', 'Avg_GA']]
+                            .to_dict(orient='records')
         }
     }
 
