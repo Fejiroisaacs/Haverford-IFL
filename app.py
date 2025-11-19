@@ -35,6 +35,31 @@ app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 user = None
 templates = Jinja2Templates(directory="templates")
 
+@app.middleware("http")
+async def add_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+
+    if request.url.path.startswith('/static/'):
+        path = request.url.path.lower()
+
+        # Images: cache for 1 year
+        if any(path.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico']):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+
+        # Fonts: cache for 1 year
+        elif any(path.endswith(ext) for ext in ['.woff', '.woff2', '.ttf', '.otf', '.eot']):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+
+        # CSS/JS: cache for 1 week
+        elif any(path.endswith(ext) for ext in ['.css', '.js']):
+            response.headers["Cache-Control"] = "public, max-age=604800"
+
+        # Other static files: cache for 1 day
+        else:
+            response.headers["Cache-Control"] = "public, max-age=86400"
+
+    return response
+
 # Add middleware (order matters - logging should be first)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=secret_key)
