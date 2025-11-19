@@ -244,6 +244,26 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                 'path': 'page_views/player_search',
                 'increment': 1
             })
+        elif route.startswith('/matches/match-preview'):
+            parts = route.split('?')
+            query = parts[1] if len(parts) > 1 else ''
+
+            params = dict()
+            for pair in query.split('&'):
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    params[key] = value
+
+            team1 = params.get('team1', 'unknown')
+            team2 = params.get('team2', 'unknown')
+            matchday = params.get('matchday', 'unknown')
+
+            log_queue.put({
+                'log_type': 'counter',
+                'path': f'match_preview_views/{team1}/{team1}-{team2}-{matchday}',
+                'increment': 1
+            })
+
 
     except Exception as e:
         logger.error(f"Error logging counters: {e}")
