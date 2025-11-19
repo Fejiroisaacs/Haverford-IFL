@@ -954,7 +954,7 @@ async function showMatchPreview(team1, team2, matchday, time) {
   document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
   try {
-    const response = await fetch(`/api/match-preview?team1=${encodeURIComponent(team1)}&team2=${encodeURIComponent(team2)}&matchday=${matchday}&time=${encodeURIComponent(time)}`);
+    const response = await fetch(`/matches/match-preview?team1=${encodeURIComponent(team1)}&team2=${encodeURIComponent(team2)}&matchday=${matchday}&time=${encodeURIComponent(time)}`);
     const data = await response.json();
 
     populateModal(data);

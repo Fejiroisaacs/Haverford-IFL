@@ -74,7 +74,7 @@ def get_upcoming_matches():
         "data": match_dict
     }
 
-@router.get("/api/match-preview")
+@router.get("/matches/match-preview")
 async def get_match_preview(team1: str, team2: str, matchday: int = None, time: str = None):
     """Get comprehensive match preview data for two teams"""
 
