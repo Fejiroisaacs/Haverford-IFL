@@ -244,7 +244,7 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                 'path': 'page_views/player_search',
                 'increment': 1
             })
-        elif route.startswith('/matches/match-preview'):
+        elif route.startswith('/api/match-preview'):
             parts = route.split('?')
             query = parts[1] if len(parts) > 1 else ''
 
