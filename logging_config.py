@@ -245,14 +245,7 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                 'increment': 1
             })
         elif route.startswith('/api/match-preview'):
-            parts = route.split('?')
-            query = parts[1] if len(parts) > 1 else ''
-
-            params = dict()
-            for pair in query.split('&'):
-                if '=' in pair:
-                    key, value = pair.split('=', 1)
-                    params[key] = value
+            params = request_data.get('query_params', {})
 
             team1 = params.get('team1', 'unknown')
             team2 = params.get('team2', 'unknown')
