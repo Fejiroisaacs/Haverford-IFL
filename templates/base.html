@@ -113,7 +113,7 @@
 
                     <div class="form-group" id="otherFeatureGroup" style="display: none;">
                         <label for="otherFeatureName">Feature Name</label>
-                        <input type="text" id="otherFeatureName" placeholder="Please specify the feature">
+                        <input type="text" id="otherFeatureName" placeholder="Please specify the feature" minlength="3" maxlength="50">
                     </div>
 
                     <div class="form-group">
@@ -134,7 +134,7 @@
 
                     <div class="form-group">
                         <label for="ratingFeedback">Your Feedback</label>
-                        <textarea id="ratingFeedback" rows="4" placeholder="Tell us what you think about this feature..." required></textarea>
+                        <textarea id="ratingFeedback" rows="4" placeholder="Tell us what you think about this feature..." required minlength="10" maxlength="1000"></textarea>
                     </div>
                 </div>
 
@@ -142,12 +142,12 @@
                 <div id="requestFeatureForm" class="feedback-form-section" style="display: none;">
                     <div class="form-group">
                         <label for="featureName">Feature Name</label>
-                        <input type="text" id="featureName" placeholder="What feature would you like to see?">
+                        <input type="text" id="featureName" placeholder="What feature would you like to see?" minlength="3" maxlength="100">
                     </div>
 
                     <div class="form-group">
                         <label for="featureDescription">Description</label>
-                        <textarea id="featureDescription" rows="5" placeholder="Describe your feature request in detail..."></textarea>
+                        <textarea id="featureDescription" rows="5" placeholder="Describe your feature request in detail..." maxlength="1000"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -163,12 +163,12 @@
                 <!-- Common Fields -->
                 <div class="form-group">
                     <label for="userName">Name (optional)</label>
-                    <input type="text" id="userName" placeholder="Your name">
+                    <input type="text" id="userName" placeholder="Your name" maxlength="100">
                 </div>
 
                 <div class="form-group">
                     <label for="userEmail">Email (optional)</label>
-                    <input type="email" id="userEmail" placeholder="your.email@example.com">
+                    <input type="email" id="userEmail" placeholder="your.email@example.com" maxlength="100">
                     <small>We'll only use this to follow up on your feedback</small>
                 </div>
 

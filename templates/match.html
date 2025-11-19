@@ -66,7 +66,7 @@
 {% if potm %}
     <h2 style='margin-top: 50px;margin-bottom: 8px;'>Player of the Match</h2>
     <a href="/players/{{potm['Name']}}" target="_blank">
-        <img src="/static/Images/POTM/{{ potm['Match ID'] }}.png" alt="{{potm['Name']}}" class="potm-image"/>
+        <img src="/static/Images/POTM/{{ potm['Match ID'] }}.png" alt="{{potm['Name']}}" class="potm-image" loading="lazy"/>
     </a>
 {% endif %}
 
