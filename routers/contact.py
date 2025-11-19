@@ -1,4 +1,4 @@
-from fastapi import Request, Form, Depends
+from fastapi import Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, JSONResponse
 from fastapi import APIRouter
@@ -7,6 +7,8 @@ from firebase_admin import db as firebase_db
 from pydantic import BaseModel
 from datetime import datetime
 import os
+import time
+from collections import defaultdict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,6 +16,11 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
 user = None
+
+# Simple rate limiting for contact form and feedback submissions
+_api_calls = defaultdict(list)
+CONTACT_RATE_LIMIT = 3  # 3 submissions per hour
+CONTACT_WINDOW = 3600  # 60 minutes in seconds
 
 # Pydantic model for feedback data validation
 class FeedbackData(BaseModel):
@@ -36,6 +43,19 @@ async def read_contact(request: Request):
 
 @router.post("/send-message", response_class=HTMLResponse)
 async def send_feedback(request: Request, email: str = Form(...), textarea: str = Form(...)):
+    client_ip = request.client.host
+    current_time = time.time()
+
+    _api_calls[client_ip] = [timestamp for timestamp in _api_calls[client_ip]
+                              if current_time - timestamp < CONTACT_WINDOW]
+
+    if len(_api_calls[client_ip]) >= CONTACT_RATE_LIMIT:
+        return templates.TemplateResponse("contact.html", {"request": request,
+                                                        "error": 'Too many submissions. Please try again in an hour.',
+                                                        "success": None})
+
+    _api_calls[client_ip].append(current_time)
+
     try:
         if not email or not textarea:
             return templates.TemplateResponse("contact.html", {"request": request,
@@ -57,8 +77,29 @@ async def send_feedback(request: Request, email: str = Form(...), textarea: str 
 
 
 @router.post("/api/feedback")
-async def submit_feedback(feedback: FeedbackData, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
+async def submit_feedback(request: Request, feedback: FeedbackData, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
     """Handle feedback submissions - send email and store in Firebase"""
+    # Rate limiting
+    client_ip = request.client.host
+    current_time = time.time()
+
+    # Clean up old requests
+    _api_calls[client_ip] = [timestamp for timestamp in _api_calls[client_ip]
+                              if current_time - timestamp < CONTACT_WINDOW]
+
+    # Check rate limit
+    if len(_api_calls[client_ip]) >= CONTACT_RATE_LIMIT:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "success": False,
+                "message": "Too many submissions. Please try again in an hour."
+            }
+        )
+
+    # Record this request
+    _api_calls[client_ip].append(current_time)
+
     try:
         # Prepare email content based on feedback type
         if feedback.type == 'rate':

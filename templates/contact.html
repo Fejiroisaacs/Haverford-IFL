@@ -26,13 +26,13 @@
     <form class="form" action="/send-message" method="post">
       <div class="form-group">
         <label for="email">Email/Name</label>
-        <input type="text" id="email" name="email" required="" placeholder="Enter your email or name or Anonymous">
+        <input type="text" id="email" name="email" required minlength="3" maxlength="100" placeholder="Enter your email or name or Anonymous">
       </div>
       <div class="form-group">
         <label for="textarea">How Can We Help You?</label>
-        <textarea name="textarea" id="textarea" rows="100" cols="50" required="" placeholder='Imagine Something...✦˚'></textarea>
+        <textarea name="textarea" id="textarea" rows="100" cols="50" required minlength="10" maxlength="2000" placeholder='Imagine Something...✦˚'></textarea>
       </div>
-      <button class="form-submit-btn" type="submit">Submit</button>
+      <button class="form-submit-btn" type="submit" id="contactSubmitBtn">Submit</button>
     </form>
 </div>
 
@@ -44,7 +44,21 @@
     <p style="color: red;">{{ error }}</p>
 {% endif %}
 
+<script>
+// Add loading state to contact form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.form');
+    const submitBtn = document.getElementById('contactSubmitBtn');
 
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+        });
+    }
+});
+</script>
 
 
 
