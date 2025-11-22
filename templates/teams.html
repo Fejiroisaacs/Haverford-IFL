@@ -81,6 +81,7 @@
             <div class="team-card" data-group="{{team['Group']}}" data-rating="{{team['Rating']}}"
                  data-wins="{{team['W']}}" data-goals="{{team['GF']}}" data-points="{{team['PTS']}}"
                  data-name="{{team['Name']}}">
+
                 <a href="/teams/{{team['Name']}}" style="text-decoration: none; color: inherit;">
                     <div class="team-header">
                         <h3>{{team["Name"]}}</h3>
@@ -144,6 +145,7 @@
             <div class="team-card" data-group="{{team['Group']}}" data-rating="{{team['Rating']}}"
                  data-wins="{{team['W']}}" data-goals="{{team['GF']}}" data-points="{{team['PTS']}}"
                  data-name="{{team['Name']}}">
+
                 <a href="/teams/{{team['Name']}}" style="text-decoration: none; color: inherit;">
                     <div class="team-header">
                         <h3>{{team["Name"]}}</h3>
@@ -489,7 +491,8 @@
         position: sticky;
         top: 0;
         z-index: 1;
-        background: white;
+        background-color: hsla(0, 0%, 100%, 0.40); 
+        backdrop-filter: blur(4px);
         padding: 1rem 0;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         border-radius: 5px;
@@ -903,7 +906,6 @@
         }
 
     }
-
 
 </style>
 
