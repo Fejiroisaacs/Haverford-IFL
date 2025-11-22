@@ -1,7 +1,8 @@
 import yagmail
 import os, tempfile
-import json, ast, random, pandas as pd
+import json, ast, pandas as pd
 from dotenv import load_dotenv
+from functools import lru_cache
 
 load_dotenv()
 
@@ -30,14 +31,19 @@ def send_email(email, bccs, subject, message, attachment=None):
 
     os.remove(temp_filename)
 
-def get_random_potm_images(k):
-    images = random.sample(os.listdir('templates/static/Images/POTM'), k=k)
-    images = [int(image.split('.png')[0]) for image in images if image.endswith('.png')]
-    
-    with open('data/player_match_stats.csv') as file:
-        data = pd.read_csv(file)
-    data = data[(data['POTM'] == 1) & (data['Match ID'].isin(images))]
-    return data[['Name', 'Match ID']].to_dict(orient='records')
+@lru_cache(maxsize=5)
+def get_k_recent_potm(k, season=None):
+    print("The season is", season)
+    match_results = pd.read_csv('data/Match_Results.csv')
+    if season:
+        match_results = match_results[match_results["Season"] == int(season)]
+    recent_matches = match_results.tail(k) 
+    recent_ids = recent_matches['Match ID'].tolist()
+
+    player_stats = pd.read_csv('data/player_match_stats.csv')
+    recent_potm = player_stats[(player_stats['POTM'] == 1) & (player_stats['Match ID'].isin(recent_ids))]
+
+    return recent_potm[['Name', 'Match ID']].to_dict(orient='records')
 
 def get_player_potm(player):
     data = pd.read_csv('data/player_match_stats.csv')
@@ -49,8 +55,6 @@ def get_player_potm(player):
     merged_data = pd.merge(data, match_data, on='Match ID', how='inner')
     
     return merged_data.to_dict(orient='records')
-
-import pandas as pd
 
 def get_potm_match(match_id):
     match_data = pd.read_csv('data/player_match_stats.csv', usecols=['Name', 'Match ID', 'POTM'])

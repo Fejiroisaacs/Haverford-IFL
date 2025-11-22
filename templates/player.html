@@ -4,168 +4,851 @@
 
 {% block content %}
 <link rel="stylesheet" href="/static/displays.css">
-<div class="player-card">
-    <div class="header">
-        <h1>{{rating_data['Name']}} ({{rating_data["Latest Team"]}})</h1>
-        <h2>Current Record: {{season_data[-2]["Record"]}}</h2>
-        <h2>POTM: {{rating_data["POTM"]}}</h2>
-        <div class="player-role">
-            <span class="role">Position: {{rating_data["Primary Position"]}}</span>
-            <span class="ovr-label">OVR:</span>
-            <span class="role">{{rating_data["OVR Rating"]}}</span>
-        </div>
-    </div>
-    <div class="stats">
-        <div class="stat">
-            <span class="stat-label">ATT</span>
-            <span class="stat-value">{{rating_data["ATT Rating"]}}</span>
-        </div>
-        <div class="stat">
-            <span class="stat-label">AST</span>
-            <span class="stat-value">{{rating_data["AST Rating"]}}</span>
-        </div>
-        <div class="stat">
-            <span class="stat-label">DEF</span>
-            <span class="stat-value">{{rating_data["DEF Rating"]}}</span>
-        </div>
-        <div class="stat">
-            <span class="stat-label">GLK</span>
-            <span class="stat-value">{{rating_data["GLK Rating"]}}</span>
-        </div>
-    </div>
-    <div class="performance">
-        <div class="metric">Goals: {{season_data[-2]["Goals"]}}</div>
-        <div class="metric">Assists: {{season_data[-2]["Assists"]}}</div>
-        <div class="metric">Saves: {{season_data[-2]["Saves"]}}</div>
-        <div class="metric">MP: {{season_data[-2]["MP"]}}</div>
-    </div>
-    <div class="team-record">
-        <h4>Team Record</h4>
-        <div class="table-container">
-            <table cellpadding="0" cellspacing="0" border="0">
-                <thead>
-                    <tr>
-                        <th>Season</th>
-                        <th>G</th>
-                        <th>Δ</th>
-                        <th>S</th>
-                        <th>POTM</th>
-                        <th>Team</th>
-                        <th>Record</th>
-                        <th>MP</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for season_stats in season_data %}
-                      <tr>
-                        <td>{{season_stats['Season']}}</td>
-                        <td>{{ season_stats["Goals"] }}</td>
-                        <td>{{ season_stats["Assists"] }}</td>
-                        <td>{{ season_stats["Saves"] }}</td>
-                        <td>{{ season_stats["POTM"] }}</td>
-                        <td>{{ season_stats["Team"] }}</td>
-                        <td>{{ season_stats["Record"] }}</td>
-                        <td>{{ season_stats["MP"] }}</td>
-                      </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<!-- Sticky Quick Stats Bar -->
+<div class="sticky-header" id="stickyHeader">
+    <div class="sticky-content">
+        <span class="sticky-name">{{rating_data['Name']}}</span>
+        <span class="sticky-stat">OVR: {{rating_data["OVR Rating"]}}</span>
+        <span class="sticky-stat">Goals: {{career_totals['total_goals'] if career_totals else 0}}</span>
+        <span class="sticky-stat">Assists: {{career_totals['total_assists'] if career_totals else 0}}</span>
+        <span class="sticky-stat">Win Rate: {{career_totals['win_rate'] if career_totals else 0}}%</span>
     </div>
 </div>
 
-{% if awards %}
-    <br>
-    <div class='player-card'>
-        <h1>Awards</h1>
-        <div class='awards-images'>
-            {% for award in awards %}
-                <div class='award-card'>
-                    <h3>{{award}}</h3>
-                </div>
-            {% endfor %}
+<!-- Main Player Card -->
+<div class="player-card">
+    <div class="header">
+        <h1>{{rating_data['Name']}} ({{rating_data["Latest Team"]}})</h1>
+        <h2>Current Record: {{season_data[-2]["Record"] if season_data and season_data|length > 1 else 'N/A'}}</h2>
+        <h2>POTM: {{rating_data["POTM"]}}</h2>
+        <div class="player-role">
+            <span class="role" title="Primary Position">Position: {{rating_data["Primary Position"]}}</span>
+            <span class="ovr-label" title="Overall Rating">OVR:</span>
+            <span class="role">{{rating_data["OVR Rating"]}}</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button onclick="sharePlayer()" class="action-btn" title="Share Player Profile">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
         </div>
     </div>
-    <br>
-{% endif %}
 
-{% if potm_images %}
-    <div class='player-card'>
-        <h1>POTMs</h1>
-        <h3>Click on card to see match details</h3>
-        <br>
-        <div class='potm-images'>
-            {% for image in potm_images %}
-                <div class='potm-card'>
-                    <a href="/teams/{{image['Team 1']}}/{{image['Team 1']}}-{{image['Team 2']}}-{{image['Match ID']}}" target="_blank">
-                        <img src="/static/Images/POTM/{{image['Match ID'] }}.png" alt='{{image['Name']}}' class='potm-image'>
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'overview')">Overview</button>
+        <button class="tab-button" onclick="openTab(event, 'detailed-stats')">Detailed Stats</button>
+        <button class="tab-button" onclick="openTab(event, 'match-history')">Match History</button>
+        <button class="tab-button" onclick="openTab(event, 'awards-records')">Awards & Records</button>
     </div>
-{% endif %}
 
-{% if previous_matches %}
-    <br>
-    <div class='player-card'>
-        <h1>Past Matches</h1>
-        <h3>Click on match to see more info</h3>
-        <br>
-        <div class='previous-matches'>
-            {% for season in previous_matches %}
-                <h2>Season {{season}}</h2>
-                <hr>
-                <br>
-                {% for match in previous_matches[season] %}
-                    <a href="/teams/{{match['My Team']}}/{{match['My Team']}}-{{match['Opponent']}}-{{match['Match ID']}}" target="_blank" style='text-decoration:none; color:#670000;'>
-                        <div style='display:flex; justify-content:space-between; margin:0 1rem; margin-bottom:-1rem;margin-top:-1rem;'>
-                            <h3 style='text-align:left; margin-left:1rem;'>@{{match['Opponent']}} &nbsp &nbsp
-                                {% if match['P'] != '-'%}
-                                    Pos: {{match['P']}}
-                                {% endif %}
-                                &nbsp
-                                {% if match['G'] != 0%}
-                                    Goals: {{match['G']}} &nbsp
-                                {% endif %}
-                                {% if match['A'] != 0%}
-                                    Assists: {{match['A']}} &nbsp
-                                {% endif %}
-                                {% if match['S'] != 0%}
-                                    Saves: {{match['S']}}
-                                {% endif %}
-                                {% if match['Y-R'] != '-'%}
-                                    {% if match['Y-R'] == 'RC'%}
-                                    &nbsp<img src='/static/Images/Elements/red-card.png' alt='Red Card' style='height:1rem;' class='red-card'>
-                                    {% elif match['Y-R'] == 'YC'%}
-                                    &nbsp<img src='/static/Images/Elements/yellow-card.png' alt='Yellow Card' style='height:1rem;' class='red-card'>
-                                    {% endif %}
-                                {% endif %}
-                                
-                            </h3>
-                            <h3 style='margin-right:1rem;'>
-                                {% if match['External Sub'] == 'Y'%}
-                                    (External Sub)
-                                {% endif %}
-                                {% if match['POTM'] == 1%}
-                                    <u>POTM</u>
-                                {% endif %}
-                            </hr>
-                        </div>
-                    </a>
-                    <hr style='border:0.01rem solid #ddd;'>
+    <!-- Tab Content: Overview -->
+    <div id="overview" class="tab-content active">
+        <!-- Ratings -->
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-label" title="Attack Rating">ATT</span>
+                <span class="stat-value">{{rating_data["ATT Rating"]}}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label" title="Assist Rating">AST</span>
+                <span class="stat-value">{{rating_data["AST Rating"]}}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label" title="Defense Rating">DEF</span>
+                <span class="stat-value">{{rating_data["DEF Rating"]}}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label" title="Goalkeeping Rating">GLK</span>
+                <span class="stat-value">{{rating_data["GLK Rating"]}}</span>
+            </div>
+        </div>
+
+        <!-- Career Totals -->
+        {% if career_totals %}
+        <div class="section-card">
+            <h3>Career Totals</h3>
+            <div class="career-grid">
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_matches']}}</div>
+                    <div class="career-label" title="Matches Played">Matches</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_goals']}}</div>
+                    <div class="career-label">Goals</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_assists']}}</div>
+                    <div class="career-label">Assists</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_saves']}}</div>
+                    <div class="career-label">Saves</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_potm']}}</div>
+                    <div class="career-label" title="Player of the Match">POTM</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['wins']}}-{{career_totals['draws']}}-{{career_totals['losses']}}</div>
+                    <div class="career-label" title="Win-Draw-Loss Record">W-D-L</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['win_rate']}}%</div>
+                    <div class="career-label">Win Rate</div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_yellows']}}</div>
+                    <div class="career-label"><img src='/static/Images/Elements/yellow-card.png' alt='Yellow Cards' style='height:1rem;'></div>
+                </div>
+                <div class="career-stat">
+                    <div class="career-value">{{career_totals['total_reds']}}</div>
+                    <div class="career-label"><img src='/static/Images/Elements/red-card.png' alt='Red Cards' style='height:1rem;'></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="section-card">
+            <h3>Performance Metrics</h3>
+            <div class="performance-grid">
+                <div class="metric-card">
+                    <div class="metric-value">{{career_totals['goals_per_game']}}</div>
+                    <div class="metric-label">Goals per Match</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{career_totals['assists_per_game']}}</div>
+                    <div class="metric-label">Assists per Match</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{career_totals['saves_per_game']}}</div>
+                    <div class="metric-label">Saves per Match</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Form -->
+        {% if recent_form %}
+        <div class="section-card">
+            <h3>Recent Form (Last 5 Matches)</h3>
+            <div class="form-indicators">
+                {% for match in recent_form %}
+                <div class="form-badge form-{{match['result']|lower}}" title="{{match['result']}} vs {{match['opponent']}} (G:{{match['goals']}} A:{{match['assists']}} S:{{match['saves']}}){% if match['potm'] %} - POTM{% endif %}">
+                    {{match['result']}}
+                    {% if match['potm'] %}⭐{% endif %}
+                </div>
                 {% endfor %}
-                <br>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Current Season Performance -->
+        {% if season_data and season_data|length > 1 %}
+        <div class="performance">
+            <h4>Current Season</h4>
+            <div class="metric">Goals: {{season_data[-2]["Goals"]}}</div>
+            <div class="metric">Assists: {{season_data[-2]["Assists"]}}</div>
+            <div class="metric">Saves: {{season_data[-2]["Saves"]}}</div>
+            <div class="metric" title="Matches Played">MP: {{season_data[-2]["MP"]}}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab Content: Detailed Stats -->
+    <div id="detailed-stats" class="tab-content">
+        <!-- Best Performances -->
+        {% if best_performances %}
+        <div class="section-card">
+            <h3>Best Performances</h3>
+            <div class="best-performances">
+                {% if best_performances['best_goals'] %}
+                <div class="best-perf-card">
+                    <div class="best-perf-value">{{best_performances['best_goals']['goals']}} Goals</div>
+                    <div class="best-perf-detail">vs {{best_performances['best_goals']['opponent']}} (Season {{best_performances['best_goals']['season']}})</div>
+                    <a href="/teams/{{best_performances['best_goals']['team']}}/{{best_performances['best_goals']['team']}}-{{best_performances['best_goals']['opponent']}}-{{best_performances['best_goals']['match_id']}}" target="_blank" class="view-match-link">View Match</a>
+                </div>
+                {% endif %}
+                {% if best_performances['best_assists'] %}
+                <div class="best-perf-card">
+                    <div class="best-perf-value">{{best_performances['best_assists']['assists']}} Assists</div>
+                    <div class="best-perf-detail">vs {{best_performances['best_assists']['opponent']}} (Season {{best_performances['best_assists']['season']}})</div>
+                    <a href="/teams/{{best_performances['best_assists']['team']}}/{{best_performances['best_assists']['team']}}-{{best_performances['best_assists']['opponent']}}-{{best_performances['best_assists']['match_id']}}" target="_blank" class="view-match-link">View Match</a>
+                </div>
+                {% endif %}
+                {% if best_performances['best_saves'] %}
+                <div class="best-perf-card">
+                    <div class="best-perf-value">{{best_performances['best_saves']['saves']}} Saves</div>
+                    <div class="best-perf-detail">vs {{best_performances['best_saves']['opponent']}} (Season {{best_performances['best_saves']['season']}})</div>
+                    <a href="/teams/{{best_performances['best_saves']['team']}}/{{best_performances['best_saves']['team']}}-{{best_performances['best_saves']['opponent']}}-{{best_performances['best_saves']['match_id']}}" target="_blank" class="view-match-link">View Match</a>
+                </div>
+                {% endif %}
+                {% if best_performances['best_contributions'] and best_performances['best_contributions']['total'] > 0 %}
+                <div class="best-perf-card">
+                    <div class="best-perf-value">{{best_performances['best_contributions']['total']}} Contributions</div>
+                    <div class="best-perf-detail">{{best_performances['best_contributions']['goals']}}G + {{best_performances['best_contributions']['assists']}}A vs {{best_performances['best_contributions']['opponent']}} (Season {{best_performances['best_contributions']['season']}})</div>
+                    <a href="/teams/{{best_performances['best_contributions']['team']}}/{{best_performances['best_contributions']['team']}}-{{best_performances['best_contributions']['opponent']}}-{{best_performances['best_contributions']['match_id']}}" target="_blank" class="view-match-link">View Match</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- League Rankings -->
+        {% if league_rankings %}
+        <div class="section-card">
+            <h3>League Rankings</h3>
+            <div class="rankings-grid">
+                <div class="ranking-item">
+                    <span class="ranking-position">#{{league_rankings['goals_rank']}}</span>
+                    <span class="ranking-label">Goals</span>
+                    <span class="ranking-total">of {{league_rankings['total_players']}}</span>
+                </div>
+                <div class="ranking-item">
+                    <span class="ranking-position">#{{league_rankings['assists_rank']}}</span>
+                    <span class="ranking-label">Assists</span>
+                    <span class="ranking-total">of {{league_rankings['total_players']}}</span>
+                </div>
+                <div class="ranking-item">
+                    <span class="ranking-position">#{{league_rankings['saves_rank']}}</span>
+                    <span class="ranking-label">Saves</span>
+                    <span class="ranking-total">of {{league_rankings['total_players']}}</span>
+                </div>
+                <div class="ranking-item">
+                    <span class="ranking-position">#{{league_rankings['potm_rank']}}</span>
+                    <span class="ranking-label">POTM</span>
+                    <span class="ranking-total">of {{league_rankings['total_players']}}</span>
+                </div>
+                <div class="ranking-item">
+                    <span class="ranking-position">#{{league_rankings['goals_per_game_rank']}}</span>
+                    <span class="ranking-label">Goals/Game</span>
+                    <span class="ranking-total">of {{league_rankings['total_players']}}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Team Contribution -->
+        {% if team_contribution %}
+        <div class="section-card">
+            <h3>Team Contribution</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Season</th>
+                            <th>Team</th>
+                            <th>Goals</th>
+                            <th>% of Team</th>
+                            <th>Assists</th>
+                            <th>% of Team</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrib in team_contribution %}
+                        <tr>
+                            <td>{{contrib['season']}}</td>
+                            <td><a href="/teams/{{contrib['team']}}" style="color:#770000;">{{contrib['team']}}</a></td>
+                            <td style="white-space: nowrap;">{{contrib['player_goals']}} / {{contrib['team_goals']}}</td>
+                            <td><strong>{{contrib['goal_percentage']}}%</strong></td>
+                            <td>{{contrib['player_assists']}} / {{contrib['team_assists']}}</td>
+                            <td><strong>{{contrib['assist_percentage']}}%</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Season by Season Record -->
+        <div class="team-record">
+            <h4>Season by Season Record</h4>
+            <div class="table-container">
+                <table cellpadding="0" cellspacing="0" border="0">
+                    <thead>
+                        <tr>
+                            <th>Season</th>
+                            <th title="Goals">G</th>
+                            <th title="Assists">Δ</th>
+                            <th title="Saves">S</th>
+                            <th title="Player of the Match">POTM</th>
+                            <th>Team</th>
+                            <th>Record</th>
+                            <th title="Matches Played">MP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for season_stats in season_data %}
+                          <tr>
+                            <td>{{season_stats['Season']}}</td>
+                            <td>{{ season_stats["Goals"] }}</td>
+                            <td>{{ season_stats["Assists"] }}</td>
+                            <td>{{ season_stats["Saves"] }}</td>
+                            <td>{{ season_stats["POTM"] }}</td>
+                            <td><a href="/teams/{{season_stats['Team']}}" style="color:#770000;">{{ season_stats["Team"] }}</a></td>
+                            <td>{{ season_stats["Record"] }}</td>
+                            <td>{{ season_stats["MP"] }}</td>
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Head-to-Head vs Opponents -->
+        {% if opponent_stats %}
+        <div class="section-card">
+            <h3>Head-to-Head vs Opponents</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th>Played</th>
+                            <th>Record</th>
+                            <th>Goals</th>
+                            <th>Assists</th>
+                            <th>Saves</th>
+                            <th>POTM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opponent in opponent_stats[:10] %}
+                        <tr>
+                            <td><a href="/teams/{{opponent['opponent']}}" style="color:#770000;">{{opponent['opponent']}}</a></td>
+                            <td>{{opponent['matches']}}</td>
+                            <td>{{opponent['wins']}}-{{opponent['draws']}}-{{opponent['losses']}}</td>
+                            <td>{{opponent['goals']}}</td>
+                            <td>{{opponent['assists']}}</td>
+                            <td>{{opponent['saves']}}</td>
+                            <td>{{opponent['potm']}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab Content: Match History -->
+    <div id="match-history" class="tab-content">
+        {% if previous_matches %}
+        <div class="match-history-controls">
+            <input type="text" id="matchSearch" placeholder="Search matches..." onkeyup="filterMatches()">
+            <select id="seasonFilter" onchange="filterMatches()">
+                <option value="">All Seasons</option>
+                {% for season in previous_matches.keys()|sort(reverse=True) %}
+                <option value="{{season}}">Season {{season}}</option>
+                {% endfor %}
+            </select>
+            <select id="sortBy" onchange="sortMatches()">
+                <option value="date">Sort by Date</option>
+                <option value="goals">Sort by Goals</option>
+                <option value="assists">Sort by Assists</option>
+                <option value="potm">Sort by POTM</option>
+            </select>
+        </div>
+
+        <div class='previous-matches' id="matchesList">
+            {% for season in previous_matches|dictsort(reverse=True) %}
+                <div class="season-section" data-season="{{season[0]}}">
+                    <h2>Season {{season[0]}}</h2>
+                    <hr>
+                    <br>
+                    {% for match in season[1] %}
+                        <a href="/teams/{{match['My Team']}}/{{match['My Team']}}-{{match['Opponent']}}-{{match['Match ID']}}" target="_blank" style='text-decoration:none; color:#670000;' class="match-item" data-goals="{{match['G']}}" data-assists="{{match['A']}}" data-potm="{{match['POTM']}}" data-opponent="{{match['Opponent']|lower}}">
+                            <div style='display:flex; justify-content:space-between; margin:0 1rem; margin-bottom:-1rem;margin-top:-1rem;'>
+                                <h3 style='text-align:left; margin-left:1rem; min-width:fit-content;'>@{{match['Opponent']}} &nbsp &nbsp
+                                    {% if match['P'] != '-'%}
+                                        Pos: {{match['P']}}
+                                    {% endif %}
+                                    &nbsp
+                                    {% if match['G'] != 0%}
+                                        Goals: {{match['G']}} &nbsp
+                                    {% endif %}
+                                    {% if match['A'] != 0%}
+                                        Assists: {{match['A']}} &nbsp
+                                    {% endif %}
+                                    {% if match['S'] != 0%}
+                                        Saves: {{match['S']}}
+                                    {% endif %}
+                                    {% if match['Y-R'] != '-'%}
+                                        {% if match['Y-R'] == 'RC'%}
+                                        &nbsp<img src='/static/Images/Elements/red-card.png' alt='Red Card' style='height:1rem;' class='red-card'>
+                                        {% elif match['Y-R'] == 'YC'%}
+                                        &nbsp<img src='/static/Images/Elements/yellow-card.png' alt='Yellow Card' style='height:1rem;' class='red-card'>
+                                        {% endif %}
+                                    {% endif %}
+                                </h3>
+                                <h3 style='margin-right:1rem;'>
+                                    {% if match['External Sub'] == 'Y'%}
+                                        (External Sub)
+                                    {% endif %}
+                                    {% if match['POTM'] == 1%}
+                                        <u>POTM</u>
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </a>
+                        <hr style='border:0.01rem solid #ddd;'>
+                    {% endfor %}
+                    <br>
+                </div>
             {% endfor %}
         </div>
-    </div>
-{% endif %}
 
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+        {% endif %}
+    </div>
+
+    <!-- Tab Content: Awards & Records -->
+    <div id="awards-records" class="tab-content">
+        {% if awards %}
+        <div class='section-card'>
+            <h3>Awards</h3>
+            <div class='awards-images'>
+                {% for award in awards %}
+                    <div class='award-card'>
+                        <h4>{{award}}</h4>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if potm_images %}
+        <div class='section-card'>
+            <h3>POTMs</h3>
+            <p>Click on card to see match details</p>
+            <br>
+            <div class='potm-images'>
+                {% for image in potm_images %}
+                    <div class='potm-card'>
+                        <a href="/teams/{{image['Team 1']}}/{{image['Team 1']}}-{{image['Team 2']}}-{{image['Match ID']}}" target="_blank">
+                            <img src="/static/Images/POTM/{{image['Match ID'] }}.png" alt='{{image['Name']}}' class='potm-image' loading="lazy">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Previous Teams -->
+        {% if previous_teams %}
+        <div class="section-card">
+            <h3>Previous Teams</h3>
+            <div class="teams-grid">
+                {% for team_data in previous_teams %}
+                <div class="team-history-card">
+                    <h4><a href="/teams/{{team_data['team']}}" style="color:#770000;">{{team_data['team']}}</a></h4>
+                    <p>Seasons: {% for season in team_data['seasons'] %}{{season}}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    <p>{{team_data['matches']}} MP | {{team_data['goals']}} G | {{team_data['assists']}} A</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Teammates -->
+        {% if teammates and teammates['current'] %}
+        <div class="section-card">
+            <h3>Current Teammates</h3>
+            <div class="teammates-grid">
+                {% for teammate in teammates['current'] %}
+                <div class="teammate-card">
+                    <a href="/players/{{teammate['name']}}" style="color:#770000;">{{teammate['name']}}</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% if teammates and teammates['old'] %}
+        <div class="section-card">
+            <h3>All Teammates</h3>
+            <div class="teammates-grid">
+                {% for teammate in teammates['old'] %}
+                <div class="teammate-card">
+                    <a href="/players/{{teammate}}" style="color:#770000;">{{teammate}}</a>
+                </div>
+                {% endfor %}
+            </div>
+            <p style="margin-top:1rem; color:#666;">Total teammates played with: {{teammates['all_time_count']}}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
 <style>
+    /* Sticky Header */
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background: linear-gradient(90deg, #770000, #3e0000);
+        color: #fff;
+        padding: 10px 20px;
+        z-index: 1;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: none;
+    }
+
+    .sticky-header.visible {
+        display: block;
+    }
+    @media screen and (min-width: 769px) {
+        .sticky-header {
+            top: 50px; /* Adjust this value to match your main nav height */
+        }
+    }
+
+    .sticky-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+    }
+
+    .sticky-name {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-right: 20px;
+    }
+
+    .sticky-stat {
+        margin: 0 10px;
+        font-size: 0.9em;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9em;
+    }
+
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        background: #f0f0f0;
+        border-bottom: 2px solid #770000;
+        overflow-x: auto;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 15px 20px;
+        cursor: pointer;
+        font-size: 1em;
+        color: #666;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .tab-button:hover {
+        background: #e0e0e0;
+        color: #770000;
+    }
+
+    .tab-button.active {
+        background: #770000;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .tab-content {
+        display: none;
+        padding: 20px;
+        animation: fadeIn 0.3s;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Section Card */
+    .section-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .section-card h3 {
+        color: #770000;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+    }
+
+    /* Career Totals Grid */
+    .career-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+    }
+
+    .career-stat {
+        text-align: center;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .career-value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #770000;
+        margin-bottom: 5px;
+    }
+
+    .career-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    /* Performance Metrics */
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .metric-card {
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #770000, #a00000);
+        color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .metric-value {
+        font-size: 2em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .metric-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+
+    /* Recent Form */
+    .form-indicators {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .form-badge {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 1.2em;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+    .form-badge:hover {
+        transform: scale(1.1);
+    }
+
+    .form-w {
+        background: #4CAF50;
+    }
+
+    .form-d {
+        background: #FFC107;
+    }
+
+    .form-l {
+        background: #F44336;
+    }
+
+    /* Best Performances */
+    .best-performances {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .best-perf-card {
+        background: #fef8e9;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #770000;
+    }
+
+    .best-perf-value {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #770000;
+        margin-bottom: 5px;
+    }
+
+    .best-perf-detail {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+    }
+
+    .view-match-link {
+        color: #770000;
+        text-decoration: none;
+        font-size: 0.85em;
+    }
+
+    .view-match-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Rankings */
+    .rankings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .ranking-item {
+        text-align: center;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .ranking-position {
+        display: block;
+        font-size: 2em;
+        font-weight: bold;
+        color: #770000;
+        margin-bottom: 5px;
+    }
+
+    .ranking-label {
+        display: block;
+        font-size: 1em;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .ranking-total {
+        display: block;
+        font-size: 0.8em;
+        color: #999;
+    }
+
+    /* Match History Controls */
+    .match-history-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .match-history-controls input,
+    .match-history-controls select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 0.9em;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    /* Teams Grid */
+    .teams-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .team-history-card {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #770000;
+    }
+
+    .team-history-card h4 {
+        margin: 0 0 10px 0;
+        color: #770000;
+    }
+
+    .team-history-card p {
+        margin: 5px 0;
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    /* Teammates Grid */
+    .teammates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .teammate-card {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+    }
+
+    .teammate-card a {
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .teammate-card a:hover {
+        text-decoration: underline;
+    }
+
+    /* Existing Styles */
     .player-card {
         width: 100%;
-        max-width: 600px;
+        max-width: 1200px;
         margin: 20px auto;
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -174,130 +857,368 @@
         overflow: hidden;
         background-color: #f9f9f9;
     }
-    
+
     .header {
         background: linear-gradient(90deg, #770000, #3e0000);
         color: #fff;
         padding: 15px;
         text-align: center;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
     }
-    
+
     .header h1 {
         font-size: 1.5em;
         margin: 0;
     }
-    
+
     .header h2 {
-        font-size: 1.2em;  
+        font-size: 1.2em;
         margin: 5px 0;
     }
-    
+
     .player-role {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-top: 10px;
     }
-    
+
     .player-role .role {
-        font-size: 1em;  
+        font-size: 1em;
         margin-right: 10px;
     }
-    
+
     .player-role .ovr-label {
-        font-size: 0.875em;  
+        font-size: 0.875em;
         margin-right: 5px;
     }
-    
-    .player-role .overall-score {
-        font-size: 1.5em;  
-        font-weight: bold;
-        color: #fff;
-    }
-    
+
     .stats {
         display: flex;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
         justify-content: space-around;
         padding: 15px;
         background: #fef8e9;
     }
-    
+
     .stats .stat {
         text-align: center;
         transition: background-color 0.3s;
     }
-    
+
     .stats .stat-label {
         display: block;
         font-weight: bold;
         margin-bottom: 5px;
     }
-    
+
     .stats .stat-value {
         font-size: 1em;
     }
-    
+
     .performance {
         display: flex;
         justify-content: space-around;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
         padding: 15px;
         background: #fff;
         border-top: 1px solid #ddd;
     }
-    
+
+    .performance h4 {
+        width: 100%;
+        text-align: center;
+        color: #770000;
+        margin: 0 0 10px 0;
+    }
+
     .performance .metric {
         font-size: 0.875em;
         text-align: center;
         color: #770000;
     }
-    
+
     .team-record {
         padding: 15px;
         background: #faf8e9;
     }
-    
+
     .team-record h4 {
         margin: 0 0 15px;
         font-size: 1.2em;
         text-align: center;
         color: #770000;
     }
-    
+
     .table-container {
         overflow-x: auto;
         width: 100%;
     }
-    
+
     .table-container table {
         width: 100%;
         border-collapse: collapse;
         text-align: center;
         font-size: 0.875em;
     }
-    
+
     .table-container table th, .table-container table td {
         border: 1px solid #ddd;
         padding: 10px;
     }
-    
+
     .table-container table th {
-        background: #770000; 
+        background: #770000;
         color: #fff;
         font-weight: bold;
     }
-    
+
+    .awards-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .award-card {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        min-width: 150px;
+        text-align: center;
+    }
+
+    .award-card h4 {
+        margin: 0;
+        color: #fff;
+        font-size: 1.1em;
+    }
+
+    .potm-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .potm-card {
+        flex: 0 0 auto;
+    }
+
+    .potm-image {
+        max-width: 200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+
+    .potm-image:hover {
+        transform: scale(1.05);
+    }
+
+    .previous-matches {
+        background: #fff;
+        padding: 15px;
+    }
+
+    .previous-matches h2 {
+        color: #770000;
+        margin-top: 20px;
+    }
+
+    .match-item {
+        display: block;
+        transition: background 0.3s;
+    }
+
+    .match-item:hover {
+        background: #f5f5f5;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .pagination button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #770000;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+
+    .pagination button:hover {
+        background: #770000;
+        color: #fff;
+    }
+
+    .pagination button.active {
+        background: #770000;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    /* Mobile Responsive */
     @media screen and (max-width: 600px) {
         .player-card {
             width: 100%;
         }
+
         td, th {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
+            padding: 5px;
+        }
+
+        .career-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tabs {
+            font-size: 0.85em;
+        }
+
+        .tab-button {
+            padding: 10px 15px;
+        }
+
+        .sticky-content {
+            font-size: 0.85em;
+        }
+
+        .sticky-stat {
+            font-size: 0.75em;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            width: 100%;
         }
     }
-    
 </style>
+
+<script>
+    // Tabs functionality
+    function openTab(evt, tabName) {
+        var i, tabcontent, tabbuttons;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tabbuttons = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // Sticky header on scroll
+    window.addEventListener('scroll', function() {
+        var stickyHeader = document.getElementById('stickyHeader');
+        if (window.pageYOffset > 300) {
+            stickyHeader.classList.add('visible');
+        } else {
+            stickyHeader.classList.remove('visible');
+        }
+    });
+
+    // Share functionality
+    function sharePlayer() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{rating_data["Name"]}} - Player Profile',
+                text: 'Check out {{rating_data["Name"]}} player profile on IFL',
+                url: window.location.href
+            }).catch(err => console.log('Error sharing:', err));
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    }
+
+    // Match filtering
+    function filterMatches() {
+        const searchTerm = document.getElementById('matchSearch').value.toLowerCase();
+        const seasonFilter = document.getElementById('seasonFilter').value;
+        const matches = document.querySelectorAll('.match-item');
+        const seasons = document.querySelectorAll('.season-section');
+
+        seasons.forEach(season => {
+            const seasonNumber = season.dataset.season;
+            let hasVisibleMatches = false;
+
+            const seasonMatches = season.querySelectorAll('.match-item');
+            seasonMatches.forEach(match => {
+                const opponent = match.dataset.opponent;
+                const matchesSearch = searchTerm === '' || opponent.includes(searchTerm);
+                const matchesSeason = seasonFilter === '' || seasonNumber === seasonFilter;
+
+                if (matchesSearch && matchesSeason) {
+                    match.style.display = 'block';
+                    match.nextElementSibling.style.display = 'block';
+                    hasVisibleMatches = true;
+                } else {
+                    match.style.display = 'none';
+                    match.nextElementSibling.style.display = 'none';
+                }
+            });
+
+            // Show/hide season header
+            if (hasVisibleMatches && (seasonFilter === '' || seasonNumber === seasonFilter)) {
+                season.querySelector('h2').style.display = 'block';
+                season.querySelector('hr').style.display = 'block';
+            } else {
+                season.querySelector('h2').style.display = 'none';
+                season.querySelector('hr').style.display = 'none';
+            }
+        });
+    }
+
+    // Sort matches
+    function sortMatches() {
+        const sortBy = document.getElementById('sortBy').value;
+        const seasons = document.querySelectorAll('.season-section');
+
+        seasons.forEach(season => {
+            const matchesContainer = season;
+            const matches = Array.from(season.querySelectorAll('.match-item'));
+            const headers = season.querySelectorAll('h2, hr');
+
+            matches.sort((a, b) => {
+                switch(sortBy) {
+                    case 'goals':
+                        return parseInt(b.dataset.goals) - parseInt(a.dataset.goals);
+                    case 'assists':
+                        return parseInt(b.dataset.assists) - parseInt(a.dataset.assists);
+                    case 'potm':
+                        return parseInt(b.dataset.potm) - parseInt(a.dataset.potm);
+                    default:
+                        return 0; // date is default order
+                }
+            });
+
+            // Re-append in sorted order
+            matches.forEach(match => {
+                const hr = match.nextElementSibling;
+                matchesContainer.appendChild(match);
+                if (hr && hr.tagName === 'HR') {
+                    matchesContainer.appendChild(hr);
+                }
+            });
+        });
+    }
+</script>
 
 {% endblock %}
