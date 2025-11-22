@@ -1,15 +1,4 @@
 ﻿Match Number,MD,Team 1,Team 2,Day,Time
-222,4,HRM,VSH,"Wed, Nov 19",7:00 PM
-223,4,VSH,NFC,"Wed, Nov 19",7:30 PM
-224,4,MSQ,BNC,"Wed, Nov 19",8:00 PM
-225,4,TOE,WCS,"Wed, Nov 19",8:30 PM
-226,4,DCK,GGS,"Wed, Nov 19",9:00 PM
-227,4,DOG,RFT,"Wed, Nov 19",9:30 PM
-228,5,SWF,NPC,"Fri, Nov 21",7:00 PM
-229,5,HRM,MFC,"Fri, Nov 21",7:35 PM
-230,5,LBJ,MCH,"Fri, Nov 21",8:10 PM
-231,5,WCS,MSQ,"Fri, Nov 21",8:45 PM
-232,5,TGS,DTF,"Fri, Nov 21",9:20 PM
 233,6,TOE,BNC,"Mon, Nov 24",7:00 PM
 234,6,GGS,RFT,"Mon, Nov 24",7:30 PM
 235,7,DCK,NPC,"Tue, Dec 2",7:00 PM
@@ -33,8 +22,3 @@
 253,10,MSQ,MCH,"Fri, Dec 12",8:10 PM
 254,10,MFC,VSH,"Fri, Dec 12",8:45 PM
 255,10,WCS,LBJ,"Fri, Dec 12",9:20 PM
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
