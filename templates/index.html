@@ -13,7 +13,7 @@
 <div class="feature-announcement" id="featureBanner">
     <div class="announcement-content">
       <div class="announcement-text">
-            <strong>NEW:</strong> Team Pages Update! Explore new filters, stats, and insights for all teams.
+            <strong>NEW:</strong> Player Pages Update! Filter by position, sort by stats, and explore detailed player analytics.
         </div>
         <button class="announcement-close" onclick="dismissBanner()">×</button>
     </div>
@@ -52,7 +52,7 @@
                     <span class="stat-label">/ {{ season_progress.total_matchdays }} Matchdays</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (season_progress.matches_played / season_progress.total_matches * 100) if season_progress.total_matches > 0 else 0 }}%"></div>
+                    <div class="progress-fill" style="width: {{ (season_progress.current_matchday / season_progress.total_matchdays * 100) if season_progress.total_matches > 0 else 0 }}%"></div>
                 </div>
                 <p class="progress-text">{{ season_progress.matches_played }} of {{ season_progress.total_matches }} matches completed</p>
             </div>
@@ -415,6 +415,25 @@
         <div class="feature-item">
           <div class="feature-date">November 15th, 2025</div>
 
+          <h3>Base Player Pages Changes</h3>
+          <p><strong>Page Redesign (UI changes)</strong></p>
+          <p><strong>Position Filtering:</strong> Filter players by position (Attacker, Midfielder, Defender, Goalkeeper)</p>
+          <p><strong>Advanced Sorting:</strong> Sort by Rating, Name, Goals, Assists, Saves, or POTM awards</p>
+          <a href="/players" class="feature-link">View Players →</a>
+          <br>
+          <hr>
+          <br>
+          <h3>Individual Player Page Changes</h3>
+          <p><strong>Best Performances:</strong> Top individual match performances highlighted</p>
+          <p><strong>League Rankings:</strong> Player rankings across all categories</p>
+          <p><strong>Team Contribution:</strong> Percentage of team goals and assists by season</p>
+          <p><strong>Head-to-Head Stats:</strong> Performance against each opponent</p>
+          <a href="/players/Ishan Deb" class="feature-link">Sample Player Page (Ishan Deb) →</a>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-date">November 15th, 2025</div>
+
           <h3>Base Team Pages Changes</h3>
           <p>New filters for team stats and performance insights.</p>
           <p>Sort teams by season, group, rating, goals scored, and more.</p>
@@ -443,18 +462,7 @@
 
         <!--<h2><i class="fas fa-clock-o feature-icon"></i> Upcoming Features <i class="fas fa-clock-o feature-icon"></i></h2>-->
 
-        <h2><i class="fas fa-hourglass-half feature-icon"></i> Future Changes <i class="fas fa-hourglass-half feature-icon"></i></h2>
-        <div class="feature-item">
-          <div class="feature-date">November 2025</div>
-
-          <h3>Base Player Pages Changes</h3>
-          <p>No details yet</p>
-          <br>
-          <hr>
-          <br>
-          <h3>Individual Player Page Changes</h3>
-          <p>No details yet</p>
-      </div>
+        <!--<h2><i class="fas fa-hourglass-half feature-icon"></i> Future Changes <i class="fas fa-hourglass-half feature-icon"></i></h2>-->
 
 
     </div>
@@ -2106,7 +2114,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showSlides();
     }
 
-    const bannerVersion = '1';
+    const bannerVersion = '2';
     const dismissedVersion = localStorage.getItem('featureBannerDismissedVersion');
 
     if (dismissedVersion !== bannerVersion) {
@@ -2119,8 +2127,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Feature Announcement Banner Functions
 function dismissBanner() {
     const banner = document.getElementById('featureBanner');
-    const bannerVersion = '1'; // Must match the version above
-    banner.style.animation = 'slideDown 0.3s ease-out reverse';
+    const bannerVersion = '2'; 
+    banner.style.animation = 'slideDown 0.5s ease-out reverse';
     setTimeout(() => {
         banner.style.display = 'none';
         localStorage.setItem('featureBannerDismissedVersion', bannerVersion);
