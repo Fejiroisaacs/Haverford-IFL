@@ -798,6 +798,7 @@ def get_league_leaders(season=None):
         season = CURRENT_SEASON
 
     player_stats_df = data_cache.get('season_player_stats', load_season_player_stats).copy()
+    player_stats_df = player_stats_df[player_stats_df["Season"] != "Total"]
 
     # Parse Y-R cards
     player_stats_df['Yellow'] = player_stats_df['Y-R'].apply(lambda x: int(str(x).split('-')[0]) if pd.notna(x) and str(x) != 'nan' else 0)

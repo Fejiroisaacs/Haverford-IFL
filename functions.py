@@ -33,10 +33,9 @@ def send_email(email, bccs, subject, message, attachment=None):
 
 @lru_cache(maxsize=5)
 def get_k_recent_potm(k, season=None):
-    print("The season is", season)
     match_results = pd.read_csv('data/Match_Results.csv')
     if season:
-        match_results = match_results[match_results["Season"] == int(season)]
+        match_results = match_results[(match_results["Season"] == int(season)) & (match_results["Time"] != "Forfeit")]
     recent_matches = match_results.tail(k) 
     recent_ids = recent_matches['Match ID'].tolist()
 
