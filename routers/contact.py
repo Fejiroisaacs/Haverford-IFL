@@ -70,10 +70,16 @@ async def send_feedback(request: Request, email: str = Form(...), textarea: str 
         return templates.TemplateResponse("contact.html", {"request": request,
                                                         "success": f"Thank you, {email}. We've received your message.",
                                                         "error": None})
-    except:
+    except ValueError as e:
+        print(f"Contact form configuration error: {str(e)}")
         return templates.TemplateResponse("contact.html", {"request": request,
                                                         "success": None,
-                                                        "error": 'Email not sent, something happened'})
+                                                        "error": 'Service temporarily unavailable. Please try again later.'})
+    except Exception as e:
+        print(f"Contact form error: {str(e)}")
+        return templates.TemplateResponse("contact.html", {"request": request,
+                                                        "success": None,
+                                                        "error": 'Unable to send message. Please try again later.'})
 
 
 @router.post("/api/feedback")
