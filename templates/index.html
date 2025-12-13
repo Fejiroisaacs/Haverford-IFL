@@ -48,13 +48,13 @@
             <h3>Season Progress</h3>
             <div class="progress-content">
                 <div class="progress-stat">
-                    <span class="big-number">{{ season_progress.current_matchday }}</span>
+                    <span class="big-number">{{ season_progress.total_matchdays if season_progress.matches_played != 0 and season_progress.current_matchday == 0 else season_progress.current_matchday }}</span>
                     <span class="stat-label">/ {{ season_progress.total_matchdays }} Matchdays</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (season_progress.current_matchday / season_progress.total_matchdays * 100) if season_progress.total_matches > 0 else 0 }}%"></div>
+                    <div class="progress-fill" style="width: {{ (season_progress.current_matchday / season_progress.total_matchdays * 100) if season_progress.total_matches > 0 else 100 }}%"></div>
                 </div>
-                <p class="progress-text">{{ season_progress.matches_played }} of {{ season_progress.total_matches }} matches completed</p>
+                <p class="progress-text">{{ season_progress.matches_played }} of {{ season_progress.total_matches + season_progress.matches_played}} matches completed</p>
             </div>
         </div>
 
@@ -349,7 +349,7 @@
         <a href="/players/Rami Nasr" target="_blank">
             <img src="/static/Images/POTM/209.png" alt="Rami Nasr" loading="lazy"/>
         </a>
-        <h3>82 Goals</h3>
+        <h3>84 Goals</h3>
     </div>
 
     <div class='leader'>
@@ -365,7 +365,7 @@
         <a href="/players/Ben Mansfield" target="_blank">
             <img src="/static/Images/POTM/22.png" alt="Ben Mansfield" loading="lazy"/>
         </a>
-        <h3>210 Saves</h3>
+        <h3>227 Saves</h3>
     </div>
 
     <div class='leader'>
