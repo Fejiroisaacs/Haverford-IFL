@@ -219,10 +219,10 @@
   {% endif %}
 {% endfor %}
 
-<br>
-<hr>
 
-{% if active_season == current_season %}
+{% if active_season == current_season and upcoming_matches_data['data'] %}
+  <br>
+  <hr>
   <h1>Upcoming Matches </h1>
   <h4>(subject to change)</h4>
 
