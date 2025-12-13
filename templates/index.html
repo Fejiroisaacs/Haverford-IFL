@@ -60,8 +60,8 @@
 
         <!-- Next Matchday -->
         <div class="dashboard-card highlight-card">
+          {% if next_matchday.matchday %}
             <h3>Next Matchday</h3>
-            {% if next_matchday.matchday %}
                 <div class="next-match-content">
                     <div class="matchday-badge">MD {{ next_matchday.matchday }}</div>
                     <p class="matchday-date">{{ next_matchday.date }}</p>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
             {% else %}
-                <p>No upcoming matches scheduled</p>
+                <img src="/static/Images/Elements/playoffs.jpg" alt="Playoffs" class="leader">
             {% endif %}
         </div>
 
