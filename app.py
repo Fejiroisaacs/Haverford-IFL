@@ -9,7 +9,9 @@ import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
 from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin
-import json, os
+import json
+import os
+import uvicorn
 import pandas as pd
 from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
@@ -411,5 +413,5 @@ async def sitemap():
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
