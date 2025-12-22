@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from functions import send_email
 from firebase_admin import db as firebase_db
 from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
 import os
 import time
@@ -25,16 +26,16 @@ CONTACT_WINDOW = 3600  # 60 minutes in seconds
 # Pydantic model for feedback data validation
 class FeedbackData(BaseModel):
     type: str
-    name: str = None
-    email: str = None
+    name: Optional[str] = None
+    email: Optional[str] = None
     timestamp: str
     page: str
-    feature: str = None
-    rating: int = None
-    feedback: str = None
-    featureName: str = None
-    description: str = None
-    priority: str = None
+    feature: Optional[str] = None
+    rating: Optional[int] = None
+    feedback: Optional[str] = None
+    featureName: Optional[str] = None
+    description: Optional[str] = None
+    priority: Optional[str] = None
 
 @router.get("/contact", response_class=HTMLResponse)
 async def read_contact(request: Request):

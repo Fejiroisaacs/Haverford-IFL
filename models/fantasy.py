@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, ClassVar
 import pandas as pd
 import numpy as np
 from firebase_admin import db
@@ -10,18 +10,18 @@ class FantasyPlayer(BaseModel):
     team: str
     season: int
     primary_position: str
-    ovr_rating: Optional[int]
+    ovr_rating: Optional[int] = None
     fantasy_cost: float
     total_points: int = 0
-    mw_points: Dict[str, int] = {}
+    mw_points: Dict[str, int] = Field(default_factory=dict)
 
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
 class FantasyTeam(BaseModel):
-    current_team: List[str] = []  # List of player names in starting lineup
-    all_players: List[str] = []   # List of all owned player names
+    current_team: List[str] = Field(default_factory=list)  # List of player names in starting lineup
+    all_players: List[str] = Field(default_factory=list)   # List of all owned player names
     captain: Optional[str] = None
     
     @property
@@ -36,17 +36,17 @@ class FantasyUser(BaseModel):
     total_points: int = 0
     week_points: int = 0
     free_transfers: int = 2
-    team: FantasyTeam = FantasyTeam()
-    
-    # Team creation rules
-    CREATING_TEAM_RULES = ("You need to have players from at least 5 different teams, "
+    team: FantasyTeam = Field(default_factory=FantasyTeam)
+
+    # Team creation rules (ClassVar to distinguish from model fields in Pydantic V2)
+    CREATING_TEAM_RULES: ClassVar[str] = ("You need to have players from at least 5 different teams, "
                           "you need at least 2 Goalkeepers, at least 2 Defenders, "
                           "at least 1 Midfielder, and at least 2 Forward players.")
-    
-    WEEKLY_TEAM_RULES = ("You need to start players from 5 different teams, you need a Goalkeeper, "
+
+    WEEKLY_TEAM_RULES: ClassVar[str] = ("You need to start players from 5 different teams, you need a Goalkeeper, "
                         "at least 2 defenders + midfielders, at least 1 Forward player.")
-    
-    TRANSFER_ACTIVE_RULES = ("Your starting team needs to have players from at least 5 different teams, "
+
+    TRANSFER_ACTIVE_RULES: ClassVar[str] = ("Your starting team needs to have players from at least 5 different teams, "
                            "you need a Goalkeeper, at least 2 defenders + midfielders combined, "
                            "and at least 1 Forward player.")
     
