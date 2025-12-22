@@ -36,24 +36,46 @@ async def post_login(request: Request, email: str = Form(...), password: str = F
     try:
         user = verify_password(email, password)
         response = RedirectResponse(url="/fantasy", status_code=303)
-        response.set_cookie(key="session_token", value=user['idToken'], httponly=True, secure=True, max_age=86400)
+        # Use the idToken from the Firebase response
+        response.set_cookie(
+            key="session_token",
+            value=user['idToken'],
+            httponly=True,
+            secure=True,
+            samesite='lax',
+            max_age=86400
+        )
         return response
     except Exception as e:
-        print(str(e))
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username/password", "user": None, 'Login': True})
+        # Log error for monitoring but don't expose details to user
+        print(f"Login error: {str(e)}")
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": "Invalid username/password",
+            "user": None,
+            'Login': True
+        })
 
 @router.get("/login", response_class=HTMLResponse)
 async def login(request: Request, session_token: str = Cookie(None)):
     user = None
     if session_token:
         try:
+            # Verify the existing session token
             user = auth.verify_id_token(session_token)
-            response = RedirectResponse(url="/fantasy", status_code=303)
-            response.set_cookie(key="session_token", value=user['idToken'], httponly=True, secure=True, max_age=86400)
-            return response
+            # If valid, redirect to fantasy page (token is already set in cookie)
+            return RedirectResponse(url="/fantasy", status_code=303)
         except Exception as e:
             print("Invalid session token:", str(e))
-    
+            # Clear invalid cookie
+            response = templates.TemplateResponse("login.html", {
+                "request": request,
+                "user": None,
+                'Login': True
+            })
+            response.delete_cookie("session_token")
+            return response
+
     return templates.TemplateResponse("login.html", {"request": request, "user": user, 'Login': True})
 
 @router.get("/logout")
