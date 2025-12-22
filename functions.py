@@ -7,29 +7,56 @@ from functools import lru_cache
 load_dotenv()
 
 def send_email(email, bccs, subject, message, attachment=None):
-    oauth2_credentials = ast.literal_eval(os.getenv("oauth2"))
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.json') as temp_file:
-        json.dump(oauth2_credentials, temp_file)
-        temp_filename = temp_file.name
-        
-    mail_sender = yagmail.SMTP(
-        user=f'{os.getenv("OUR_EMAIL")}',
-        password=f'{os.getenv("OUR_EMAIL_PASSWORD")}',
-        oauth2_file=temp_filename,
-    )
+    """
+    Send email using yagmail with OAuth2 authentication.
+
+    Args:
+        email: Sender email
+        bccs: List of BCC recipients
+        subject: Email subject
+        message: Email body
+        attachment: Optional attachment
+
+    Raises:
+        ValueError: If credentials are missing
+        Exception: If email sending fails
+    """
+    temp_filename = None
     try:
+        oauth2_str = os.getenv("oauth2")
+        if not oauth2_str:
+            raise ValueError("OAuth2 credentials not found in environment")
+
+        oauth2_credentials = ast.literal_eval(oauth2_str)
+
+        with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.json') as temp_file:
+            json.dump(oauth2_credentials, temp_file)
+            temp_filename = temp_file.name
+
+        mail_sender = yagmail.SMTP(
+            user=f'{os.getenv("OUR_EMAIL")}',
+            password=f'{os.getenv("OUR_EMAIL_PASSWORD")}',
+            oauth2_file=temp_filename,
+        )
+
         mail_sender.send(
             to=email,
             bcc=bccs,
             subject=subject,
             contents=message,
             attachments=attachment,
-            
         )
-    except Exception as e:
-        print(str(e))
 
-    os.remove(temp_filename)
+    except (ValueError, KeyError) as e:
+        raise
+    except Exception as e:
+        raise
+    finally:
+        if temp_filename and os.path.exists(temp_filename):
+            try:
+                os.remove(temp_filename)
+            except OSError as e:
+                print(f"Failed to remove temp file: {str(e)}")
 
 @lru_cache(maxsize=5)
 def get_k_recent_potm(k, season=None):
