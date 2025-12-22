@@ -13,10 +13,28 @@ import json, os
 import pandas as pd
 from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from middleware import RequestLoggingMiddleware
+from security import SecurityHeadersMiddleware, RateLimitMiddleware, generate_csrf_token
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 
 load_dotenv()
+
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            FastApiIntegration(),
+            StarletteIntegration(),
+        ],
+        traces_sample_rate=0.1,  
+        environment=os.getenv("ENVIRONMENT", "development"),
+        release=os.getenv("RELEASE_VERSION", "1.0.0"),
+    )
 
 firebase_config_str = os.getenv("FIREBASE_CONFIG")
 firebase_config = json.loads(firebase_config_str)
@@ -60,9 +78,11 @@ async def add_cache_headers(request: Request, call_next):
 
     return response
 
-# Add middleware (order matters - logging should be first)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(SessionMiddleware, secret_key=secret_key)
+app.add_middleware(SessionMiddleware, secret_key=secret_key, same_site='lax', https_only=True)
 
 app.include_router(matches.router, dependencies=[Depends(lambda: db)])
 app.include_router(signup.router, dependencies=[Depends(lambda: db), Depends(lambda: auth)])
@@ -332,6 +352,27 @@ async def read_root(request: Request):
         "season_stats": season_stats,
         "top_performers": top_performers
     })
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Check if we can access cached data
+        data = get_cached_data()
+        is_healthy = data['schedule'] is not None
+
+        return {
+            "status": "healthy" if is_healthy else "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "cache_status": "active" if data['last_updated'] else "cold",
+            "environment": os.getenv("ENVIRONMENT", "development")
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
 
 @app.get("/pdf")
 async def get_pdf():
