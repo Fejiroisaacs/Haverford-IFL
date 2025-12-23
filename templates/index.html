@@ -225,7 +225,7 @@
     <div class="results-grid">
         {% for match in latest_results %}
             <div class="result-card">
-                <span class="match-group">Group {{ match.group }}</span>
+                <span class="match-group">{{ "Group" + match.group if match.group|length == 1 else match.group }}</span>
                 <div class="result-content">
                     <span class="result-team">{{ match.team1 }}</span>
                     <span class="result-score">{{ match.score }}</span>
