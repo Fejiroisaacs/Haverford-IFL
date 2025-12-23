@@ -257,3 +257,11 @@ TGS,VSH,6,A,254,3,1,Final,S6,0,1,1,0
 WCS,BNC,6,C,255,1,7,Final,S6,0,0,0,1
 SWF,GGS,6,B,256,8,4,Final,S6,0,0,1,0
 MSQ,LBJ,6,C,257,5,0,Forfeit,S6,0,0,1,0
+TOE,SWF,6,Playoff,258,1,8,Playoff/FT,S6,0,0,0,1
+MCH,RFT,6,Playoff,259,0,6,Playoff/FT,S6,0,0,0,1
+NPC,VSH,6,Playoff,260,7,1,Playoff/FT,S6,0,0,1,0
+BNC,TGS,6,Playoff,261,3,1,Playoff/FT,S6,0,0,1,0
+SWF,MFC,6,Playoff,262,3,1,Playoff/FT,S6,0,0,1,0
+NPC,BNC,6,Playoff,263,3,5,Playoff/FT,S6,0,0,0,1
+RFT,SWF,6,Playoff,264,6,1,Playoff/FT,S6,0,0,1,0
+RFT,BNC,6,Playoff,265,3,10,Playoff/FT,S6,0,0,0,1
