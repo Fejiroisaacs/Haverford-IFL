@@ -355,6 +355,45 @@ async def read_root(request: Request):
         "top_performers": top_performers
     })
 
+# @app.get("/gallery", response_class=HTMLResponse)
+async def gallery(request: Request):
+    """Gallery page displaying images from all seasons"""
+    try:
+        # Load gallery data
+        gallery_json_path = os.path.join('templates', 'static', 'data', 'gallery.json')
+        with open(gallery_json_path, 'r', encoding='utf-8') as f:
+            gallery_data = json.load(f)
+
+        # Count total images across all seasons
+        total_images = 0
+        for _, season_data in gallery_data.get('seasons', {}).items():
+            if 'images' in season_data:
+                total_images += len(season_data['images'])
+
+        return templates.TemplateResponse("gallery.html", {
+            "request": request,
+            "user": user,
+            "gallery_data": gallery_data,
+            "total_images": total_images
+        })
+    except FileNotFoundError:
+        # If gallery.json doesn't exist, show empty gallery
+        return templates.TemplateResponse("gallery.html", {
+            "request": request,
+            "user": user,
+            "gallery_data": {"seasons": {}},
+            "total_images": 0
+        })
+    except Exception as e:
+        print(f"Error loading gallery: {e}")
+        # Return error page or empty gallery
+        return templates.TemplateResponse("gallery.html", {
+            "request": request,
+            "user": user,
+            "gallery_data": {"seasons": {}},
+            "total_images": 0
+        })
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring and load balancers"""

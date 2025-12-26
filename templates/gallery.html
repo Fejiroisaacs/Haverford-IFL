@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Gallery - Haverford IFL{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/gallery.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="gallery-container">
+    <!-- Gallery Header -->
+    <div class="gallery-header">
+        <h1 class="gallery-title">IFL Gallery</h1>
+        <p class="gallery-subtitle">Capturing the best moments from every season</p>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="gallery-controls">
+        <!-- Search Bar -->
+        <div class="search-section">
+            <input type="search"
+                   id="gallerySearch"
+                   class="search-input"
+                   placeholder="Search by caption, match, tags, or players..."
+                   aria-label="Search gallery images">
+            <button class="search-clear" id="searchClear" style="display: none;" aria-label="Clear search">
+                &times;
+            </button>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="filters-row">
+            <div class="filter-group">
+                <label for="seasonFilter" class="filter-label">Season:</label>
+                <select id="seasonFilter" class="filter-select" aria-label="Filter by season">
+                    <option value="all">All Seasons</option>
+                    {% for season_num in gallery_data.seasons.keys()|sort(reverse=True) %}
+                    <option value="{{ season_num }}">
+                        Season {{ season_num }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="tagFilter" class="filter-label">Tag:</label>
+                <select id="tagFilter" class="filter-select" aria-label="Filter by tag">
+                    <option value="all">All Tags</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="playerFilter" class="filter-label">Player:</label>
+                <select id="playerFilter" class="filter-select" aria-label="Filter by player">
+                    <option value="all">All Players</option>
+                </select>
+            </div>
+
+            <button class="filter-reset" id="resetFilters" aria-label="Reset all filters">
+                Reset Filters
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="gallery-stats">
+            <span id="imageCount" class="stat-badge">
+                {{ total_images }} media{{ 's' if total_images != 1 else '' }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="gallery-grid" id="galleryGrid">
+        {% if total_images == 0 %}
+        <div class="empty-state">
+            <div class="empty-icon">📷</div>
+            <h2>No Images Yet</h2>
+            <p>Images will appear here once they're uploaded.</p>
+            <p class="empty-hint">Check back soon for photos from Season 6!</p>
+        </div>
+        {% else %}
+            {% for season_num, season_data in gallery_data.seasons.items()|sort(reverse=True) %}
+                {% if season_data.images %}
+                    {% for image in season_data.images %}
+                    <div class="gallery-item"
+                         data-season="{{ season_num }}"
+                         data-image-id="{{ image.id }}"
+                         data-type="{{ image.type|default('image') }}"
+                         data-tags="{{ image.tags|join(',') }}"
+                         data-players="{{ image.players|join(',') }}">
+
+                        <div class="image-wrapper">
+                            <!-- Loading skeleton -->
+                            <div class="image-skeleton"></div>
+
+                            <img src="{{ image.thumbnail }}"
+                                 alt="{{ image.alt }}"
+                                 loading="lazy"
+                                 class="gallery-thumbnail"
+                                 data-lightbox-image="{{ image.id }}"
+                                 onerror="this.src='/static/Images/Logo/logo.png'; this.classList.add('error');"
+                                 onload="this.previousElementSibling.style.display='none'">
+
+                            {% if image.type == 'video' %}
+                            <!-- Video Play Icon Overlay -->
+                            <div class="video-play-overlay">
+                                <div class="play-icon">
+                                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                        <circle cx="32" cy="32" r="32" fill="rgba(0, 0, 0, 0.7)"/>
+                                        <path d="M26 20L44 32L26 44V20Z" fill="white"/>
+                                    </svg>
+                                </div>
+                                {% if image.duration %}
+                                <div class="video-duration">{{ image.duration }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <div class="image-overlay">
+                                <div class="overlay-content">
+                                    {% if image.caption %}
+                                    <h3 class="image-title">{{ image.caption }}</h3>
+                                    {% endif %}
+
+                                    {% if image.match %}
+                                    <p class="image-match">{{ image.match }}</p>
+                                    {% endif %}
+
+                                    <div class="image-meta">
+                                        <span class="season-badge">Season {{ season_num }}</span>
+                                        {% if image.date %}
+                                        <span class="date-badge">{{ image.date }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if image.tags %}
+                                    <div class="image-tags">
+                                        {% for tag in image.tags %}
+                                        <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- No Results Message (Hidden by default) -->
+    <div id="noResults" class="no-results" style="display: none;">
+        <div class="empty-icon">🔍</div>
+        <h2>No images found</h2>
+        <p>Try selecting a different season</p>
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <span class="lightbox-close" role="button" aria-label="Close lightbox" tabindex="0">&times;</span>
+
+    <!-- Image Counter -->
+    <div class="lightbox-counter" id="lightboxCounter" aria-live="polite">
+        <span id="currentImageNumber">1</span> / <span id="totalImages">1</span>
+    </div>
+
+    <div class="lightbox-content">
+        <!-- Loading Spinner -->
+        <div class="lightbox-spinner" id="lightboxSpinner">
+            <div class="spinner"></div>
+            <p id="spinnerText">Loading image...</p>
+        </div>
+
+        <!-- Image Display -->
+        <img id="lightboxImage" src="" alt="" class="lightbox-image">
+
+        <!-- YouTube Video Player -->
+        <div id="lightboxVideo" class="lightbox-video" style="display: none;">
+            <iframe id="youtubePlayer"
+                    width="100%"
+                    height="100%"
+                    src=""
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        <div class="lightbox-info">
+            <div class="lightbox-header">
+                <h2 id="lightboxCaption" class="lightbox-caption"></h2>
+                <a id="downloadBtn" href="#" download class="download-btn" aria-label="Download image" title="Download image">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 15L5 10h3V5h4v5h3l-5 5z"/>
+                        <path d="M3 17h14v2H3v-2z"/>
+                    </svg>
+                    Download
+                </a>
+            </div>
+
+            <p id="lightboxMatch" class="lightbox-match"></p>
+
+            <div class="lightbox-meta">
+                <span id="lightboxSeason" class="meta-item"></span>
+                <span id="lightboxDate" class="meta-item"></span>
+            </div>
+
+            <div id="lightboxTags" class="lightbox-tags"></div>
+            <div id="lightboxPlayers" class="lightbox-players"></div>
+        </div>
+
+        <button class="lightbox-nav lightbox-prev"
+                data-nav="-1"
+                aria-label="Previous image"
+                tabindex="0">
+            &#10094;
+        </button>
+        <button class="lightbox-nav lightbox-next"
+                data-nav="1"
+                aria-label="Next image"
+                tabindex="0">
+            &#10095;
+        </button>
+    </div>
+</div>
+
+<!-- Pass gallery data to JavaScript -->
+<script>
+    window.galleryData = {{ gallery_data|tojson|safe }};
+</script>
+
+<!-- Load gallery JavaScript after data is available -->
+<script src="/static/gallery.js"></script>
+
+{% endblock %}
