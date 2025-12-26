@@ -58,6 +58,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "img-src 'self' data: https:",
             "font-src 'self' cdnjs.cloudflare.com",
             "connect-src 'self'",
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'"
