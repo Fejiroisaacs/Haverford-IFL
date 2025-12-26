@@ -1,21 +1,20 @@
 
-:root {
-    --background: #1a1a2e;
-    --color: #000;
-    --primary-color: #0f3460;
-}
+/* Auth Page Styles - Requires design-tokens.css */
 
-* {
-    box-sizing: border-box;
+/* Auth-specific variables */
+:root {
+    --auth-background: #1a1a2e;
+    --auth-text-color: var(--color-black);
+    --auth-primary: #0f3460;
 }
 
 a {
     text-decoration: none;
-    color: var(--color);
+    color: var(--auth-text-color);
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: var(--text-4xl);
 }
 
 .container {
@@ -31,35 +30,29 @@ h1 {
 }
 .form-container {
     border: 1px solid hsla(0, 0%, 65%, 0.158);
-    box-shadow: 0 0 36px 1px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--radius-lg);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 99;
-    padding: 2rem;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    -ms-border-radius: 10px;
-    -o-border-radius: 10px;
+    padding: var(--space-8);
 }
 
 .login-container form input {
     display: block;
     padding: 14.5px;
     width: 100%;
-    margin: 2rem 0;
-    color: var(--color);
+    margin: var(--space-8) 0;
+    color: var(--auth-text-color);
     outline: none;
     background-color: #9191911f;
     border: none;
-    border-radius: 5px;
-    font-weight: 500;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
     letter-spacing: 0.8px;
-    font-size: 15px;
+    font-size: var(--text-base);
     backdrop-filter: blur(15px);
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    -ms-border-radius: 5px;
-    -o-border-radius: 5px;
+    -webkit-backdrop-filter: blur(15px);
 }
 
 .login-container form input:focus {
@@ -69,37 +62,25 @@ h1 {
 }
 
 .login-container form button {
-    background-color: var(--primary-color);
-    color: var(--color);
+    background-color: var(--auth-primary);
+    color: var(--auth-text-color);
     display: block;
-    padding: 13px;
-    border-radius: 5px;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
     outline: none;
-    font-size: 18px;
+    font-size: var(--text-lg);
     letter-spacing: 1.5px;
-    font-weight: bold;
+    font-weight: var(--font-bold);
     width: 100%;
     cursor: pointer;
-    margin-bottom: 2rem;
-    transition: all 0.1s ease-in-out;
+    margin-bottom: var(--space-8);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     border: none;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    -ms-border-radius: 5px;
-    -o-border-radius: 5px;
-    -webkit-transition: all 0.1s ease-in-out;
-    -moz-transition: all 0.1s ease-in-out;
-    -ms-transition: all 0.1s ease-in-out;
-    -o-transition: all 0.1s ease-in-out;
 }
 
 .login-container form button:hover {
-    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
     transform: scale(1.02);
-    -webkit-transform: scale(1.02);
-    -moz-transform: scale(1.02);
-    -ms-transform: scale(1.02);
-    -o-transform: scale(1.02);
 }
 
 .circle {
@@ -107,10 +88,6 @@ h1 {
     height: 8rem;
     background: var(--primary-color);
     border-radius: 50%;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    -ms-border-radius: 50%;
-    -o-border-radius: 50%;
     position: absolute;
 }
 
@@ -141,10 +118,6 @@ h1 {
     left: 0;
     z-index: -1;
     transform: translate(-45%, -45%);
-    -webkit-transform: translate(-45%, -45%);
-    -moz-transform: translate(-45%, -45%);
-    -ms-transform: translate(-45%, -45%);
-    -o-transform: translate(-45%, -45%);
 }
 
 .circle-two {
@@ -152,10 +125,6 @@ h1 {
     right: 0;
     z-index: -1;
     transform: translate(45%, 45%);
-    -webkit-transform: translate(45%, 45%);
-    -moz-transform: translate(45%, 45%);
-    -ms-transform: translate(45%, 45%);
-    -o-transform: translate(45%, 45%);
 }
 
 .register-forget {
@@ -185,29 +154,13 @@ h1 {
 @keyframes wobble {
     0% {
         transform: scale(1.025);
-        -webkit-transform: scale(1.025);
-        -moz-transform: scale(1.025);
-        -ms-transform: scale(1.025);
-        -o-transform: scale(1.025);
     }
     25% {
         transform: scale(1);
-        -webkit-transform: scale(1);
-        -moz-transform: scale(1);
-        -ms-transform: scale(1);
-        -o-transform: scale(1);
     }
     75% {
         transform: scale(1.025);
-        -webkit-transform: scale(1.025);
-        -moz-transform: scale(1.025);
-        -ms-transform: scale(1.025);
-        -o-transform: scale(1.025);
     }
     100% {
         transform: scale(1);
-        -webkit-transform: scale(1);
-        -moz-transform: scale(1);
-        -ms-transform: scale(1);
-        -o-transform: scale(1);
     }

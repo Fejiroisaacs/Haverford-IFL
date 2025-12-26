@@ -1,21 +1,5 @@
-/* 3D Slideshow */ 
-/*
-<section id="slideshow">
-  <div class="entire-content">
-    <div class="content-carrousel">
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-      <figure class="shadow"><img src="/static/Images/Logo/logo.png"/></figure>
-    </div>
-</div>
-</section>
-*/
+/* 3D Slideshow - Carousel Component */
+
 * {
     margin: 0;
     padding: 0;

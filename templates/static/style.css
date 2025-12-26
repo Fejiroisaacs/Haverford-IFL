@@ -37,13 +37,12 @@ body {
   margin: 0 10px;
   padding: 5px 10px;
   cursor: pointer;
-  transition: color 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
 }
 
 .menuOptions:hover {
   color: white;
   background-color: rgba(0, 0, 0, 0.8);
-  transition: background 0.3s ease-in-out;
 }
 
 
@@ -54,7 +53,6 @@ body {
 .scrolling-active .menuOptions:hover {
   color: whitesmoke;
   background-color: black;
-  transition: background 0.3s ease-in-out;
 }
 
 
@@ -213,18 +211,18 @@ main {
 .slide_container{
   width: 100%;
   max-width: 800px;
-  heigth: 500px;
+  height: 500px;
   display: flex;
   justify-content: center;
   align-items: stretch;
   gap: 1.25rem;
-  transistion: all 400ms;
+  transition: transform 400ms ease, opacity 400ms ease;
 }
 
 .image_card{
   flex: 1;
   height: 100%;
-  transistion: all 400ms;
+  transition: flex 400ms ease, filter 400ms ease;
   cursor: pointer;
 }
 

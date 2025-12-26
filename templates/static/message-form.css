@@ -3,7 +3,7 @@
   width: 80vw;
   max-width: 400px;
   background: linear-gradient(#212121, #212121) padding-box,
-              linear-gradient(145deg, transparent 35%,#970000, #370000) border-box;
+              linear-gradient(145deg, transparent 35%, #670000, #370000) border-box;
   border: 2px solid transparent;
   padding: 32px 24px;
   font-size: 14px;
@@ -14,7 +14,6 @@
   gap: 20px;
   box-sizing: border-box;
   border-radius: 16px;
-
 }
 
 .form-container button:active {
@@ -69,12 +68,12 @@
 
 .form-container .form-group input:focus {
   outline: none;
-  border-color: #970000;
+  border-color: #670000;
 }
 
 .form-container .form-group textarea:focus {
   outline: none;
-  border-color: #970000;
+  border-color: #670000;
 }
 
 .form-container .form-submit-btn {
@@ -97,30 +96,30 @@
 }
 
 .form-container .form-submit-btn:hover {
-  background-color: #970000;
+  background-color: #670000;
   border-color: #fff;
 }
 
 .btn {
-    background-color: #970000;
+    background-color: #670000;
     color: white;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px; 
+    border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
-    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
-    background-color: #870000;
+    background-color: #8B0000;
 }
 
 .btn:active {
-    background-color: #770000;
+    background-color: #670000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(2px); 
+    transform: translateY(2px);
 }
 
 .contact {
@@ -129,7 +128,7 @@
 }
 
 .contact a{
-    color: #770000;
+    color: #670000;
     text-decoration: none;
 }
 

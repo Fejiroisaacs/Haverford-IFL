@@ -12,7 +12,7 @@
     padding: 10px;
     text-align: center;
     cursor: pointer;
-    transition: color 0.05s, border-bottom 0.05s;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
 }
 
 .option:hover, .option.active {

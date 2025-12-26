@@ -2,11 +2,13 @@
 
 {% block title %}Home{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="stylesheet" href="/static/slides.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="/static/message-form.css">
+{% endblock %}
 
+{% block content %}
 <script src="/static/slide.js" defer></script>
 
 <!-- NEW: Feature Announcement Banner -->
@@ -415,7 +417,7 @@
 <hr>
 
 <a href="/static/IFL_Rule_Book.pdf" download>
-  <button class='btn'>Download IFL Rule Book</button>
+  <button class='btn btn-primary'>Download IFL Rule Book</button>
 </a>
 
 <!-- What's New Floating Button -->

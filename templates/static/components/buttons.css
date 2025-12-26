@@ -1,0 +1,333 @@
+/**
+ * Button Components - Haverford IFL
+ * Unified button styles across the application
+ * Requires: design-tokens.css
+ */
+
+/* ========== Base Button ========== */
+.btn {
+  display: inline-block;
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-base),
+              transform var(--transition-base),
+              box-shadow var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+/* ========== Button Variants ========== */
+
+/* Primary - Maroon */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-maroon) 0%, var(--color-maroon-hover) 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-maroon-sm);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-maroon-hover) 0%, var(--color-maroon-light) 100%);
+  box-shadow: var(--shadow-maroon-md);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow: var(--shadow-maroon-sm);
+}
+
+/* Secondary - Gray */
+.btn-secondary {
+  background: linear-gradient(135deg, var(--color-gray-700) 0%, var(--color-gray-800) 100%);
+  color: var(--color-white);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-900) 100%);
+  transform: translateY(-2px);
+}
+
+/* Success - Green */
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-light) 100%);
+  color: var(--color-white);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-success-light) 0%, var(--color-success) 100%);
+  transform: translateY(-2px);
+}
+
+/* Warning - Yellow */
+.btn-warning {
+  background: linear-gradient(135deg, var(--color-warning) 0%, #e0a800 100%);
+  color: var(--color-gray-900);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e0a800 0%, #d39e00 100%);
+  transform: translateY(-2px);
+}
+
+/* Danger - Red */
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-error) 0%, #c82333 100%);
+  color: var(--color-white);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  transform: translateY(-2px);
+}
+
+/* Outline variant */
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--color-maroon);
+  color: var(--color-maroon);
+  box-shadow: none;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--color-maroon);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+/* Ghost variant */
+.btn-ghost {
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-maroon);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(103, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ========== Button Sizes ========== */
+
+.btn-xs {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+  border-radius: var(--radius-lg);
+}
+
+.btn-xl {
+  padding: var(--space-5) var(--space-10);
+  font-size: var(--text-xl);
+  border-radius: var(--radius-xl);
+}
+
+/* ========== Button Widths ========== */
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.btn-auto {
+  width: auto;
+}
+
+/* ========== Button Groups ========== */
+
+.btn-group {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-group-vertical {
+  flex-direction: column;
+}
+
+.btn-group-start {
+  justify-content: flex-start;
+}
+
+.btn-group-end {
+  justify-content: flex-end;
+}
+
+/* ========== Loading State ========== */
+
+.btn-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: var(--radius-circle);
+  animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== Icon Buttons ========== */
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-circle);
+}
+
+.btn-icon.btn-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.btn-icon.btn-lg {
+  width: 48px;
+  height: 48px;
+}
+
+.btn-icon.btn-xl {
+  width: 56px;
+  height: 56px;
+}
+
+/* Button with icon and text */
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ========== Floating Action Button ========== */
+
+.btn-fab {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: linear-gradient(135deg, var(--color-maroon) 0%, var(--color-maroon-hover) 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-maroon-lg);
+  z-index: var(--z-fixed);
+  font-size: var(--text-2xl);
+}
+
+.btn-fab:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-maroon-xl);
+}
+
+/* ========== Responsive ========== */
+
+@media (max-width: 768px) {
+  .btn {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .btn-lg {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+  }
+
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group > .btn {
+    width: 100%;
+  }
+
+  .btn-fab {
+    bottom: var(--space-4);
+    right: var(--space-4);
+  }
+}
+
+/* ========== Accessibility ========== */
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-maroon);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ========== Legacy Support ========== */
+/* Maintain compatibility with existing button classes */
+
+/* Auth page buttons */
+.login-container form button {
+  composes: btn btn-primary btn-block;
+}
+
+/* Message form buttons */
+.form-submit-btn {
+  composes: btn btn-primary;
+}
+
+/* Dropdown button in table.css */
+.dropdown:checked + label,
+.dropdown:not(:checked) + label {
+  composes: btn btn-primary;
+}

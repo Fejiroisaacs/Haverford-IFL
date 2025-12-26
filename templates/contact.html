@@ -2,9 +2,12 @@
 
 {% block title %}Contact{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="stylesheet" href="/static/message-form.css">
 <link rel="stylesheet" href="/static/slides.css">
+{% endblock %}
+
+{% block content %}
 <script src="/static/slide.js" defer></script>
 <div class="contact">
     <h1>IFL Leadership</h1>
@@ -32,7 +35,7 @@
         <label for="textarea">How Can We Help You?</label>
         <textarea name="textarea" id="textarea" rows="100" cols="50" required minlength="10" maxlength="2000" placeholder='Imagine Something...✦˚'></textarea>
       </div>
-      <button class="form-submit-btn" type="submit" id="contactSubmitBtn">Submit</button>
+      <button class="btn btn-primary btn-block" type="submit" id="contactSubmitBtn">Submit</button>
     </form>
 </div>
 
