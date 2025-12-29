@@ -431,60 +431,49 @@
     <div class="whats-new-content">
         <span class="close-whats-new" onclick="closeWhatsNew()">&times;</span>
         <h2><i class="fas fa-trophy feature-icon"></i> What's New in IFL <i class="fas fa-trophy feature-icon"></i></h2>
-        
-        <div class="feature-item">
-          <div class="feature-date">November 22nd, 2025</div>
-
-          <h3>Base Player Pages Changes</h3>
-          <p><strong>Page Redesign (UI changes)</strong></p>
-          <p><strong>Position Filtering:</strong> Filter players by position (Attacker, Midfielder, Defender, Goalkeeper)</p>
-          <p><strong>Advanced Sorting:</strong> Sort by Rating, Name, Goals, Assists, Saves, or POTM awards</p>
-          <a href="/players" class="feature-link">View Players →</a>
-          <br>
-          <hr>
-          <br>
-          <h3>Individual Player Page Changes</h3>
-          <p><strong>Best Performances:</strong> Top individual match performances highlighted</p>
-          <p><strong>League Rankings:</strong> Player rankings across all categories</p>
-          <p><strong>Team Contribution:</strong> Percentage of team goals and assists by season</p>
-          <p><strong>Head-to-Head Stats:</strong> Performance against each opponent</p>
-          <a href="/players/Ishan Deb" class="feature-link">Sample Player Page (Ishan Deb) →</a>
-        </div>
 
         <div class="feature-item">
-          <div class="feature-date">November 15th, 2025</div>
+          <div class="feature-date">December 2025</div>
 
-          <h3>Base Team Pages Changes</h3>
-          <p>New filters for team stats and performance insights.</p>
-          <p>Sort teams by season, group, rating, goals scored, and more.</p>
-          <p>Updated team cards with current form, record, and points.</p>
-          <p>Seasonal and all-time metrics and awards section.</p>
-          <a href="/teams" class="feature-link">View Teams →</a>
+          <h3>Redesigned Navigation System</h3>
+          <p><strong>Desktop Navigation:</strong> Cleaner, more organized menu with dropdown groupings for League Info (Statistics, Hall of Fame, Archives)</p>
+          <p><strong>Mobile Navigation:</strong> Improved sidebar with visual sections and dividers for better organization</p>
           <br>
-          <hr>
           <br>
-          <h3>Individual Team Page Changes</h3>
-          <p>All-Time Top Performers section for players.</p>
-          <p>New Statistics & Awards menu with overall team charts and metrics.</p>
-          <p>Players menu with individual player stats per season.</p>
-          <p>Head-to-Head (H2H) record for every team faced.</p>
+          <h3>UI Improvements and Optimization</h3>
+          <p>Faster load times and smoother transitions across the site. Enhanced responsiveness for all devices.</p>
+          <p>Improved accessibility features for better user experience.</p>
+          <p>Screen reader compatibility enhancements.</p>
+          <p>Security enhancements.</p>
         </div>
-        
-        <div class="feature-item">
-          <div class="feature-date">November 11th, 2025</div>
-          <h3>Match Preview Feature</h3>
-          <p>Feedback form! Share your thoughts, rate features, and suggest new ideas.</p>
-          <p>Matches are now organized by match day with buttons to quickly view each day's games.</p>
-          <p>Get detailed insights for upcoming matches with head-to-head stats, form analysis, and key player comparisons.</p>
-          <a href="/matches" class="feature-link">View Matches →</a>
+
+        <h2 style="margin-top: 2rem;"><i class="fas fa-clock-o feature-icon"></i> Coming Soon <i class="fas fa-clock-o feature-icon"></i></h2>
+
+        <div class="feature-item upcoming-feature">
+          <h3>Statistics Dashboard</h3>
+          <p>Comprehensive league statistics with player rankings, team performance analytics, and season trends. Track all-time leaders, current season stats, and rating distributions.</p>
         </div>
-        
 
-        <!--<h2><i class="fas fa-clock-o feature-icon"></i> Upcoming Features <i class="fas fa-clock-o feature-icon"></i></h2>-->
+        <div class="feature-item upcoming-feature">
+          <h3>Hall of Fame</h3>
+          <p>Celebrate legendary players and their incredible achievements. View career highlights, awards, and memorable moments from the league's history.</p>
+        </div>
 
-        <!--<h2><i class="fas fa-hourglass-half feature-icon"></i> Future Changes <i class="fas fa-hourglass-half feature-icon"></i></h2>-->
+        <div class="feature-item upcoming-feature">
+          <h3>Season Archives</h3>
+          <p>Explore historical data from past seasons. Browse standings, top performers, and relive memorable moments from previous campaigns.</p>
+        </div>
 
+        <div class="feature-item upcoming-feature">
+          <h3>Photo Gallery</h3>
+          <p>Browse photos and memorable moments from all seasons. Relive the action with our curated collection of match-day images.</p>
+        </div>
 
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+          <a href="/patch-notes" class="feature-link" style="font-size: 1.1rem;">
+            <i class="fa fa-file-text-o"></i> View Full Patch Notes →
+          </a>
+        </div>
     </div>
 </div>
 
@@ -2003,6 +1992,20 @@
 .feature-item:hover {
   transform: translateX(5px) translateZ(0);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upcoming-feature {
+  background: linear-gradient(135deg, #fff9f0 0%, #fff5e6 100%);
+  border-left: 4px solid #ffa500;
+  opacity: 0.85;
+}
+
+.upcoming-feature h3 {
+  color: #cc7000;
+}
+
+.upcoming-feature:hover {
+  opacity: 1;
 }
 
 .feature-date {
