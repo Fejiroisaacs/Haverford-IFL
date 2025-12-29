@@ -1,8 +1,13 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .menu {
@@ -145,12 +150,30 @@ body {
   background: linear-gradient(to right, #670000, #000000);
 }
 
-.sidenav .closebtn {
+.sidenav .closebtn,
+.sidenav .closebtnMobile {
   position: absolute;
   top: 0;
   right: 25px;
   font-size: 36px;
   margin-left: 50px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+
+.sidenav .closebtn:hover,
+.sidenav .closebtnMobile:hover {
+  color: #ccc;
+}
+
+.sidenav .closebtn:focus,
+.sidenav .closebtnMobile:focus {
+  outline: 2px solid #ffcc00;
+  outline-offset: 2px;
 }
 
 @media screen and (max-height: 450px) {
@@ -206,7 +229,7 @@ main {
     border: 3px solid #ff6b6b;
     padding: 5px;
   }
-
+}
 
 .slide_container{
   width: 100%;
@@ -238,4 +261,128 @@ main {
 }
 .image_card:hover{
   flex: 3;
+}
+
+/* ===== DROPDOWN NAVIGATION ===== */
+
+/* Dropdown Container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Button */
+.dropdown-toggle {
+    font-size: 110%;
+    text-decoration: none;
+    color: black;
+    text-align: center;
+    margin: 0 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background: none;
+    border: none;
+    display: inline-block;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+}
+
+.dropdown-toggle::after {
+    content: ' ▾';
+    font-size: 0.8em;
+}
+
+.dropdown-toggle:hover {
+    color: white;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Dropdown Content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    z-index: 1001;
+    padding: 8px 0;
+    margin-top: 2px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 20px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f5f5f5;
+    color: #670000;
+}
+
+/* Show dropdown on hover (desktop only) */
+@media only screen and (min-width: 901px) {
+    .dropdown:hover .dropdown-content {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+    }
+}
+
+/* Active state for scrolling menu */
+.scrolling-active .dropdown-toggle:hover {
+    color: whitesmoke;
+    background-color: black;
+}
+
+.scrolling-active .dropdown-content {
+    background-color: rgba(249, 249, 249, 0.98);
+}
+
+/* ===== MOBILE NAVIGATION ENHANCEMENTS ===== */
+
+.mobile-nav-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 12px 16px;
+}
+
+.mobile-nav-label {
+    padding: 8px 32px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* ===== RESPONSIVE DROPDOWN BEHAVIOR ===== */
+
+/* Hide dropdowns on mobile (they're already hidden via .menu display:none) */
+@media only screen and (max-width: 900px) {
+    .dropdown {
+        display: none;
+    }
+}
+
+/* Ensure dropdowns work properly on desktop */
+@media only screen and (min-width: 901px) {
+    .dropdown {
+        display: inline-block;
+    }
+
+    .mobile-nav-divider,
+    .mobile-nav-label {
+        display: none;
+    }
 }

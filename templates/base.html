@@ -6,19 +6,30 @@
     <meta name="google-site-verification" content="X5h4TjQv5dzDO1Ku9dtk6Wnx0ukpjqx8dZ756Ric8so" />
     <title>{% block title %}{% endblock %}</title>
     <link rel="shortcut icon" href="/static/Images/Logo/logo.png" type="image/x-icon">
+
+    <!-- Preload Critical Assets -->
+    <link rel="preload" href="/static/style.css" as="style">
+    <link rel="preload" href="/static/design-tokens.css" as="style">
+    <link rel="preload" href="/static/Images/Logo/logo.png" as="image">
+    <link rel="preload" href="/static/script.js" as="script">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <link rel="stylesheet" href="/static/design-tokens.css">
     <link rel="stylesheet" href="/static/components/buttons.css">
 
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/loading-states.css">
 
     {% block extra_css %}{% endblock %}
 
+    <script src="/static/focus-trap.js"></script>
     <script src="/static/script.js" defer></script>
 </head>
 
 <body>
+    <!-- Skip Navigation Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header class="headerclass">
         <div class="menu">
           <div class="menu-left">
@@ -29,17 +40,31 @@
             <a href="/matches" class="menuOptions">Matches</a>
             <a href="/teams" class="menuOptions">Teams</a>
             <a href="/players" class="menuOptions">Players</a>
+
+            <!-- League Dropdown -->
+            <div class="dropdown">
+                <button class="dropdown-toggle menuOptions"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-label="League menu"
+                        onclick="toggleDropdown(this)">
+                    League
+                </button>
+                <div class="dropdown-content" role="menu">
+                    <a href="/statistics" role="menuitem">Statistics</a>
+                    <a href="/hall-of-fame" role="menuitem">Hall of Fame</a>
+                    <a href="/archives" role="menuitem">Archives</a>
+                </div>
+            </div>
+
             <a href="/gallery" class="menuOptions">Gallery</a>
             <a href="/contact" class="menuOptions">Contact</a>
-            <a href="/fantasy" class="menuOptions">Fantasy</a>
         </div>
         <div class="menu-right">
+            <a href="/fantasy" class="menuOptions">Fantasy</a>
             {% if user is not none and ('user_id' in user or 'uid' in user) %}
                 <a href="/settings" class="menuOptions">Settings</a>
                 <a href="/logout" class="menuOptions">Logout</a>
-            {% else %}
-                <a href="/login" class="menuOptions">Log In</a>
-                <a href="/signup" class="menuOptions">Sign Up</a>
             {% endif %}
         </div>
         </div>
@@ -47,27 +72,52 @@
 
 
     <div class="nav">
-        <div id="mySidenav" class="sidenav" style="z-index:4;">
-            <a href="javascript:void(0)" class="closebtnMobile" onclick="closeMobileNav()">&times;</a>
+        <nav id="mySidenav" class="sidenav" style="z-index:999;" role="navigation" aria-label="Mobile navigation" aria-hidden="true">
+            <button type="button" class="closebtnMobile" onclick="closeMobileNav()" aria-label="Close mobile menu">&times;</button>
+
+            <!-- Core Section -->
             <a href="/">Home</a>
             <a href="/matches">Matches</a>
             <a href="/teams">Teams</a>
             <a href="/players">Players</a>
+
+            <div class="mobile-nav-divider"></div>
+            <div class="mobile-nav-label">League Info</div>
+
+            <!-- League Section -->
+            <a href="/statistics">Statistics</a>
+            <a href="/hall-of-fame">Hall of Fame</a>
+            <a href="/archives">Archives</a>
+
+            <div class="mobile-nav-divider"></div>
+            <div class="mobile-nav-label">More</div>
+
+            <!-- More Section -->
             <a href="/gallery">Gallery</a>
             <a href="/contact">Contact</a>
+
+            <div class="mobile-nav-divider"></div>
+            <div class="mobile-nav-label">Fantasy League</div>
+
+            <!-- Fantasy Section -->
             <a href="/fantasy">Fantasy</a>
             {% if user is not none and ('user_id' in user or 'uid' in user) %}
-                <a href="/settings" class="menuOptions">Settings</a>
-                <a href="/logout" class="menuOptions">Logout</a>
-            {% else %}
-                <a href="/login" class="menuOptions">Log In</a>
-                <a href="/signup" class="menuOptions">Sign Up</a>
+                <a href="/settings">Settings</a>
+                <a href="/logout">Logout</a>
             {% endif %}
-        </div>
-        <span id="navIcon" style="font-size:30px; cursor:pointer; margin-left:3%; color: #670000; z-index:1000;" class="openMenuMobile" onclick="openMobileNav()">&#9776;</span>
+        </nav>
+        <button type="button" id="navIcon"
+                class="openMenuMobile"
+                onclick="openMobileNav()"
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+                aria-controls="mySidenav"
+                style="font-size:30px; cursor:pointer; margin-left:3%; color: #670000; z-index:1000; background: none; border: none; padding: 8px;">
+            &#9776;
+        </button>
     </div>
 
-    <main>
+    <main id="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
 
@@ -540,15 +590,33 @@
             }
         });
 
-        // Feedback Modal Functions
+        // Feedback Modal Functions with Focus Trap
+        let feedbackModalFocusTrap = null;
+
         function openFeedbackModal() {
-            document.getElementById('feedbackModal').style.display = 'block';
+            const modal = document.getElementById('feedbackModal');
+            modal.style.display = 'block';
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+            // Activate focus trap
+            if (!feedbackModalFocusTrap) {
+                feedbackModalFocusTrap = new FocusTrap(modal);
+
+                // Listen for escape key from focus trap
+                modal.addEventListener('focustrap:escape', closeFeedbackModal);
+            }
+            feedbackModalFocusTrap.activate();
         }
 
         function closeFeedbackModal() {
-            document.getElementById('feedbackModal').style.display = 'none';
+            const modal = document.getElementById('feedbackModal');
+            modal.style.display = 'none';
             document.body.style.overflow = 'auto'; // Restore scrolling
+
+            // Deactivate focus trap
+            if (feedbackModalFocusTrap) {
+                feedbackModalFocusTrap.deactivate();
+            }
 
             // Reset form
             setTimeout(() => {
