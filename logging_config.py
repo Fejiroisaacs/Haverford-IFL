@@ -257,6 +257,15 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                 'increment': 1
             })
 
+        else:
+            # Aggregate all other page visits (home, statistics, hall-of-fame, archives, gallery, contact, etc.)
+            # Exclude static files, API endpoints, and health checks
+            if not route.startswith('/static') and not route.startswith('/api/') and route != '/health':
+                log_queue.put({
+                    'log_type': 'counter',
+                    'path': 'page_views/other_page_visits',
+                    'increment': 1
+                })
 
     except Exception as e:
         logger.error(f"Error logging counters: {e}")
