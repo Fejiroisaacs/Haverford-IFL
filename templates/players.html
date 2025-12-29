@@ -70,6 +70,14 @@
         <a href="#top" class="nav-link"><i class="fas fa-arrow-up"></i> Top</a>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-container">
+            <div class="loading-spinner loading-spinner-large"></div>
+            <div class="loading-text">Loading players...</div>
+        </div>
+    </div>
+
     <!-- All Players Section -->
     <div id="all-players" class="section">
         <h2>Season {{selected_season}} Players</h2>
@@ -86,10 +94,10 @@
                     <div class="player-image-container">
                         {% if player['POTM_Image'] %}
                         <img src="/static/Images/POTM/{{player['POTM_Image']}}.png"
-                             alt="{{player['Name']}}" class="player-potm-image" loading="lazy">
+                             alt="{{player['Name']}}" class="player-potm-image" loading="lazy" decoding="async">
                         {% else %}
                         <img src="/static/Images/POTM/ford.png"
-                             alt="{{player['Name']}}" class="player-potm-image" loading="lazy">
+                             alt="{{player['Name']}}" class="player-potm-image" loading="lazy" decoding="async">
                         {% endif %}
                     </div>
 
@@ -321,7 +329,7 @@
                 <div class='potm-card'>
                     <a href="/players/{{image['Name']}}" target="_blank">
                         <img src="/static/Images/POTM/{{image['Match ID']}}.png"
-                             alt='{{image['Name']}}' class='potm-image' loading="lazy">
+                             alt='{{image['Name']}}' class='potm-image' loading="lazy" decoding="async">
                         <div class="potm-info">
                             <p class="potm-name">{{image['Name']}}</p>
                         </div>
@@ -345,12 +353,20 @@
     .players-container {
         max-width: 1600px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 1rem;
     }
 
     .season-selector {
-        margin: 2rem 0;
         text-align: center;
+        background: white;
+        z-index: 100;
+        padding: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .season-selector.stuck {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .season-selector h3 {
@@ -456,7 +472,7 @@
     /* Offset for larger screens to sit below main nav */
     @media screen and (min-width: 769px) {
         .quick-nav {
-            top: 50px; /* Adjust this value to match your main nav height */
+            top: 50px; 
         }
     }
 
@@ -519,7 +535,7 @@
         justify-content: center;
         align-items: center;
         margin-bottom: 1rem;
-        background: #f0f0f0;
+        background-color: hsla(0, 0%, 90%, 0.8);
         border-radius: 8px;
         overflow: hidden;
     }
@@ -887,7 +903,9 @@
         .players-grid {
             grid-template-columns: 1fr;
         }
-
+        .player-card{
+            min-width: 70vw; 
+        }
         .potm-image {
             height: 200px;
             width: 200px;
@@ -909,6 +927,12 @@
 
     // Apply filters - reload page with query parameters
     function applyFilters() {
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('hidden');
+        }
+
         const position = document.getElementById('positionFilter').value;
         const sortBy = document.getElementById('sortBy').value;
 
@@ -926,6 +950,68 @@
 
         window.location.href = url;
     }
+
+    // Progressive image loading
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('.player-potm-image');
+
+        images.forEach(img => {
+            // Add progressive loading class
+            const container = img.parentElement;
+            if (container) {
+                container.classList.add('progressive-image', 'loading');
+            }
+
+            // When image loads, remove loading state
+            if (img.complete) {
+                img.classList.add('loaded');
+                if (container) {
+                    container.classList.remove('loading');
+                }
+            } else {
+                img.addEventListener('load', function() {
+                    img.classList.add('loaded');
+                    if (container) {
+                        container.classList.remove('loading');
+                    }
+                });
+            }
+
+            // Handle image load errors
+            img.addEventListener('error', function() {
+                if (container) {
+                    container.classList.remove('loading');
+                }
+            });
+        });
+
+        // Fade in player cards
+        const playerCards = document.querySelectorAll('.player-card');
+        playerCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            setTimeout(() => {
+                card.classList.add('fade-in');
+                card.style.opacity = '1';
+            }, index * 50); // Stagger animation
+        });
+
+        // Sticky season selector effect
+        const seasonSelector = document.querySelector('.season-selector');
+        if (seasonSelector) {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.intersectionRatio < 1) {
+                        seasonSelector.classList.add('stuck');
+                    } else {
+                        seasonSelector.classList.remove('stuck');
+                    }
+                },
+                { threshold: [1], rootMargin: '-60px 0px 0px 0px' }
+            );
+            observer.observe(seasonSelector);
+        }
+
+    });
 
     // Tab switching
     function showTab(tabId) {

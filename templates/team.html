@@ -7,6 +7,23 @@
 <link rel="stylesheet" href="/static/displays.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Breadcrumbs Navigation -->
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <ol class="breadcrumbs-list">
+        <li class="breadcrumbs-item">
+            <a href="/" class="breadcrumbs-link">Home</a>
+        </li>
+        <li class="breadcrumbs-separator" aria-hidden="true">/</li>
+        <li class="breadcrumbs-item">
+            <a href="/teams" class="breadcrumbs-link">Teams</a>
+        </li>
+        <li class="breadcrumbs-separator" aria-hidden="true">/</li>
+        <li class="breadcrumbs-item">
+            <span class="breadcrumbs-current" aria-current="page">{{team}}</span>
+        </li>
+    </ol>
+</nav>
+
 <h1>{{team}} TEAM</h1>
 <h2>Rating: {{data["Rating"]}} / Rank: {{data["Rank"]}}</h2>
 
@@ -277,7 +294,7 @@
                         <h3>Top Saves</h3>
                         ${playerStatsData.top_saves ? `
                             <p class="performer-name">${playerStatsData.top_saves.Name}</p>
-                            <p class="performer-stat">${playerStatsData.top_saves.Saves} assists</p>
+                            <p class="performer-stat">${playerStatsData.top_saves.Saves} saves</p>
                         ` : '<p>No data</p>'}
                     </div>
                 </div>`;

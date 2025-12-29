@@ -6,6 +6,23 @@
 <link rel="stylesheet" href="/static/displays.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+<!-- Breadcrumbs Navigation -->
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <ol class="breadcrumbs-list">
+        <li class="breadcrumbs-item">
+            <a href="/" class="breadcrumbs-link">Home</a>
+        </li>
+        <li class="breadcrumbs-separator" aria-hidden="true">/</li>
+        <li class="breadcrumbs-item">
+            <a href="/players" class="breadcrumbs-link">Players</a>
+        </li>
+        <li class="breadcrumbs-separator" aria-hidden="true">/</li>
+        <li class="breadcrumbs-item">
+            <span class="breadcrumbs-current" aria-current="page">{{rating_data['Name']}}</span>
+        </li>
+    </ol>
+</nav>
+
 <!-- Sticky Quick Stats Bar -->
 <div class="sticky-header" id="stickyHeader">
     <div class="sticky-content">

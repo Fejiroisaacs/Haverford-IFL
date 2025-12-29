@@ -14,6 +14,7 @@ let currentImageId = null;
 let allImageIds = [];
 let filteredImageIds = [];
 let currentFilter = 'all';
+let lightboxFocusTrap = null;
 
 /**
  * Initialize gallery on page load
@@ -120,6 +121,11 @@ function applyFilters() {
     let visibleCount = 0;
     filteredImageIds = [];
 
+    // Show loading state
+    if (galleryGrid) {
+        galleryGrid.classList.add('loading');
+    }
+
     // Add fade-out animation
     galleryItems.forEach(item => {
         item.classList.add('fade-out');
@@ -169,6 +175,11 @@ function applyFilters() {
         } else {
             galleryGrid.style.display = 'block';
             noResults.style.display = 'none';
+        }
+
+        // Remove loading state
+        if (galleryGrid) {
+            galleryGrid.classList.remove('loading');
         }
 
         updateImageCount();
@@ -262,8 +273,11 @@ function openLightbox(imageId) {
         // Add class to lightbox for video-specific styling
         lightbox.classList.add('showing-video');
 
-        // Build YouTube embed URL
-        const youtubeUrl = `https://www.youtube.com/embed/${imageData.youtube_id}?autoplay=1&rel=0`;
+        // Build YouTube embed URL with optional autoplay 
+        // Users can enable autoplay by setting enableAutoplay to true
+        const enableAutoplay = false; // Set to true to enable autoplay
+        const autoplayParam = enableAutoplay ? 'autoplay=1' : 'autoplay=0';
+        const youtubeUrl = `https://www.youtube.com/embed/${imageData.youtube_id}?${autoplayParam}&rel=0&modestbranding=1`;
 
         // Set iframe source
         youtubePlayer.src = youtubeUrl;
@@ -359,14 +373,14 @@ function openLightbox(imageId) {
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-    // Focus management for accessibility
-    const lightboxClose = document.querySelector('.lightbox-close');
-    if (lightboxClose) {
-        // Store the element that had focus before opening lightbox
-        window.lastFocusedElement = document.activeElement;
-        // Set focus to close button
-        setTimeout(() => lightboxClose.focus(), 100);
+    // Activate focus trap for accessibility
+    if (!lightboxFocusTrap) {
+        lightboxFocusTrap = new FocusTrap(lightbox);
+
+        // Listen for escape key from focus trap
+        lightbox.addEventListener('focustrap:escape', closeLightbox);
     }
+    lightboxFocusTrap.activate();
 
     // Preload adjacent images
     preloadAdjacentImages(imageId);
@@ -388,10 +402,9 @@ function closeLightbox() {
     document.body.style.overflow = ''; // Restore scrolling
     currentImageId = null;
 
-    // Restore focus to element that opened the lightbox
-    if (window.lastFocusedElement) {
-        window.lastFocusedElement.focus();
-        window.lastFocusedElement = null;
+    // Deactivate focus trap (this will restore focus automatically)
+    if (lightboxFocusTrap) {
+        lightboxFocusTrap.deactivate();
     }
 }
 

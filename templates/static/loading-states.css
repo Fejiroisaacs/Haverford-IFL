@@ -1,0 +1,543 @@
+/**
+ * Loading States & Skeleton Loaders
+ * Provides consistent loading experiences across the IFL application
+ */
+
+/* ===========================
+   SKIP NAVIGATION LINK
+   =========================== */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #670000;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-weight: bold;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid #ffcc00;
+    outline-offset: 2px;
+}
+
+/* ===========================
+   LOADING SPINNER
+   =========================== */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(103, 0, 0, 0.1);
+    border-top-color: #670000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner-large {
+    width: 60px;
+    height: 60px;
+    border-width: 6px;
+}
+
+.loading-spinner-small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.loading-text {
+    color: #670000;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Overlay Loading State */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+/* Inline Loading State */
+.loading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ===========================
+   SKELETON LOADERS
+   =========================== */
+
+/* Base Skeleton */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 0%,
+        #e0e0e0 20%,
+        #f0f0f0 40%,
+        #f0f0f0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Skeleton Text Lines */
+.skeleton-text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text-title {
+    height: 2rem;
+    width: 60%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-text-subtitle {
+    height: 1.5rem;
+    width: 40%;
+    margin-bottom: 0.75rem;
+}
+
+/* Skeleton Card (for player/team cards) */
+.skeleton-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.skeleton-card-image {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+.skeleton-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Skeleton Player Card */
+.skeleton-player-card {
+    background: white;
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.skeleton-player-image {
+    width: 100%;
+    height: 250px;
+    border-radius: 8px;
+}
+
+.skeleton-player-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.skeleton-stat-item {
+    height: 40px;
+    border-radius: 4px;
+}
+
+/* Skeleton Table */
+.skeleton-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skeleton-table-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.skeleton-table-cell {
+    height: 1.5rem;
+    border-radius: 4px;
+}
+
+/* Skeleton Gallery Grid */
+.skeleton-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.skeleton-gallery-item {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+}
+
+/* Skeleton Match Preview */
+.skeleton-match-preview {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.skeleton-team {
+    width: 30%;
+    height: 60px;
+    border-radius: 8px;
+}
+
+.skeleton-vs {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeleton-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.skeleton-stat-box {
+    height: 80px;
+    border-radius: 8px;
+}
+
+/* ===========================
+   CONTENT LOADING STATES
+   =========================== */
+
+/* Fade-in animation for loaded content */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide elements while loading */
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid rgba(103, 0, 0, 0.1);
+    border-top-color: #670000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ===========================
+   BUTTON LOADING STATES
+   =========================== */
+
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.btn-loading-light::after {
+    border-top-color: white;
+}
+
+.btn-loading-dark::after {
+    border-top-color: #670000;
+}
+
+/* ===========================
+   PROGRESSIVE IMAGE LOADING
+   =========================== */
+
+.progressive-image {
+    position: relative;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.progressive-image.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.5),
+        transparent
+    );
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progressive-image img {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progressive-image img.loaded {
+    opacity: 1;
+}
+
+/* ===========================
+   RESPONSIVE ADJUSTMENTS
+   =========================== */
+
+@media (max-width: 768px) {
+    .loading-spinner-large {
+        width: 50px;
+        height: 50px;
+        border-width: 5px;
+    }
+
+    .skeleton-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .skeleton-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .skeleton-match-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .skeleton-team {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-container {
+        padding: 2rem 1rem;
+    }
+
+    .skeleton-player-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .skeleton-gallery {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===========================
+   BREADCRUMBS NAVIGATION
+   =========================== */
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.breadcrumbs-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 0.5rem;
+}
+
+.breadcrumbs-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumbs-link {
+    color: #670000;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.breadcrumbs-link:hover {
+    background-color: rgba(103, 0, 0, 0.1);
+    text-decoration: underline;
+}
+
+.breadcrumbs-link:focus {
+    outline: 2px solid #670000;
+    outline-offset: 2px;
+}
+
+.breadcrumbs-separator {
+    color: #999;
+    margin: 0 0.25rem;
+    user-select: none;
+}
+
+.breadcrumbs-current {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .breadcrumbs {
+        font-size: 0.85rem;
+        padding: 0.75rem 0;
+    }
+
+    .breadcrumbs-list {
+        gap: 0.25rem;
+    }
+
+    .breadcrumbs-link {
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* ===========================
+   UTILITY CLASSES
+   =========================== */
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+
+.opacity-50 {
+    opacity: 0.5;
+}
+
+.opacity-100 {
+    opacity: 1;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.pointer-events-auto {
+    pointer-events: auto;
+}
+
+/* Smooth transitions */
+.transition-opacity {
+    transition: opacity 0.3s ease;
+}
+
+.transition-all {
+    transition: all 0.3s ease;
+}
