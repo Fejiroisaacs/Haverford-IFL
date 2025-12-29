@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, Cookie
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
@@ -9,6 +9,7 @@ import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
 from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics
+from auth_utils import get_current_user
 import json
 import os
 import uvicorn
@@ -56,17 +57,6 @@ templates = Jinja2Templates(directory="templates")
 
 # DEVELOPMENT TOGGLE FOR GALLERY
 IS_DEV = os.getenv("DEV", False) == "true"
-
-async def get_current_user(session_token: str = Cookie(None)):
-    """Get current user from session token. Returns None if not authenticated."""
-    if not session_token:
-        return None
-    try:
-        user = auth.verify_id_token(session_token)
-        return user
-    except Exception as e:
-        print(f"Invalid session token: {e}")
-        return None
 
 @app.middleware("http")
 async def add_cache_headers(request: Request, call_next):
@@ -372,8 +362,8 @@ async def read_root(request: Request, user = Depends(get_current_user)):
 @app.get("/gallery", response_class=HTMLResponse)
 async def gallery(request: Request, user = Depends(get_current_user)):
     """Gallery page displaying images from all seasons"""
-    # Check if gallery page is enabled
-    if not IS_DEV:
+    # Check if gallery page is enabled or admin logged in
+    if not IS_DEV or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,

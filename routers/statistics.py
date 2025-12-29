@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
+from auth_utils import get_current_user
 import pandas as pd
 import time
 from numpy import linspace
@@ -600,15 +601,11 @@ def get_all_seasons_summary():
     return archives
 
 
-async def get_current_user(session_token: str = None):
-    """Get current user from session (placeholder)"""
-    return None
-
 @router.get("/statistics", response_class=HTMLResponse)
 async def statistics_page(request: Request, season: int = 6, user = Depends(get_current_user)):
     """Statistics Dashboard page"""
-    # Check if statistics pages are enabled
-    if not IS_DEV:
+    # Check if statistics pages are enabled or admin logged in
+    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
@@ -654,8 +651,8 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
 @router.get("/hall-of-fame", response_class=HTMLResponse)
 async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
     """Hall of Fame page"""
-    # Check if statistics pages are enabled
-    if not IS_DEV:
+    # Check if statistics pages are enabled or admin logged in
+    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
@@ -692,8 +689,8 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
 @router.get("/archives", response_class=HTMLResponse)
 async def archives_page(request: Request, user = Depends(get_current_user)):
     """Season Archives page"""
-    # Check if statistics pages are enabled
-    if not IS_DEV:
+    # Check if statistics pages are enabled or admin logged in
+    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
