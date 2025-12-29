@@ -417,6 +417,14 @@ async def gallery(request: Request, user = Depends(get_current_user)):
             "total_images": 0
         })
 
+@app.get("/patch-notes", response_class=HTMLResponse)
+async def patch_notes(request: Request, user = Depends(get_current_user)):
+    """Patch notes page with complete update history"""
+    return templates.TemplateResponse("patch-notes.html", {
+        "request": request,
+        "user": user
+    })
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring and load balancers"""

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Patch Notes - Haverford IFL{% endblock %}
+
+{% block extra_css %}
+<style>
+    .patch-notes-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+
+    .patch-notes-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .patch-notes-header h1 {
+        font-size: 2.5rem;
+        color: #670000;
+        margin-bottom: 1rem;
+    }
+
+    .patch-notes-header p {
+        font-size: 1.2rem;
+        color: #666;
+    }
+
+    .patch-note-item {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #670000;
+    }
+
+    .patch-date {
+        display: inline-block;
+        background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .patch-note-item h3 {
+        color: #670000;
+        font-size: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .patch-note-item p {
+        color: #555;
+        line-height: 1.8;
+        margin: 0.75rem 0;
+    }
+
+    .patch-note-item strong {
+        color: #670000;
+    }
+
+    .patch-note-item hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 1.5rem 0;
+    }
+
+    .feature-link {
+        display: inline-block;
+        color: #670000;
+        text-decoration: none;
+        font-weight: bold;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-link:hover {
+        color: #a70000;
+        transform: translateX(5px);
+    }
+
+    .feature-link i {
+        margin-left: 0.5rem;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #670000;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        transform: translateX(-5px);
+    }
+
+    @media (max-width: 768px) {
+        .patch-notes-container {
+            padding: 1rem;
+        }
+
+        .patch-notes-header h1 {
+            font-size: 2rem;
+        }
+
+        .patch-note-item {
+            padding: 1.5rem;
+        }
+
+        .patch-note-item h3 {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="patch-notes-container">
+    <a href="/" class="back-link">
+        <i class="fa fa-arrow-left"></i> Back to Home
+    </a>
+
+    <div class="patch-notes-header">
+        <h1><i class="fa fa-file-text-o"></i> Complete Patch Notes</h1>
+        <p>Full history of updates and improvements to the IFL platform</p>
+    </div>
+
+    <div class="patch-note-item">
+        <div class="patch-date">November 22nd, 2025</div>
+
+        <h3>Base Player Pages Changes</h3>
+        <p><strong>Page Redesign (UI changes)</strong></p>
+        <p><strong>Position Filtering:</strong> Filter players by position (Attacker, Midfielder, Defender, Goalkeeper)</p>
+        <p><strong>Advanced Sorting:</strong> Sort by Rating, Name, Goals, Assists, Saves, or POTM awards</p>
+        <a href="/players" class="feature-link">View Players <i class="fa fa-arrow-right"></i></a>
+
+        <hr>
+
+        <h3>Individual Player Page Changes</h3>
+        <p><strong>Best Performances:</strong> Top individual match performances highlighted</p>
+        <p><strong>League Rankings:</strong> Player rankings across all categories</p>
+        <p><strong>Team Contribution:</strong> Percentage of team goals and assists by season</p>
+        <p><strong>Head-to-Head Stats:</strong> Performance against each opponent</p>
+        <a href="/players/Ishan Deb" class="feature-link">Sample Player Page (Ishan Deb) <i class="fa fa-arrow-right"></i></a>
+    </div>
+
+    <div class="patch-note-item">
+        <div class="patch-date">November 15th, 2025</div>
+
+        <h3>Base Team Pages Changes</h3>
+        <p>New filters for team stats and performance insights.</p>
+        <p>Sort teams by season, group, rating, goals scored, and more.</p>
+        <p>Updated team cards with current form, record, and points.</p>
+        <p>Seasonal and all-time metrics and awards displayed.</p>
+        <a href="/teams" class="feature-link">Explore Teams <i class="fa fa-arrow-right"></i></a>
+
+        <hr>
+
+        <h3>Individual Team Page Changes</h3>
+        <p><strong>Season Performance Timelines:</strong> Visual representations of team performance across seasons</p>
+        <p><strong>Head-to-Head Records:</strong> Detailed records against every opponent</p>
+        <p><strong>Team Achievements:</strong> Honors, awards, and milestones</p>
+        <p><strong>Player Roster:</strong> Complete squad list with contribution stats</p>
+        <a href="/teams/NPC" class="feature-link">Sample Team Page (NPC) <i class="fa fa-arrow-right"></i></a>
+    </div>
+
+    <div class="patch-note-item">
+        <div class="patch-date">November 11th, 2025</div>
+
+        <h3>Match Preview & Organization</h3>
+        <p>Feedback form! Share your thoughts, rate features, and suggest new ideas.</p>
+        <p>Matches are now organized by match day with buttons to quickly view each day's games.</p>
+        <p>Get detailed insights for upcoming matches with head-to-head stats, form analysis, and key player comparisons.</p>
+        <a href="/matches" class="feature-link">View Matches <i class="fa fa-arrow-right"></i></a>
+    </div>
+</div>
+{% endblock %}
