@@ -605,7 +605,7 @@ def get_all_seasons_summary():
 async def statistics_page(request: Request, season: int = 6, user = Depends(get_current_user)):
     """Statistics Dashboard page"""
     # Check if statistics pages are enabled or admin logged in
-    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
+    if not IS_DEV or (user and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
@@ -652,7 +652,7 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
 async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
     """Hall of Fame page"""
     # Check if statistics pages are enabled or admin logged in
-    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
+    if not IS_DEV or (user and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
@@ -690,7 +690,7 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
 async def archives_page(request: Request, user = Depends(get_current_user)):
     """Season Archives page"""
     # Check if statistics pages are enabled or admin logged in
-    if not IS_DEV and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]:
+    if not IS_DEV or (user and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
