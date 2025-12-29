@@ -258,12 +258,17 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
             })
 
         else:
-            # Aggregate all other page visits (home, statistics, hall-of-fame, archives, gallery, contact, etc.)
+            # Track all other page visits individually
             # Exclude static files, API endpoints, and health checks
             if not route.startswith('/static') and not route.startswith('/api/') and route != '/health':
+                clean_route = route.split('?')[0].lstrip('/')
+
+                if clean_route == '':
+                    clean_route = 'home'
+
                 log_queue.put({
                     'log_type': 'counter',
-                    'path': 'page_views/other_page_visits',
+                    'path': f'page_views/{clean_route}',
                     'increment': 1
                 })
 
