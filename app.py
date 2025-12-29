@@ -363,7 +363,7 @@ async def read_root(request: Request, user = Depends(get_current_user)):
 async def gallery(request: Request, user = Depends(get_current_user)):
     """Gallery page displaying images from all seasons"""
     # Check if gallery page is enabled or admin logged in
-    if not IS_DEV or (user and user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
+    if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
         return templates.TemplateResponse("coming-soon.html", {
             "request": request,
             "user": user,
