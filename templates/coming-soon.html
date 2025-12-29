@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Coming Soon - Haverford IFL{% endblock %}
+
+{% block extra_css %}
+<style>
+    .coming-soon-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .coming-soon-icon {
+        font-size: 6rem;
+        color: #670000;
+        margin-bottom: 2rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    .coming-soon-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #670000;
+        margin-bottom: 1rem;
+    }
+
+    .coming-soon-subtitle {
+        font-size: 1.5rem;
+        color: #666;
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+
+    .coming-soon-description {
+        font-size: 1.1rem;
+        color: #888;
+        max-width: 500px;
+        line-height: 1.6;
+        margin-bottom: 3rem;
+    }
+
+    .coming-soon-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .coming-soon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+        color: white !important;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(103, 0, 0, 0.4);
+        color: white !important;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #670000;
+        border: 2px solid #670000;
+    }
+
+    .btn-secondary:hover {
+        background: #670000;
+        border-color: #670000;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .coming-soon-icon {
+            font-size: 4rem;
+        }
+
+        .coming-soon-title {
+            font-size: 2rem;
+        }
+
+        .coming-soon-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .coming-soon-description {
+            font-size: 1rem;
+        }
+
+        .coming-soon-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .coming-soon-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coming-soon-container">
+    <div class="coming-soon-icon">
+        <i class="fa fa-clock-o"></i>
+    </div>
+
+    <h1 class="coming-soon-title">{{ page_name }} Coming Soon!</h1>
+
+    <p class="coming-soon-subtitle">
+        Someone's working hard to bring you this feature
+    </p>
+
+    <p class="coming-soon-description">
+        This page is currently under development. Check back soon for {{ page_description }}!
+    </p>
+
+    <div class="coming-soon-buttons">
+        <a href="/" class="coming-soon-btn btn-primary">
+            Return Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+
+<!-- IGNORE:
+ How to use:
+ create ENABLE_STATISTICS_PAGES variable and set to False in whatever route you want to use this template for
+ then use this code to return the template
+ if not ENABLE_STATISTICS_PAGES:
+        return templates.TemplateResponse("coming-soon.html", {
+            "request": request,
+            "user": user,
+            "page_name": "Season Archives",
+            "page_description": "historical data, past season standings, and memorable moments from previous campaigns"
+        })
+-->
