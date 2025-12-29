@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics
 import json
 import os
 import uvicorn
@@ -52,8 +52,18 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
-user = None
 templates = Jinja2Templates(directory="templates")
+
+async def get_current_user(session_token: str = Cookie(None)):
+    """Get current user from session token. Returns None if not authenticated."""
+    if not session_token:
+        return None
+    try:
+        user = auth.verify_id_token(session_token)
+        return user
+    except Exception as e:
+        print(f"Invalid session token: {e}")
+        return None
 
 @app.middleware("http")
 async def add_cache_headers(request: Request, call_next):
@@ -95,6 +105,7 @@ app.include_router(players.router, dependencies=[Depends(lambda: db)])
 app.include_router(settings.router)
 app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 app.include_router(admin.router)
+# app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
 
 _data_cache = {
     'schedule': None,
@@ -335,7 +346,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
 @app.get("/home", response_class=HTMLResponse)
-async def read_root(request: Request):
+async def read_root(request: Request, user = Depends(get_current_user)):
     # Get all dynamic data for Season 6
     season_progress = get_season_progress()
     next_matchday = get_next_matchday()
@@ -356,7 +367,7 @@ async def read_root(request: Request):
     })
 
 # @app.get("/gallery", response_class=HTMLResponse)
-async def gallery(request: Request):
+async def gallery(request: Request, user = Depends(get_current_user)):
     """Gallery page displaying images from all seasons"""
     try:
         # Load gallery data
@@ -429,20 +440,27 @@ async def robots_txt():
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap():
+    # URLs with priority based on page importance
     urls = [
-        "https://quickest-doralyn-haverford-167803e3.koyeb.app/",
-        "https://quickest-doralyn-haverford-167803e3.koyeb.app/teams",
-        "https://quickest-doralyn-haverford-167803e3.koyeb.app/matches",
-        "https://quickest-doralyn-haverford-167803e3.koyeb.app/players"
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/", "1.0"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/matches", "0.9"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/teams", "0.9"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/players", "0.9"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/statistics", "0.8"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/gallery", "0.8"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/hall-of-fame", "0.7"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/archives", "0.7"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/contact", "0.7"),
+        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/fantasy", "0.7")
     ]
 
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>\n"""
     xml_content += """<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n"""
 
-    for url in set(urls):
+    for url, priority in urls:
         xml_content += f"""    <url>
         <loc>{url}</loc>
-        <priority>0.8</priority>
+        <priority>{priority}</priority>
     </url>\n"""
 
     xml_content += """</urlset>"""
