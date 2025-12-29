@@ -1,0 +1,115 @@
+{
+  "seasons": {
+    "6": {
+      "name": "Season 6",
+      "year": "Fall 2024",
+      "description": "BingChillin's championship season",
+      "images": [
+        {
+          "id": "s6_image_1",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_1.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_1.webp",
+          "alt": "Season 6 image 1",
+          "caption": "Test Import",
+          "match": "NPC - Munch",
+          "date": "may 1, 2024",
+          "tags": ["NPC", "Munch", "Championship"],
+          "players": ["player_1", "player_2", "player_1", "player_2", "player_1", "player_2"]
+        },
+        {
+          "id": "s6_image_2",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_2.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_2.webp",
+          "alt": "Season 6 image 2",
+          "caption": "Test Import",
+          "match": "",
+          "date": "",
+          "tags": [],
+          "players": []
+        },
+        {
+          "id": "s6_image_3",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_3.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_3.webp",
+          "alt": "Season 6 image 3",
+          "caption": "Test Import",
+          "match": "",
+          "date": "",
+          "tags": [],
+          "players": []
+        },
+        {
+          "id": "s6_image_4",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_4.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_4.webp",
+          "alt": "Season 6 image 4",
+          "caption": "Test Import",
+          "match": "",
+          "date": "",
+          "tags": [],
+          "players": []
+        },
+        {
+          "id": "s6_image_5",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_5.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_5.webp",
+          "alt": "Season 6 image 5",
+          "caption": "Test Import",
+          "match": "",
+          "date": "",
+          "tags": [],
+          "players": []
+        },
+        {
+          "id": "s6_video_1",
+          "type": "video",
+          "youtube_id": "ZhmTKpSR3eU",
+          "thumbnail": "https://img.youtube.com/vi/C0DPdy98e4c/hqdefault.jpg",
+          "alt": "Season 6 Championship Highlights",
+          "caption": "Championship Game Highlights (Test Video)",
+          "match": "Finals: BingChillin vs NPC Team",
+          "date": "December 15, 2024",
+          "duration": "0:08",
+          "tags": ["Championship", "Highlights", "BingChillin"],
+          "players": ["player_1", "player_2"]
+        },
+        {
+          "name": "Season 5",
+          "year": "Spring 2024",
+          "description": "NPC Team's underdog victory",
+          "images": []
+        }
+      ]
+    },
+    "5": {
+      "name": "Season 5",
+      "year": "Spring 2024",
+      "description": "NPC Team's underdog victory",
+      "images": []
+    },
+    "4": {
+      "name": "Season 4",
+      "year": "Fall 2023",
+      "description": "Brixton Bullies end the dynasty",
+      "images": []
+    },
+    "3": {
+      "name": "Season 3",
+      "year": "Spring 2023",
+      "description": "Team Munch's 3-peat",
+      "images": []
+    },
+    "2": {
+      "name": "Season 2",
+      "year": "Fall 2022",
+      "description": "Team Munch defends the title",
+      "images": []
+    },
+    "1": {
+      "name": "Season 1",
+      "year": "Spring 2022",
+      "description": "The inaugural IFL season",
+      "images": []
+    }
+  }
+}

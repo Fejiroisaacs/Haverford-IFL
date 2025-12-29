@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/gallery.css">
+<script src="/static/focus-trap.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -97,6 +98,7 @@
                             <img src="{{ image.thumbnail }}"
                                  alt="{{ image.alt }}"
                                  loading="lazy"
+                                 decoding="async"
                                  class="gallery-thumbnail"
                                  data-lightbox-image="{{ image.id }}"
                                  onerror="this.src='/static/Images/Logo/logo.png'; this.classList.add('error');"
