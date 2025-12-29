@@ -153,8 +153,6 @@ def log_request(request_data: Dict[str, Any]):
             logger.error(log_msg)
         elif status_code >= 400:
             logger.warning(log_msg)
-        else:
-            logger.info(log_msg)
 
         # Firebase: Only log in production (skip in local dev)
         if IS_PRODUCTION:
