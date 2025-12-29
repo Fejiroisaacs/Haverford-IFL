@@ -54,6 +54,9 @@ app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
+# DEVELOPMENT TOGGLE FOR GALLERY
+IS_DEV = os.getenv("DEV", False) == "true"
+
 async def get_current_user(session_token: str = Cookie(None)):
     """Get current user from session token. Returns None if not authenticated."""
     if not session_token:
@@ -105,7 +108,7 @@ app.include_router(players.router, dependencies=[Depends(lambda: db)])
 app.include_router(settings.router)
 app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 app.include_router(admin.router)
-# app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
+app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
 
 _data_cache = {
     'schedule': None,
@@ -366,9 +369,18 @@ async def read_root(request: Request, user = Depends(get_current_user)):
         "top_performers": top_performers
     })
 
-# @app.get("/gallery", response_class=HTMLResponse)
+@app.get("/gallery", response_class=HTMLResponse)
 async def gallery(request: Request, user = Depends(get_current_user)):
     """Gallery page displaying images from all seasons"""
+    # Check if gallery page is enabled
+    if not IS_DEV:
+        return templates.TemplateResponse("coming-soon.html", {
+            "request": request,
+            "user": user,
+            "page_name": "Gallery",
+            "page_description": "photos and memorable moments from each season"
+        })
+
     try:
         # Load gallery data
         gallery_json_path = os.path.join('templates', 'static', 'data', 'gallery.json')
