@@ -1,0 +1,954 @@
+{% extends "base.html" %}
+
+{% block title %}Season Archives{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/displays.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="archives-container" id="top">
+    <h1><i class="fas fa-history"></i> Season Archives</h1>
+    <p class="subtitle"> Have a look through Haverford IFL history</p>
+
+    <!-- Timeline Navigation -->
+    <div class="timeline-nav">
+        {% for season in seasons %}
+        <button class="timeline-btn" onclick="scrollToSeason({{season}})">
+             Season {{season}}
+        </button>
+        {% endfor %}
+    </div>
+
+    <!-- Vertical Timeline -->
+    <div class="timeline">
+        {% for archive in archives %}
+        <div class="timeline-item" id="season-{{archive.season}}" data-season="{{archive.season}}">
+            <div class="timeline-marker">
+                <div class="timeline-dot"></div>
+                {% if not loop.last %}
+                <div class="timeline-line"></div>
+                {% endif %}
+            </div>
+
+            <div class="season-card">
+                <!-- Card Header -->
+                <div class="season-header" onclick="toggleSeason({{archive.season}})">
+                    <div class="season-title">
+                        <i class="fas fa-futbol"></i>
+                        <h2>Season {{archive.season}}</h2>
+                    </div>
+                    <button class="expand-btn" id="expand-btn-{{archive.season}}">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+
+                <!-- Champion Banner (Always Visible) -->
+                <div class="champion-banner">
+                    <i class="fas fa-trophy"></i>
+                    <span class="champion-label">Champions:</span>
+                    <span class="champion-team">{{archive.champion.Team}}</span>
+                    <span class="champion-record">({{archive.champion.Record}})</span>
+                </div>
+
+                <!-- Expandable Content -->
+                <div class="season-content collapsed" id="content-{{archive.season}}">
+                    <!-- Season Stats -->
+                    <div class="stats-section">
+                        <h3><i class="fas fa-chart-bar"></i> Season Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <i class="fas fa-futbol"></i>
+                                <span class="stat-value">{{archive.stats.total_goals}}</span>
+                                <span class="stat-label">Total Goals</span>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-calendar-check"></i>
+                                <span class="stat-value">{{archive.stats.matches}}</span>
+                                <span class="stat-label">Matches</span>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-chart-line"></i>
+                                <span class="stat-value">{{archive.stats.avg_goals}}</span>
+                                <span class="stat-label">Avg Goals/Match</span>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <br/>
+                    <div class="content-grid">
+                        <!-- Left Column: Awards & Top Teams -->
+                        <div class="content-column">
+                            <!-- Awards Section -->
+                            <div class="awards-section">
+                                <h3><i class="fas fa-medal"></i> Season Awards</h3>
+                                <div class="awards-grid">
+                                    <div class="award-item">
+                                        <i class="fas fa-futbol"></i>
+                                        <div class="award-details">
+                                            <span class="award-type">Golden Boot</span>
+                                            <a href="/players/{{archive.awards.golden_boot}}" class="award-winner">{{archive.awards.golden_boot}}</a>
+                                        </div>
+                                    </div>
+                                    <div class="award-item">
+                                        <i class="fas fa-hand-paper"></i>
+                                        <div class="award-details">
+                                            <span class="award-type">Golden Glove</span>
+                                            <a href="/players/{{archive.awards.golden_glove}}" class="award-winner">{{archive.awards.golden_glove}}</a>
+                                        </div>
+                                    </div>
+                                    <div class="award-item">
+                                        <i class="fas fa-shoe-prints"></i>
+                                        <div class="award-details">
+                                            <span class="award-type">Golden Lace</span>
+                                            <a href="/players/{{archive.awards.golden_lace}}" class="award-winner">{{archive.awards.golden_lace}}</a>
+                                        </div>
+                                    </div>
+                                    <div class="award-item">
+                                        <i class="fas fa-star"></i>
+                                        <div class="award-details">
+                                            <span class="award-type">Golden Goat (MVP)</span>
+                                            <a href="/players/{{archive.awards.mvp}}" class="award-winner">{{archive.awards.mvp}}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Final Standings -->
+                            <div class="standings-section">
+                                <h3><i class="fas fa-list-ol"></i> Final Standings (Top 3)</h3>
+                                {% if archive.regular_season_winner and archive.regular_season_winner.Team != archive.champion.Team %}
+                                <div class="regular-season-note">
+                                    <i class="fas fa-star"></i>
+                                    Team <strong>{{archive.regular_season_winner.Team}}</strong> finished with the most points with {{archive.regular_season_winner.PTS}} points
+                                </div>
+                                {% endif %}
+                                <ol class="top-teams">
+                                    {% for team in archive.top_teams[:3] %}
+                                    <li class="team-item rank-{{loop.index}}">
+                                        <span class="team-rank">{{loop.index}}</span>
+                                        <a href="/teams/{{team.Team}}" class="team-name">{{team.Team}}</a>
+                                        <span class="team-pts">{{team.PTS}} pts</span>
+                                        <span class="team-record">{{team.Record}}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ol>
+                                <a href="/matches/{{archive.season}}" class="view-full-btn">
+                                    <i class="fas fa-list"></i> View Full Standings
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Stats -->
+                        <div class="content-column">
+                            <!-- Playoff Path (Championship Journey) -->
+                            {% if archive.playoff_path and archive.playoff_path|length > 0 %}
+                            <div class="playoff-section">
+                                <h3><i class="fas fa-route"></i> Path to Championship</h3>
+                                <p class="playoff-subtitle">{{archive.champion.Team}}'s playoff journey</p>
+                                <div class="playoff-matches">
+                                    {% for match in archive.playoff_path %}
+                                    <a href="{{match.link}}" class="playoff-match">
+                                        <div class="playoff-round">Round {{loop.index}}</div>
+                                        <div class="playoff-matchup">
+                                            <span class="playoff-opponent">vs {{match.opponent}}</span>
+                                            <span class="playoff-score">{{match.score}}</span>
+                                        </div>
+                                        <div class="playoff-result result-{{match.result|lower}}">
+                                            {% if match.result == 'W' %}
+                                            <i class="fas fa-check-circle"></i> Win
+                                            {% elif match.result == 'D' %}
+                                            <i class="fas fa-minus-circle"></i> Draw
+                                            {% else %}
+                                            <i class="fas fa-times-circle"></i> Loss
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Championship Photo -->
+                            <div class="moments-section">
+                                <h3><i class="fas fa-camera"></i> Team {{archive.champion.Team}}</h3>
+                                <div class="item-image-container">
+                                    <img class="item-image" src="/static/Images/champs/{{archive.season}}.jpg" loading="lazy" alt="Season {{archive.season}} Champions" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Playoff Bracket -->
+                    {% if archive.bracket and archive.bracket.matches %}
+                    <div class="bracket-section">
+                        <h3><i class="fas fa-sitemap"></i> Playoff Matches</h3>
+                        <p class="bracket-subtitle">All {{archive.bracket.total_matches}} playoff matches for Season {{archive.season}}</p>
+                        <div class="playoff-matches-list">
+                            {% for match in archive.bracket.matches %}
+                            <a href="{{match.link}}" class="bracket-match {% if match.is_final %}final-match{% endif %} {% if match.is_champion_match %}champion-match{% endif %}">
+                                <div class="match-label">
+                                    {% if match.is_final %}
+                                    <i class="fas fa-trophy"></i> Championship Final
+                                    {% else %}
+                                    Match {{match.match_number}}
+                                    {% endif %}
+                                </div>
+                                <div class="match-details">
+                                    <div class="bracket-team {% if match.winner == match.team1 %}winner{% endif %}">
+                                        <span class="team-name">{{match.team1}}</span>
+                                        <span class="team-score">{{match.score1}}</span>
+                                    </div>
+                                    <div class="bracket-vs">vs</div>
+                                    <div class="bracket-team {% if match.winner == match.team2 %}winner{% endif %}">
+                                        <span class="team-name">{{match.team2}}</span>
+                                        <span class="team-score">{{match.score2}}</span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.archives-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-top: -1rem;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+}
+
+/* Timeline Navigation */
+.timeline-nav {
+    position: sticky;
+    top: 50px;
+    z-index: 5;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background-color: hsla(0, 0%, 100%, 0.90); 
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #670000, #a70000);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.timeline-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.4);
+}
+
+/* Vertical Timeline */
+.timeline {
+    position: relative;
+    max-width: 1000px;
+    margin: 3rem auto;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.timeline-marker {
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    margin-right: 2rem;
+}
+
+.timeline-dot {
+    width: 20px;
+    height: 20px;
+    background: #670000;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px #670000;
+    position: absolute;
+    left: 10px;
+    top: 20px;
+    z-index: 2;
+}
+
+.timeline-line {
+    width: 2px;
+    background: linear-gradient(to bottom, #670000, #ddd);
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: -60px;
+    z-index: 1;
+}
+
+/* Season Card */
+.season-card {
+    flex: 1;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #670000;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+}
+
+.season-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.season-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.season-header:hover {
+    background: #f0f0f0;
+}
+
+.season-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.season-title h2 {
+    color: #670000;
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.season-title i {
+    font-size: 1.5rem;
+    color: #670000;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    color: #670000;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.expand-btn.open {
+    transform: rotate(180deg);
+}
+
+/* Champion Banner */
+.champion-banner {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.champion-banner i {
+    font-size: 1.5rem;
+}
+
+.champion-label {
+    font-weight: 600;
+}
+
+.champion-team {
+    font-size: 1.4rem;
+}
+
+.champion-record {
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+/* Expandable Content */
+.season-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+}
+
+.season-content.collapsed {
+    max-height: 0;
+    padding: 0;
+}
+
+.season-content.expanded {
+    max-height: fit-content;
+    padding: 2rem;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.content-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Awards Section */
+.awards-section h3,
+.standings-section h3,
+.stats-section h3,
+.moments-section h3 {
+    color: #670000;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.awards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.award-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 3px solid #FFD700;
+}
+
+.award-item i {
+    font-size: 1.5rem;
+    color: #FFD700;
+}
+
+.award-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.award-type {
+    font-weight: 600;
+    color: #670000;
+    font-size: 0.9rem;
+}
+
+.award-winner {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.award-winner:hover {
+    color: #670000;
+    text-decoration: underline;
+}
+
+/* Standings */
+.regular-season-note {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, rgba(255, 215, 0, 0.1), transparent);
+    border-left: 3px solid #FFD700;
+    border-radius: 5px;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.regular-season-note i {
+    color: #FFD700;
+    margin-right: 0.5rem;
+}
+
+.top-teams {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+
+.team-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #670000;
+}
+
+.team-item.rank-1 {
+    border-left-color: #FFD700;
+    background: linear-gradient(to right, rgba(255, 215, 0, 0.1), #f9f9f9);
+}
+
+.team-item.rank-2 {
+    border-left-color: #C0C0C0;
+}
+
+.team-item.rank-3 {
+    border-left-color: #CD7F32;
+}
+
+.team-rank {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #670000;
+    min-width: 30px;
+}
+
+.team-name {
+    flex: 1;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.team-name:hover {
+    color: #670000;
+}
+
+.team-pts {
+    font-weight: bold;
+    color: #670000;
+}
+
+.team-record {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.view-full-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #670000;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.view-full-btn:hover {
+    background: #a70000;
+}
+
+/* Stats Section */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-box i {
+    font-size: 2rem;
+    color: #670000;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.playoff-subtitle {
+    color: #666;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.playoff-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.playoff-match {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #670000;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+}
+
+.playoff-match:hover {
+    background: #ffe8e8;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(103, 0, 0, 0.2);
+}
+
+.playoff-round {
+    font-weight: 600;
+    color: #670000;
+    font-size: 0.9rem;
+    min-width: 70px;
+}
+
+.playoff-matchup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.playoff-opponent {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #333;
+}
+
+.playoff-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.playoff-result {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.playoff-result.result-w {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.playoff-result.result-d {
+    background: linear-gradient(135deg, #FFA500, #FF8C00);
+    color: white;
+}
+
+.playoff-result.result-l {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
+}
+
+/* Playoff Bracket Section */
+.bracket-section {
+    margin-top: 2rem;
+}
+
+.bracket-subtitle {
+    color: #666;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.playoff-matches-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.bracket-match {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bracket-match:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.25);
+    border-color: #670000;
+}
+
+.bracket-match.final-match {
+    border: 3px solid #FFD700;
+    background: linear-gradient(135deg, #fffef8, #fffcf0);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.bracket-match.final-match:hover {
+    box-shadow: 0 6px 18px rgba(255, 215, 0, 0.6);
+}
+
+.bracket-match.champion-match {
+    border-left: 5px solid #670000;
+}
+
+.match-label {
+    font-weight: bold;
+    font-size: 0.75rem;
+    color: #670000;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+}
+
+.final-match .match-label i {
+    color: #FFD700;
+    font-size: 1rem;
+}
+
+.match-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.bracket-team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.bracket-team.winner {
+    background: linear-gradient(135deg, #ffe8e8, #ffdddd);
+    border: 2px solid #670000;
+    font-weight: bold;
+}
+
+.bracket-team.winner .team-name {
+    color: #670000;
+}
+
+.team-name {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.team-score {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #670000;
+    min-width: 25px;
+    text-align: right;
+}
+
+.bracket-vs {
+    text-align: center;
+    color: #999;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Responsive Bracket */
+@media (max-width: 768px) {
+    .playoff-matches-list {
+        grid-template-columns: 1fr;
+    }
+
+    .bracket-match {
+        padding: 0.875rem;
+    }
+
+    .match-label {
+        font-size: 0.7rem;
+    }
+
+    .team-name {
+        font-size: 0.85rem;
+    }
+
+    .team-score {
+        font-size: 1rem;
+    }
+
+    .bracket-team {
+        padding: 0.5rem 0.65rem;
+    }
+}
+
+/* Moments Section */
+.moments-section {
+    margin-top: 2rem;
+}
+
+.moments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.moments-list li {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f9f9f9;
+    border-left: 3px solid #670000;
+    border-radius: 5px;
+}
+
+.moments-list li i {
+    color: #FFD700;
+    margin-right: 0.5rem;
+}
+
+.item-image-container {
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 3px solid #670000;
+}
+
+.item-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s;
+}
+
+.item-image:hover {
+    transform: scale(1.02);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .timeline-nav {
+        top: 50px;
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .timeline-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .timeline-marker {
+        margin-right: 1rem;
+    }
+
+    .timeline-dot {
+        left: 5px;
+    }
+
+    .timeline-line {
+        left: 15px;
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .champion-banner {
+        font-size: 1rem;
+    }
+
+    .champion-team {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
+<script>
+function toggleSeason(season) {
+    const content = document.getElementById(`content-${season}`);
+    const btn = document.getElementById(`expand-btn-${season}`);
+
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        content.classList.add('expanded');
+        btn.classList.add('open');
+    } else {
+        content.classList.remove('expanded');
+        content.classList.add('collapsed');
+        btn.classList.remove('open');
+    }
+}
+
+function scrollToSeason(season) {
+    const element = document.getElementById(`season-${season}`);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Auto-expand when scrolled to
+        const content = document.getElementById(`content-${season}`);
+        const btn = document.getElementById(`expand-btn-${season}`);
+
+        if (content.classList.contains('collapsed')) {
+            setTimeout(() => {
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                btn.classList.add('open');
+            }, 500);
+        }
+    }
+}
+</script>
+
+{% endblock %}

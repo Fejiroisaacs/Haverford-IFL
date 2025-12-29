@@ -1,0 +1,888 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics Dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/displays.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<div class="statistics-container" id="top">
+    <h1><i class="fas fa-chart-bar"></i> Statistics Dashboard</h1>
+    <p class="subtitle">Comprehensive league statistics and performance analytics</p>
+
+    <!-- Season Selector -->
+    <div class="season-selector">
+        <h3>Select Season:</h3>
+        <div class="season-buttons">
+            {% for season in all_seasons %}
+            <a href="/statistics?season={{season}}"
+               class="season-button {% if season == selected_season %}active{% endif %}">
+                Season {{season}}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="quick-nav" id="quick-nav">
+        <a href="#leaderboards" class="nav-link"><i class="fas fa-trophy"></i> Leaderboards</a>
+        <a href="#team-comparison" class="nav-link"><i class="fas fa-balance-scale"></i> Team Comparison</a>
+        <a href="#trends" class="nav-link"><i class="fas fa-chart-line"></i> Season Trends</a>
+        <a href="#distributions" class="nav-link"><i class="fas fa-chart-pie"></i> Distributions</a>
+        <a href="#top" class="nav-link"><i class="fas fa-arrow-up"></i> Top</a>
+    </div>
+
+    <!-- Section 1: Leaderboards -->
+    <div id="leaderboards" class="section">
+        <h2><i class="fas fa-crown"></i> League Leaders</h2>
+
+        <div class="stats-tabs">
+            <button class="tab-button active" onclick="showLeaderTab('current-leaders')">Season {{selected_season}}</button>
+            <button class="tab-button" onclick="showLeaderTab('alltime-leaders')">All-Time</button>
+        </div>
+
+        <!-- Current Season Leaders -->
+        <div id="current-leaders" class="tab-content active">
+            <div class="leaders-grid">
+                <!-- Goals Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-futbol"></i> Top Scorers</h3>
+                    <div class="leader-list">
+                        {% for player in current_leaders.goals[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Goals}} <small>goals</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Assists Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-hands-helping"></i> Top Assists</h3>
+                    <div class="leader-list">
+                        {% for player in current_leaders.assists[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Assists}} <small>assists</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Saves Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-hand-paper"></i> Top Saves</h3>
+                    <div class="leader-list">
+                        {% for player in current_leaders.saves[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Saves}} <small>saves</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All-Time Leaders -->
+        <div id="alltime-leaders" class="tab-content">
+            <div class="leaders-grid">
+                <!-- Goals Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-futbol"></i> All-Time Scorers</h3>
+                    <div class="leader-list">
+                        {% for player in all_time_leaders.goals[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Goals}} <small>goals</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Assists Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-hands-helping"></i> All-Time Assists</h3>
+                    <div class="leader-list">
+                        {% for player in all_time_leaders.assists[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Assists}} <small>assists</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Saves Leaders -->
+                <div class="leader-category">
+                    <h3><i class="fas fa-hand-paper"></i> All-Time Saves</h3>
+                    <div class="leader-list">
+                        {% for player in all_time_leaders.saves[:10] %}
+                        <div class="leader-item">
+                            <span class="rank">{{loop.index}}</span>
+                            <a href="/players/{{player.Name}}" class="player-name">{{player.Name}}</a>
+                            <span class="stat-value">{{player.Saves}} <small>saves</small></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Team Performance Comparison -->
+    <div id="team-comparison" class="section">
+        <h2><i class="fas fa-balance-scale"></i> Team Performance Comparison</h2>
+        <p class="section-subtitle">Season {{selected_season}} team statistics</p>
+
+        <div class="chart-container">
+            <h3>Win Percentage</h3>
+            <canvas id="winPctChart" style="max-height: 400px;"></canvas>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Average Goals For</h3>
+                <canvas id="offenseChart"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Average Goals Against</h3>
+                <canvas id="defenseChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <h3>Complete Team Stats</h3>
+            <table class="tbl-content">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>W-D-L</th>
+                        <th>Win %</th>
+                        <th>Pts</th>
+                        <th>Avg GF</th>
+                        <th>Avg GA</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in team_comparison %}
+                    <tr>
+                        <td><a href="/teams/{{team.Team}}">{{team.Team}}</a></td>
+                        <td>{{team.W}}-{{team.D}}-{{team.L}}</td>
+                        <td>{{team.Win_Pct}}%</td>
+                        <td>{{team.PTS}}</td>
+                        <td>{{team.Avg_GF}}</td>
+                        <td>{{team.Avg_GA}}</td>
+                        <td>{{team.Rating|int}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 3: Season Trends -->
+    <div id="trends" class="section">
+        <h2><i class="fas fa-chart-line"></i> Season Trends</h2>
+        <p class="section-subtitle">Six seasons of Haverford IFL history</p>
+
+        <div class="chart-container">
+            <h3>Total Goals by Season</h3>
+            <canvas id="goalsTrendChart"></canvas>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Average Goals per Match</h3>
+                <canvas id="avgGoalsTrendChart"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Number of Teams by Season</h3>
+                <canvas id="teamsTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Rating Distribution -->
+    <div id="distributions" class="section">
+        <h2><i class="fas fa-chart-pie"></i> Rating Distributions</h2>
+        <p class="section-subtitle">Overall rating breakdowns</p>
+
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Player Ratings</h3>
+                <canvas id="playerRatingDist"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Team Ratings</h3>
+                <canvas id="teamRatingDist"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 150px;
+}
+
+.statistics-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-top: -1rem;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.section-subtitle {
+    color: #666;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Season Selector */
+.season-selector {
+    margin: 2rem 0;
+    text-align: center;
+    background-color: hsla(0, 0%, 100%, 0.40); 
+    z-index: 100;
+    padding: 1rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    transition: box-shadow 0.3s ease;
+}
+
+.season-selector.stuck {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.season-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.season-button {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: 2px solid #670000;
+    color: #670000;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.season-button:hover {
+    background: #670000;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.season-button.active {
+    background: #670000;
+    color: white;
+}
+
+/* Quick Nav */
+.quick-nav {
+    position: sticky;
+    top: 50px;
+    z-index: 99;
+    background: hsla(0, 0%, 100%, 0.4);
+    backdrop-filter: blur(4px);
+    padding: 1rem 0;
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    transition: all 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.quick-nav.stuck {
+    background: hsla(0, 0%, 100%, 0.95);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+    color: #a70000;
+}
+
+/* Section */
+.section {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+    color: #670000;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+/* Tabs */
+.stats-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #666;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-button:hover {
+    color: #670000;
+}
+
+.tab-button.active {
+    color: #670000;
+    border-bottom-color: #670000;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Leaders Grid */
+.leaders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.leader-category {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #670000;
+}
+
+.leader-category h3 {
+    color: #670000;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.leader-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.leader-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.leader-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.rank {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #670000;
+    min-width: 40px;
+    text-align: center;
+}
+
+.rank:nth-child(1) {
+    color: #FFD700;
+}
+
+.player-name {
+    flex: 1;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.player-name:hover {
+    color: #670000;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #670000;
+    font-size: 1.1rem;
+}
+
+.stat-value small {
+    font-size: 0.85rem;
+    color: #999;
+    font-weight: normal;
+}
+
+/* Charts */
+.chart-container {
+    background: #f9f9f9;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.chart-container h3 {
+    color: #670000;
+    margin-bottom: 1rem;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.chart-container.half {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+/* Table */
+.table-container {
+    margin-top: 2rem;
+    overflow-x: auto;
+}
+
+.tbl-content {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tbl-content th,
+.tbl-content td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.tbl-content th {
+    background: #670000;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.tbl-content th:nth-child(1),
+.tbl-content td:nth-child(1) {
+    min-width: 60px;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+}
+
+.tbl-content th:nth-child(1) {
+    background: #670000;
+    z-index: 11;
+}
+
+.tbl-content td:nth-child(1) {
+    background: white;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.tbl-content tr:hover td:nth-child(1) {
+    background: #f9f9f9;
+}
+
+.tbl-content th:nth-child(2),
+.tbl-content td:nth-child(2) {
+    min-width: 80px;
+}
+
+.tbl-content tr:hover {
+    background: #f9f9f9;
+}
+
+.tbl-content a {
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.tbl-content a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .statistics-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .section {
+        padding: 1rem;
+        margin: 2rem 0;
+    }
+
+    .quick-nav {
+        top: 0;
+        align-items: stretch;
+        font-size: 0.9rem;
+    }
+
+    .nav-link {
+        text-align: center;
+    }
+
+    .leaders-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .chart-container {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .chart-container.half {
+        padding: 1rem;
+    }
+
+    .season-selector {
+        padding: 0.5rem 0;
+    }
+
+    .season-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+// Tab switching
+function showLeaderTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('#leaderboards .tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Remove active from buttons
+    document.querySelectorAll('#leaderboards .tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+
+    // Add active to clicked button
+    event.target.classList.add('active');
+}
+
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Sticky quick-nav observer
+    const quickNav = document.querySelector('.quick-nav');
+    if (quickNav) {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.boundingClientRect.top <= 50) {
+                    quickNav.classList.add('stuck');
+                } else {
+                    quickNav.classList.remove('stuck');
+                }
+            },
+            { threshold: [1], rootMargin: '-50px 0px 0px 0px' }
+        );
+        observer.observe(quickNav);
+    }
+
+    const teamData = {{ team_comparison|tojson|safe }};
+    const trendData = {{ season_trends|tojson|safe }};
+    const ratingDist = {{ rating_distribution|tojson|safe }};
+
+    console.log('Team Data:', teamData);
+    console.log('Trend Data:', trendData);
+    console.log('Rating Distribution:', ratingDist);
+
+    // Win Percentage Chart
+    if (teamData && teamData.length > 0) {
+        console.log('Creating Win Pct Chart with', teamData.length, 'teams');
+        const canvas = document.getElementById('winPctChart');
+        if (!canvas) {
+            console.error('Canvas element winPctChart not found');
+            return;
+        }
+        try {
+            new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: teamData.map(t => t.Team),
+                datasets: [{
+                    label: 'Win %',
+                    data: teamData.map(t => t.Win_Pct),
+                    backgroundColor: teamData.map(t =>
+                        t.Win_Pct >= 60 ? 'rgba(75, 192, 192, 0.8)' :
+                        t.Win_Pct >= 40 ? 'rgba(255, 206, 86, 0.8)' :
+                        'rgba(255, 99, 132, 0.8)'
+                    ),
+                    borderColor: '#670000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: (value) => value + '%' }
+                    }
+                }
+            }
+        });
+            console.log('Win Pct Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Win Pct Chart:', error);
+        }
+
+        // Offense Chart
+        try {
+            new Chart(document.getElementById('offenseChart'), {
+            type: 'bar',
+            data: {
+                labels: teamData.map(t => t.Team),
+                datasets: [{
+                    label: 'Avg Goals For',
+                    data: teamData.map(t => t.Avg_GF),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: '#4CAF50',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+            console.log('Offense Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Offense Chart:', error);
+        }
+
+        // Defense Chart
+        try {
+            new Chart(document.getElementById('defenseChart'), {
+            type: 'bar',
+            data: {
+                labels: teamData.map(t => t.Team),
+                datasets: [{
+                    label: 'Avg Goals Against',
+                    data: teamData.map(t => t.Avg_GA),
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    borderColor: '#f44336',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+            console.log('Defense Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Defense Chart:', error);
+        }
+    } else {
+        console.warn('No team data available - teamData:', teamData);
+    }
+
+    // Season Trends Charts
+    if (trendData && trendData.length > 0) {
+        console.log('Creating Trend Charts with', trendData.length, 'seasons');
+        // Total Goals Trend
+        new Chart(document.getElementById('goalsTrendChart'), {
+            type: 'line',
+            data: {
+                labels: trendData.map(s => 'Season ' + s.season),
+                datasets: [{
+                    label: 'Total Goals',
+                    data: trendData.map(s => s.total_goals),
+                    borderColor: '#670000',
+                    backgroundColor: 'rgba(103, 0, 0, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Avg Goals per Match
+        new Chart(document.getElementById('avgGoalsTrendChart'), {
+            type: 'line',
+            data: {
+                labels: trendData.map(s => 'S' + s.season),
+                datasets: [{
+                    label: 'Avg Goals/Match',
+                    data: trendData.map(s => s.avg_goals),
+                    borderColor: '#FFA500',
+                    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Teams Count
+        new Chart(document.getElementById('teamsTrendChart'), {
+            type: 'line',
+            data: {
+                labels: trendData.map(s => 'S' + s.season),
+                datasets: [{
+                    label: 'Teams',
+                    data: trendData.map(s => s.teams_count),
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } else {
+        console.warn('No trend data available - trendData:', trendData);
+    }
+
+    // Rating Distributions
+    if (ratingDist) {
+        console.log('Creating Rating Distribution Charts');
+        // Player Ratings
+        if (ratingDist.player_ratings && ratingDist.player_ratings.length > 0) {
+            new Chart(document.getElementById('playerRatingDist'), {
+                type: 'bar',
+                data: {
+                    labels: ratingDist.player_ratings.map(r => r.bucket),
+                    datasets: [{
+                        label: 'Players',
+                        data: ratingDist.player_ratings.map(r => r.count),
+                        backgroundColor: 'rgba(103, 0, 0, 0.8)',
+                        borderColor: '#670000',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Team Ratings
+        if (ratingDist.team_ratings && ratingDist.team_ratings.length > 0) {
+            new Chart(document.getElementById('teamRatingDist'), {
+                type: 'bar',
+                data: {
+                    labels: ratingDist.team_ratings.map(r => r.bucket),
+                    datasets: [{
+                        label: 'Teams',
+                        data: ratingDist.team_ratings.map(r => r.count),
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderColor: '#4CAF50',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+    } else {
+        console.warn('No rating distribution data available - ratingDist:', ratingDist);
+    }
+});
+</script>
+
+{% endblock %}

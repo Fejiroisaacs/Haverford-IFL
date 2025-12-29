@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}Hall of Fame{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/displays.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="hof-container" id="top">
+    <h1><i class="fas fa-trophy"></i> Hall of Fame</h1>
+    <p class="subtitle"> Haverford IFL's greatest players and achievements</p>
+
+    <!-- Summary Stats -->
+    <div class="hof-summary">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value">{{total_inductees}}</div>
+            <div class="stat-label">Inductees</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-medal"></i></div>
+            <div class="stat-value">{{total_awards}}</div>
+            <div class="stat-label">Awards Distributed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-history"></i></div>
+            <div class="stat-value">6</div>
+            <div class="stat-label">Seasons</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <label for="categoryFilter"><i class="fas fa-filter"></i> Filter by Achievement:</label>
+            <select id="categoryFilter" onchange="filterHOF()">
+                <option value="all">All Inductees</option>
+                <option value="champions">Champions</option>
+                <option value="golden-boot">Golden Boot Winners</option>
+                <option value="golden-glove">Golden Glove Winners</option>
+                <option value="milestones">Milestone Achievers</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sortBy"><i class="fas fa-sort"></i> Sort by:</label>
+            <select id="sortBy" onchange="sortHOF()">
+                <option value="awards">Most Awards</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="goals">Most Goals</option>
+                <option value="rating">Highest Rating</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="results-count" id="resultsCount">Showing {{total_inductees}} inductees</div>
+
+    <!-- HOF Grid -->
+    <div class="hof-grid" id="hofGrid">
+        {% for player in hof_members %}
+        <div class="hof-card"
+             data-category="{{player.category}}"
+             data-awards="{{player.awards_count}}"
+             data-name="{{player.Name}}"
+             data-goals="{{player.career_stats.Goals}}"
+             data-rating="{{player.rating}}">
+            <a href="/players/{{player.Name}}">
+                <!-- POTM Image -->
+                <div class="hof-image">
+                    <img src="/static/Images/POTM/{{player.POTM_ID}}.png"
+                         alt="{{player.Name}}"
+                         loading="lazy"
+                         onerror="this.src='/static/Images/ford.png'">
+                    <div class="hof-badge"><i class="fas fa-trophy"></i></div>
+                </div>
+
+                <!-- Player Info -->
+                <div class="hof-header">
+                    <h3>{{player.Name}}</h3>
+                    <span class="rating-badge {% if player.rating >= 85 %}elite{% elif player.rating >= 75 %}good{% else %}average{% endif %}">
+                        {{player.rating}}
+                    </span>
+                </div>
+
+                <div class="hof-team">
+                    <i class="fas fa-shield-alt"></i> {{player.Team}}
+                </div>
+
+                <!-- Awards Section -->
+                <div class="hof-awards">
+                    <h4><i class="fas fa-medal"></i> Awards & Achievements</h4>
+                    <ul>
+                        {% for award in player.awards %}
+                        <li><i class="fas fa-trophy"></i> {{award}}</li>
+                        {% endfor %}
+                        {% for achievement in player.achievements %}
+                        <li><i class="fas fa-star"></i> {{achievement}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Career Stats -->
+                <div class="hof-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-futbol"></i>
+                        <span>{{player.career_stats.Goals}}G</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hands-helping"></i>
+                        <span>{{player.career_stats.Assists}}A</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hand-paper"></i>
+                        <span>{{player.career_stats.Saves}}S</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <span>{{player.career_stats.POTM}} POTM</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>{{player.awards_count}} Awards</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <i class="fas fa-search"></i>
+        <p>No players found matching the selected filters.</p>
+        <button onclick="resetFilters()" class="reset-btn">Reset Filters</button>
+    </div>
+</div>
+
+<style>
+.hof-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-top: -1rem;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+}
+
+/* Summary Stats */
+.hof-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #670000, #a70000);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.stat-value {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Filters */
+.filter-section {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #670000;
+}
+
+.filter-group select {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #670000;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    background: white;
+    color: #333;
+}
+
+.results-count {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* HOF Grid */
+.hof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.hof-card {
+    background: linear-gradient(145deg, #fff, #f8f8f8);
+    border: 3px solid #FFD700;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.hof-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(103, 0, 0, 0.4);
+}
+
+.hof-card a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.hof-image {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(120, 0, 0, 0.92),
+            rgba(165, 30, 30, 0.92)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 12px 28px rgba(0, 0, 0, 0.35);
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1.25rem;
+}
+
+.hof-image img {
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.hof-card:hover .hof-image img {
+    transform: scale(1.05);
+}
+
+.hof-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hof-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.hof-header h3 {
+    color: #670000;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.rating-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.rating-badge.elite {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.rating-badge.good {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.rating-badge.average {
+    background: linear-gradient(135deg, #808080, #606060);
+}
+
+.hof-team {
+    padding: 0 1.5rem 1rem;
+    color: #666;
+    font-size: 1rem;
+}
+
+.hof-awards {
+    padding: 1rem 1.5rem;
+    border-top: 2px solid #eee;
+}
+
+.hof-awards h4 {
+    color: #670000;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.hof-awards ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.hof-awards li {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: #f0f0f0;
+    border-left: 3px solid #670000;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.hof-awards li:hover {
+    background: #e8e8e8;
+}
+
+.hof-awards li i {
+    color: #FFD700;
+    margin-right: 0.5rem;
+}
+
+.hof-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem 1.5rem 1.5rem;
+    background: #f9f9f9;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-item i {
+    font-size: 1.2rem;
+    color: #670000;
+}
+
+.stat-item span {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.reset-btn {
+    padding: 0.75rem 2rem;
+    background: #670000;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.reset-btn:hover {
+    background: #a70000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hof-summary {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        padding: 0.5rem;
+    }
+
+    .stat-icon i {
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    .hof-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filter-group select {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Filter and Sort Functions
+function filterHOF() {
+    const category = document.getElementById('categoryFilter').value;
+    const cards = document.querySelectorAll('.hof-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const cardCategories = card.dataset.category.split(',');
+
+        if (category === 'all' || cardCategories.includes(category)) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    updateResultsCount(visibleCount);
+}
+
+function sortHOF() {
+    const sortBy = document.getElementById('sortBy').value;
+    const grid = document.getElementById('hofGrid');
+    const cards = Array.from(grid.querySelectorAll('.hof-card'));
+
+    cards.sort((a, b) => {
+        switch(sortBy) {
+            case 'awards':
+                return parseInt(b.dataset.awards) - parseInt(a.dataset.awards);
+            case 'name':
+                return a.dataset.name.localeCompare(b.dataset.name);
+            case 'goals':
+                return parseInt(b.dataset.goals) - parseInt(a.dataset.goals);
+            case 'rating':
+                return parseInt(b.dataset.rating) - parseInt(a.dataset.rating);
+            default:
+                return 0;
+        }
+    });
+
+    // Re-append sorted cards
+    cards.forEach(card => grid.appendChild(card));
+}
+
+function updateResultsCount(count) {
+    const resultsCount = document.getElementById('resultsCount');
+    const emptyState = document.getElementById('emptyState');
+    const grid = document.getElementById('hofGrid');
+
+    resultsCount.textContent = `Showing ${count} inductee${count !== 1 ? 's' : ''}`;
+
+    if (count === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+    } else {
+        grid.style.display = 'grid';
+        emptyState.style.display = 'none';
+    }
+}
+
+function resetFilters() {
+    document.getElementById('categoryFilter').value = 'all';
+    document.getElementById('sortBy').value = 'awards';
+    filterHOF();
+    sortHOF();
+}
+</script>
+
+{% endblock %}
