@@ -14,8 +14,9 @@
 <!-- NEW: Feature Announcement Banner -->
 <div class="feature-announcement" id="featureBanner">
     <div class="announcement-content">
+      <!--Dont forget to update bannerVersion in index.html when changing this message -->
       <div class="announcement-text">
-            <strong>NEW:</strong> Player Pages Update! Filter by position, sort by stats, and explore detailed player analytics.
+            <strong>NEW:</strong> Redesigned Navigation! Cleaner menu with dropdown groupings on desktop and improved sidebar on mobile for better organization. Accessibility, security, and performance enhancements across the site. (December 2025)
         </div>
         <button class="announcement-close" onclick="dismissBanner()">×</button>
     </div>
@@ -1796,7 +1797,7 @@
   top: 60px;
   left: 0;
   right: 0;
-  z-index: 999;
+  z-index: 998;
   background: linear-gradient(135deg, #670000 0%, #a70000 100%);
   color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -2134,7 +2135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showSlides();
     }
 
-    const bannerVersion = '2';
+    const bannerVersion = '3';
     const dismissedVersion = localStorage.getItem('featureBannerDismissedVersion');
 
     if (dismissedVersion !== bannerVersion) {
@@ -2147,7 +2148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Feature Announcement Banner Functions
 function dismissBanner() {
     const banner = document.getElementById('featureBanner');
-    const bannerVersion = '2'; 
+    const bannerVersion = '3'; 
     banner.style.animation = 'slideDown 0.5s ease-out reverse';
     setTimeout(() => {
         banner.style.display = 'none';
