@@ -628,6 +628,7 @@
     padding: var(--space-4);
     border-radius: var(--radius-lg);
     max-width: 800px;
+    overflow-y: auto;
 }
 
 .lightbox-header {

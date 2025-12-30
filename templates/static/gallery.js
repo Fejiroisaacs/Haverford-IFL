@@ -217,7 +217,7 @@ function updateImageCount() {
     const imageCount = document.getElementById('imageCount');
     if (imageCount) {
         const count = filteredImageIds.length;
-        imageCount.textContent = `${count} image${count !== 1 ? 's' : ''}`;
+        imageCount.textContent = `${count} asset${count !== 1 ? 's' : ''}`;
     }
 }
 
