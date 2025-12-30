@@ -259,7 +259,7 @@ def get_hall_of_fame_members():
             (career_df['Goals'] > 30) |
             (career_df['Assists'] > 25) |
             (career_df['Saves'] > 200) |
-            (career_df['MP'] > 25)
+            (career_df['MP'] > 30)
         ]['Name'].unique()
 
         # Union of both sets

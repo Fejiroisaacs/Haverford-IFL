@@ -46,7 +46,7 @@ class GalleryImporter:
         self.season = season
         self.season_folder = self.GALLERY_BASE / f"Season{season}"
         self.thumbnails_folder = self.season_folder / "thumbnails"
-        self.full_folder = self.season_folder / "full"
+        self.full_folder = self.season_folder / "original"
 
         # Ensure folders exist
         self._create_folders()
