@@ -6,61 +6,6 @@
       "description": "BingChillin's championship season",
       "images": [
         {
-          "id": "s6_image_1",
-          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_1.webp",
-          "full": "/static/Images/Gallery/Season6/original/s6_image_1.webp",
-          "alt": "Season 6 image 1",
-          "caption": "Test Import",
-          "match": "NPC - Munch",
-          "date": "may 1, 2024",
-          "tags": ["NPC", "Munch", "Championship"],
-          "players": ["player_1", "player_2", "player_1", "player_2", "player_1", "player_2"]
-        },
-        {
-          "id": "s6_image_2",
-          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_2.webp",
-          "full": "/static/Images/Gallery/Season6/original/s6_image_2.webp",
-          "alt": "Season 6 image 2",
-          "caption": "Test Import",
-          "match": "",
-          "date": "",
-          "tags": [],
-          "players": []
-        },
-        {
-          "id": "s6_image_3",
-          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_3.webp",
-          "full": "/static/Images/Gallery/Season6/original/s6_image_3.webp",
-          "alt": "Season 6 image 3",
-          "caption": "Test Import",
-          "match": "",
-          "date": "",
-          "tags": [],
-          "players": []
-        },
-        {
-          "id": "s6_image_4",
-          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_4.webp",
-          "full": "/static/Images/Gallery/Season6/original/s6_image_4.webp",
-          "alt": "Season 6 image 4",
-          "caption": "Test Import",
-          "match": "",
-          "date": "",
-          "tags": [],
-          "players": []
-        },
-        {
-          "id": "s6_image_5",
-          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_5.webp",
-          "full": "/static/Images/Gallery/Season6/original/s6_image_5.webp",
-          "alt": "Season 6 image 5",
-          "caption": "Test Import",
-          "match": "",
-          "date": "",
-          "tags": [],
-          "players": []
-        },
-        {
           "id": "s6_video_1",
           "type": "video",
           "youtube_id": "ZhmTKpSR3eU",
@@ -70,14 +15,26 @@
           "match": "Finals: BingChillin vs NPC Team",
           "date": "December 15, 2024",
           "duration": "0:08",
-          "tags": ["Championship", "Highlights", "BingChillin"],
-          "players": ["player_1", "player_2"]
+          "tags": [
+            "Championship",
+            "Highlights",
+            "BingChillin"
+          ],
+          "players": [
+            "player_1",
+            "player_2"
+          ]
         },
         {
-          "name": "Season 5",
-          "year": "Spring 2024",
-          "description": "NPC Team's underdog victory",
-          "images": []
+          "id": "s6_image_6",
+          "thumbnail": "/static/Images/Gallery/Season6/thumbnails/s6_image_6.webp",
+          "full": "/static/Images/Gallery/Season6/original/s6_image_6.webp",
+          "alt": "Season 6 image 6",
+          "caption": "Season 6 Champions",
+          "match": "BingChillin",
+          "date": "December 21, 2025",
+          "tags": ["Finals", "Team", "Champions", "BingChillin"],
+          "players": []
         }
       ]
     },
@@ -85,31 +42,91 @@
       "name": "Season 5",
       "year": "Spring 2024",
       "description": "NPC Team's underdog victory",
-      "images": []
+      "images": [
+        {
+          "id": "s5_image_1",
+          "thumbnail": "/static/Images/Gallery/Season5/thumbnails/s5_image_1.webp",
+          "full": "/static/Images/Gallery/Season5/original/s5_image_1.webp",
+          "alt": "Season 5 image 1",
+          "caption": "Season 5 Champions",
+          "match": "NPC Team",
+          "date": "",
+          "tags": ["Finals", "Team", "Champions"],
+          "players": ["Abigail Trapp", "Sophia Kearns", "William Murdock", "Grant DeVries", "Oghenefejiro Anigboro", "Vivek Mittal-Henkle", "Yassine Falah", "Owen Sykes", "Rami Nasr", "Brian Rettig"]
+        }
+      ]
     },
     "4": {
       "name": "Season 4",
       "year": "Fall 2023",
       "description": "Brixton Bullies end the dynasty",
-      "images": []
+      "images": [
+        {
+          "id": "s4_image_1",
+          "thumbnail": "/static/Images/Gallery/Season4/thumbnails/s4_image_1.webp",
+          "full": "/static/Images/Gallery/Season4/original/s4_image_1.webp",
+          "alt": "Season 4 image 1",
+          "caption": "Season 4 Champions",
+          "match": "",
+          "date": "",
+          "tags": ["Finals", "Team", "Champions"],
+          "players": []
+        }
+      ]
     },
     "3": {
       "name": "Season 3",
       "year": "Spring 2023",
       "description": "Team Munch's 3-peat",
-      "images": []
+      "images": [
+        {
+          "id": "s3_image_1",
+          "thumbnail": "/static/Images/Gallery/Season3/thumbnails/s3_image_1.webp",
+          "full": "/static/Images/Gallery/Season3/original/s3_image_1.webp",
+          "alt": "Season 3 image 1",
+          "caption": "Season 3 Champions",
+          "match": "",
+          "date": "",
+          "tags": ["Finals", "Team", "Champions"],
+          "players": []
+        }
+      ]
     },
     "2": {
       "name": "Season 2",
       "year": "Fall 2022",
       "description": "Team Munch defends the title",
-      "images": []
+      "images": [
+        {
+          "id": "s2_image_1",
+          "thumbnail": "/static/Images/Gallery/Season2/thumbnails/s2_image_1.webp",
+          "full": "/static/Images/Gallery/Season2/original/s2_image_1.webp",
+          "alt": "Season 2 image 1",
+          "caption": "Season 2 Champions",
+          "match": "",
+          "date": "",
+          "tags": ["Finals", "Team", "Champions"],
+          "players": []
+        }
+      ]
     },
     "1": {
       "name": "Season 1",
       "year": "Spring 2022",
       "description": "The inaugural IFL season",
-      "images": []
+      "images": [
+        {
+          "id": "s1_image_1",
+          "thumbnail": "/static/Images/Gallery/Season1/thumbnails/s1_image_1.webp",
+          "full": "/static/Images/Gallery/Season1/original/s1_image_1.webp",
+          "alt": "Season 1 image 1",
+          "caption": "Season 1 Champions",
+          "match": "",
+          "date": "",
+          "tags": ["Finals", "Team", "Champions"],
+          "players": []
+        }
+      ]
     }
   }
 }
