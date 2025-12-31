@@ -3,6 +3,7 @@
 {% block title %}{{rating_data['Name']}} ({{rating_data["Latest Team"]}}){% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/table.css">
 <link rel="stylesheet" href="/static/displays.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -119,11 +120,11 @@
                 </div>
                 <div class="career-stat">
                     <div class="career-value">{{career_totals['total_yellows']}}</div>
-                    <div class="career-label"><img src='/static/Images/Elements/yellow-card.png' alt='Yellow Cards' style='height:1rem;'></div>
+                    <div class="career-label"><img src='/static/Images/Elements/yellow-card.png' alt='Yellow Cards' class='card-image'></div>
                 </div>
                 <div class="career-stat">
                     <div class="career-value">{{career_totals['total_reds']}}</div>
-                    <div class="career-label"><img src='/static/Images/Elements/red-card.png' alt='Red Cards' style='height:1rem;'></div>
+                    <div class="career-label"><img src='/static/Images/Elements/red-card.png' alt='Red Cards' class='card-image'></div>
                 </div>
             </div>
         </div>
@@ -252,11 +253,11 @@
         {% if team_contribution %}
         <div class="section-card">
             <h3>Team Contribution</h3>
-            <div class="table-container">
+            <div class="tbl-content">
                 <table>
-                    <thead>
+                    <thead class="tbl-header">
                         <tr>
-                            <th>Season</th>
+                            <th class="tbl-col1"></th>
                             <th>Team</th>
                             <th>Goals</th>
                             <th>% of Team</th>
@@ -267,14 +268,27 @@
                     <tbody>
                         {% for contrib in team_contribution %}
                         <tr>
-                            <td>{{contrib['season']}}</td>
-                            <td><a href="/teams/{{contrib['team']}}" style="color:#770000;">{{contrib['team']}}</a></td>
-                            <td style="white-space: nowrap;">{{contrib['player_goals']}} / {{contrib['team_goals']}}</td>
-                            <td><strong>{{contrib['goal_percentage']}}%</strong></td>
-                            <td>{{contrib['player_assists']}} / {{contrib['team_assists']}}</td>
-                            <td><strong>{{contrib['assist_percentage']}}%</strong></td>
+                            <td class="tbl-col1">
+                            {% if contrib['season'] != 'Total' %}
+                                <a href="/seasons/{{ contrib['season'] }}" target="_blank" class="team-link">
+                                Season {{ contrib['season'] }}
+                                </a>
+                            {% else %}
+                                {{ contrib['season'] }}
+                            {% endif %}
+                            </td>
+                            <td>
+                            <a href="/teams/{{ contrib['team'] }}" target="_blank" class="team-link">
+                                {{ contrib['team'] }}
+                            </a>
+                            </td>
+                            <td class="nowrap">{{ contrib['player_goals'] }} / {{ contrib['team_goals'] }}</td>
+                            <td class="percentage">{{ contrib['goal_percentage'] }}%</td>
+                            <td>{{ contrib['player_assists'] }} / {{ contrib['team_assists'] }}</td>
+                            <td class="percentage">{{ contrib['assist_percentage'] }}%</td>
                         </tr>
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -284,11 +298,11 @@
         <!-- Season by Season Record -->
         <div class="team-record">
             <h4>Season by Season Record</h4>
-            <div class="table-container">
+            <div class="tbl-content">
                 <table cellpadding="0" cellspacing="0" border="0">
-                    <thead>
+                    <thead class="tbl-header">
                         <tr>
-                            <th>Season</th>
+                            <th class="tbl-col1"></th>
                             <th title="Goals">G</th>
                             <th title="Assists">Δ</th>
                             <th title="Saves">S</th>
@@ -300,17 +314,30 @@
                     </thead>
                     <tbody>
                         {% for season_stats in season_data %}
-                          <tr>
-                            <td>{{season_stats['Season']}}</td>
+                        <tr>
+                            <td class="tbl-col1">
+                            {% if season_stats['Season'] != 'Total' %}
+                                <a href="/matches/{{ season_stats['Season'] }}" target="_blank" class="team-link">
+                                Season {{ season_stats['Season'] }}
+                                </a>
+                            {% else %}
+                                {{ season_stats['Season'] }}
+                            {% endif %}
+                            </td>
+
                             <td>{{ season_stats["Goals"] }}</td>
                             <td>{{ season_stats["Assists"] }}</td>
                             <td>{{ season_stats["Saves"] }}</td>
                             <td>{{ season_stats["POTM"] }}</td>
-                            <td><a href="/teams/{{season_stats['Team']}}" style="color:#770000;">{{ season_stats["Team"] }}</a></td>
+
+                            <td>
+                                <a href="/teams/{{ season_stats['Team'] }}" target="_blank" class="team-link">{{ season_stats['Team'] }}</a>
+                            </td>
                             <td>{{ season_stats["Record"] }}</td>
                             <td>{{ season_stats["MP"] }}</td>
-                          </tr>
+                        </tr>
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -320,11 +347,11 @@
         {% if opponent_stats %}
         <div class="section-card">
             <h3>Head-to-Head vs Opponents</h3>
-            <div class="table-container">
+            <div class="tbl-content">
                 <table>
-                    <thead>
+                    <thead class="tbl-header">
                         <tr>
-                            <th>Opponent</th>
+                            <th class="tbl-col1">Opponent</th>
                             <th>Played</th>
                             <th>Record</th>
                             <th>Goals</th>
@@ -335,8 +362,8 @@
                     </thead>
                     <tbody>
                         {% for opponent in opponent_stats[:10] %}
-                        <tr>
-                            <td><a href="/teams/{{opponent['opponent']}}" style="color:#770000;">{{opponent['opponent']}}</a></td>
+                        <tr onclick="window.open('/teams/{{opponent['opponent']}}', '_blank')">
+                            <td class="tbl-col1 team-link">{{opponent['opponent']}}</td>
                             <td>{{opponent['matches']}}</td>
                             <td>{{opponent['wins']}}-{{opponent['draws']}}-{{opponent['losses']}}</td>
                             <td>{{opponent['goals']}}</td>
@@ -378,9 +405,9 @@
                     <hr>
                     <br>
                     {% for match in season[1] %}
-                        <a href="/teams/{{match['My Team']}}/{{match['My Team']}}-{{match['Opponent']}}-{{match['Match ID']}}" target="_blank" style='text-decoration:none; color:#670000;' class="match-item" data-goals="{{match['G']}}" data-assists="{{match['A']}}" data-potm="{{match['POTM']}}" data-opponent="{{match['Opponent']|lower}}">
-                            <div style='display:flex; justify-content:space-between; margin:0 1rem; margin-bottom:-1rem;margin-top:-1rem;'>
-                                <h3 style='text-align:left; margin-left:1rem; min-width:fit-content;'>@{{match['Opponent']}} &nbsp &nbsp
+                        <a href="/teams/{{match['My Team']}}/{{match['My Team']}}-{{match['Opponent']}}-{{match['Match ID']}}" target="_blank" class="match-item" data-goals="{{match['G']}}" data-assists="{{match['A']}}" data-potm="{{match['POTM']}}" data-opponent="{{match['Opponent']|lower}}">
+                            <div class="match-item-content">
+                                <h3 class="match-item-stats">@{{match['Opponent']}} &nbsp &nbsp
                                     {% if match['P'] != '-'%}
                                         Pos: {{match['P']}}
                                     {% endif %}
@@ -396,13 +423,13 @@
                                     {% endif %}
                                     {% if match['Y-R'] != '-'%}
                                         {% if match['Y-R'] == 'RC'%}
-                                        &nbsp<img src='/static/Images/Elements/red-card.png' alt='Red Card' style='height:1rem;' class='red-card'>
+                                        &nbsp<img src='/static/Images/Elements/red-card.png' alt='Red Card' class='card-image'>
                                         {% elif match['Y-R'] == 'YC'%}
-                                        &nbsp<img src='/static/Images/Elements/yellow-card.png' alt='Yellow Card' style='height:1rem;' class='red-card'>
+                                        &nbsp<img src='/static/Images/Elements/yellow-card.png' alt='Yellow Card' class='card-image'>
                                         {% endif %}
                                     {% endif %}
                                 </h3>
-                                <h3 style='margin-right:1rem;'>
+                                <h3 class="match-item-badges">
                                     {% if match['External Sub'] == 'Y'%}
                                         (External Sub)
                                     {% endif %}
@@ -412,7 +439,7 @@
                                 </h3>
                             </div>
                         </a>
-                        <hr style='border:0.01rem solid #ddd;'>
+                        <hr class="match-divider">
                     {% endfor %}
                     <br>
                 </div>
@@ -463,7 +490,7 @@
             <div class="teams-grid">
                 {% for team_data in previous_teams %}
                 <div class="team-history-card">
-                    <h4><a href="/teams/{{team_data['team']}}" style="color:#770000;">{{team_data['team']}}</a></h4>
+                    <h4><a href="/teams/{{team_data['team']}}" class="team-link">{{team_data['team']}}</a></h4>
                     <p>Seasons: {% for season in team_data['seasons'] %}{{season}}{% if not loop.last %}, {% endif %}{% endfor %}</p>
                     <p>{{team_data['matches']}} MP | {{team_data['goals']}} G | {{team_data['assists']}} A</p>
                 </div>
@@ -479,7 +506,7 @@
             <div class="teammates-grid">
                 {% for teammate in teammates['current'] %}
                 <div class="teammate-card">
-                    <a href="/players/{{teammate['name']}}" style="color:#770000;">{{teammate['name']}}</a>
+                    <a href="/players/{{teammate['name']}}" class="team-link">{{teammate['name']}}</a>
                 </div>
                 {% endfor %}
             </div>
@@ -491,11 +518,11 @@
             <div class="teammates-grid">
                 {% for teammate in teammates['old'] %}
                 <div class="teammate-card">
-                    <a href="/players/{{teammate}}" style="color:#770000;">{{teammate}}</a>
+                    <a href="/players/{{teammate}}" class="team-link">{{teammate}}</a>
                 </div>
                 {% endfor %}
             </div>
-            <p style="margin-top:1rem; color:#666;">Total teammates played with: {{teammates['all_time_count']}}</p>
+            <p class="teammate-count">Total teammates played with: {{teammates['all_time_count']}}</p>
         </div>
         {% endif %}
     </div>
@@ -506,10 +533,10 @@
     .sticky-header {
         position: sticky;
         top: 0;
-        background: linear-gradient(90deg, #770000, #3e0000);
+        background: linear-gradient(90deg, #670000, #3e0000);
         color: #fff;
         padding: 10px 20px;
-        z-index: 1;
+        z-index: 100;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         display: none;
     }
@@ -572,7 +599,7 @@
     .tabs {
         display: flex;
         background: #f0f0f0;
-        border-bottom: 2px solid #770000;
+        border-bottom: 2px solid #670000;
         overflow-x: auto;
     }
 
@@ -589,11 +616,11 @@
 
     .tab-button:hover {
         background: #e0e0e0;
-        color: #770000;
+        color: #670000;
     }
 
     .tab-button.active {
-        background: #770000;
+        background: #670000;
         color: #fff;
         font-weight: bold;
     }
@@ -624,7 +651,7 @@
     }
 
     .section-card h3 {
-        color: #770000;
+        color: #670000;
         margin-top: 0;
         margin-bottom: 15px;
         font-size: 1.3em;
@@ -648,7 +675,7 @@
     .career-value {
         font-size: 1.8em;
         font-weight: bold;
-        color: #770000;
+        color: #670000;
         margin-bottom: 5px;
     }
 
@@ -667,7 +694,7 @@
     .metric-card {
         text-align: center;
         padding: 20px;
-        background: linear-gradient(135deg, #770000, #a00000);
+        background: linear-gradient(135deg, #670000, #a00000);
         color: #fff;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -733,13 +760,13 @@
         background: #fef8e9;
         padding: 15px;
         border-radius: 8px;
-        border-left: 4px solid #770000;
+        border-left: 4px solid #670000;
     }
 
     .best-perf-value {
         font-size: 1.3em;
         font-weight: bold;
-        color: #770000;
+        color: #670000;
         margin-bottom: 5px;
     }
 
@@ -750,7 +777,7 @@
     }
 
     .view-match-link {
-        color: #770000;
+        color: #670000;
         text-decoration: none;
         font-size: 0.85em;
     }
@@ -778,7 +805,7 @@
         display: block;
         font-size: 2em;
         font-weight: bold;
-        color: #770000;
+        color: #670000;
         margin-bottom: 5px;
     }
 
@@ -824,12 +851,12 @@
         background: #f9f9f9;
         padding: 15px;
         border-radius: 8px;
-        border-left: 4px solid #770000;
+        border-left: 4px solid #670000;
     }
 
     .team-history-card h4 {
         margin: 0 0 10px 0;
-        color: #770000;
+        color: #670000;
     }
 
     .team-history-card p {
@@ -876,7 +903,7 @@
     }
 
     .header {
-        background: linear-gradient(90deg, #770000, #3e0000);
+        background: linear-gradient(90deg, #670000, #3e0000);
         color: #fff;
         padding: 15px;
         text-align: center;
@@ -945,14 +972,14 @@
     .performance h4 {
         width: 100%;
         text-align: center;
-        color: #770000;
+        color: #670000;
         margin: 0 0 10px 0;
     }
 
     .performance .metric {
         font-size: 0.875em;
         text-align: center;
-        color: #770000;
+        color: #670000;
     }
 
     .team-record {
@@ -964,7 +991,7 @@
         margin: 0 0 15px;
         font-size: 1.2em;
         text-align: center;
-        color: #770000;
+        color: #670000;
     }
 
     .table-container {
@@ -985,7 +1012,7 @@
     }
 
     .table-container table th {
-        background: #770000;
+        background: #670000;
         color: #fff;
         font-weight: bold;
     }
@@ -1042,7 +1069,7 @@
     }
 
     .previous-matches h2 {
-        color: #770000;
+        color: #670000;
         margin-top: 20px;
     }
 
@@ -1068,19 +1095,19 @@
         padding: 8px 12px;
         border: 1px solid #ddd;
         background: #fff;
-        color: #770000;
+        color: #670000;
         cursor: pointer;
         border-radius: 4px;
         transition: all 0.3s;
     }
 
     .pagination button:hover {
-        background: #770000;
+        background: #670000;
         color: #fff;
     }
 
     .pagination button.active {
-        background: #770000;
+        background: #670000;
         color: #fff;
         font-weight: bold;
     }
@@ -1122,6 +1149,118 @@
 
         .action-btn {
             width: 100%;
+        }
+    }
+
+    /* Semantic CSS Classes */
+    .team-link {
+        color: #670000;
+        text-decoration: none;
+    }
+
+    .team-link:hover {
+        text-decoration: underline;
+    }
+
+    .nowrap {
+        white-space: nowrap;
+    }
+
+    .percentage {
+        font-weight: bold;
+    }
+
+    .card-image {
+        height: 1rem;
+    }
+
+    .match-item {
+        text-decoration: none;
+        color: #670000;
+    }
+
+    .match-item-content {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 1rem;
+        margin-bottom: -1rem;
+        margin-top: -1rem;
+    }
+
+    .match-item-stats {
+        text-align: left;
+        margin-left: 1rem;
+        min-width: fit-content;
+    }
+
+    .match-item-badges {
+        margin-right: 1rem;
+    }
+
+    .match-divider {
+        border: 0.01rem solid #ddd;
+    }
+
+    .teammate-count {
+        margin-top: 1rem;
+        color: #666;
+    }
+
+    /* Breadcrumbs Styling */
+    .breadcrumbs {
+        background: #f9f9f9;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .breadcrumbs-list {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        gap: 8px;
+    }
+
+    .breadcrumbs-item {
+        display: inline;
+    }
+
+    .breadcrumbs-link {
+        color: #670000;
+        text-decoration: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .breadcrumbs-link:hover {
+        background: #f0f0f0;
+        color: #8b0000;
+    }
+
+    .breadcrumbs-separator {
+        color: #999;
+        user-select: none;
+    }
+
+    .breadcrumbs-current {
+        color: #333;
+        font-weight: 600;
+        padding: 4px 8px;
+    }
+
+    @media screen and (max-width: 600px) {
+        .breadcrumbs {
+            padding: 8px 15px;
+        }
+
+        .breadcrumbs-link,
+        .breadcrumbs-current {
+            font-size: 0.9em;
+            padding: 2px 6px;
         }
     }
 </style>
