@@ -6,17 +6,17 @@
 <link rel="stylesheet" href="/static/table.css">
 <link rel="stylesheet" href="/static/displays.css">
 
-<h2 style='text-align: left; opacity:0.25; margin-left:1rem;'>{{match_data[0]['Time']}}</h2>
+<h2 class="match-time">{{match_data[0]['Time']}}</h2>
 <div class="match-header">
     <div class="team">
         <img src="/static/Images/Logo/logo.png" alt="Logo" class="match-image" />
         <h1>{{match_details[0]}}</h1>
     </div>
-    <h2>{{match_data[0]['Goals']}}</h2>
+    <h2 class="match-score">{{match_data[0]['Goals']}}</h2>
 
     <hr class='match-separator'>
 
-    <h2>{{match_data[1]['Goals']}}</h2>
+    <h2 class="match-score">{{match_data[1]['Goals']}}</h2>
     <div class="team">
         <img src="/static/Images/Logo/logo.png" alt="Logo" class="match-image" />
         <h1>{{match_details[1]}}</h1>
@@ -25,19 +25,26 @@
 
 <hr>
 
-<div class="options-container">
-    <div class="option" id="match_option" onclick="showContent('match_stats')">MATCH STATS</div>
-    <div class="option" id="team1_option" onclick="showContent('team1_stats'); generateTable('team1_stats', '{{match_details[0]}}')">{{match_details[0]}}</div>
-    <div class="option" id="team2_option" onclick="showContent('team2_stats'); generateTable('team2_stats', '{{match_details[1]}}')">{{match_details[1]}}</div>
+<div class="options-container" role="tablist" aria-label="Match information tabs">
+    <div class="option" id="match_option" role="tab" aria-selected="true" aria-controls="match_stats" tabindex="0" onclick="showContent('match_stats')">MATCH STATS</div>
+    <div class="option" id="team1_option" role="tab" aria-selected="false" aria-controls="team1_stats" tabindex="-1" onclick="showContent('team1_stats'); generateTable('team1_stats', '{{match_details[0]}}')">{{match_details[0]}}</div>
+    <div class="option" id="team2_option" role="tab" aria-selected="false" aria-controls="team2_stats" tabindex="-1" onclick="showContent('team2_stats'); generateTable('team2_stats', '{{match_details[1]}}')">{{match_details[1]}}</div>
 </div>
 
 
-<div id="match_stats" class="content">
+<div id="match_stats" class="content" role="tabpanel" aria-labelledby="match_option">
     <div class='team1'>
         <h4>{{match_details[0]}}</h4>
         {% for key, value in match_data[0].items() %}
             {% if key != 'Goals' and key != 'Goals Allowed' %}
-                <p>{{value}}</p>
+                {% set team2_value = match_data[1][key] %}
+                {% if key == 'Rating Change' %}
+                    <p class="{% if value|float > 0 %}stat-positive{% elif value|float < 0 %}stat-negative{% endif %}">{{value}}</p>
+                {% elif key != 'Time' %}
+                    <p class="{% if value|float > team2_value|float %}stat-higher{% endif %}">{{value}}</p>
+                {% else %}
+                    <p>{{value}}</p>
+                {% endif %}
             {% endif %}
         {% endfor %}
     </div>
@@ -53,44 +60,64 @@
         <h4>{{match_details[1]}}</h4>
         {% for key, value in match_data[1].items() %}
             {% if key != 'Goals' and key != 'Goals Allowed' %}
-                <p>{{value}}</p>
+                {% set team1_value = match_data[0][key] %}
+                {% if key == 'Rating Change' %}
+                    <p class="{% if value|float > 0 %}stat-positive{% elif value|float < 0 %}stat-negative{% endif %}">{{value}}</p>
+                {% elif key != 'Time' %}
+                    <p class="{% if value|float > team1_value|float %}stat-higher{% endif %}">{{value}}</p>
+                {% else %}
+                    <p>{{value}}</p>
+                {% endif %}
             {% endif %}
         {% endfor %}
     </div>
 </div>
 
 
-<div id="team1_stats" class="content" style="display: none;"></div>
-<div id="team2_stats" class="content" style="display: none;"></div>
+<div id="team1_stats" class="content content-hidden" role="tabpanel" aria-labelledby="team1_option"></div>
+<div id="team2_stats" class="content content-hidden" role="tabpanel" aria-labelledby="team2_option"></div>
 
 {% if potm %}
-    <h2 style='margin-top: 50px;margin-bottom: 8px;'>Player of the Match</h2>
-    <a href="/players/{{potm['Name']}}" target="_blank">
-        <img src="/static/Images/POTM/{{ potm['Match ID'] }}.png" alt="{{potm['Name']}}" class="potm-image" loading="lazy"/>
-    </a>
+    <div class="potm-section">
+        <h2 class="potm-title">Player of the Match</h2>
+        <a href="/players/{{potm['Name']}}" target="_blank" class="potm-link" aria-label="View {{potm['Name']}}'s profile">
+            <img src="/static/Images/POTM/{{ potm['Match ID'] }}.png" alt="{{potm['Name']}}" class="potm-image" loading="lazy"/>
+            <p class="potm-name">{{potm['Name']}}</p>
+        </a>
+    </div>
 {% endif %}
 
 <script>
     let activeContent = 'match_stats';
 
     function showContent(section) {
+        // Hide all content sections
         document.getElementById('match_stats').style.display = 'none';
         document.getElementById('team1_stats').style.display = 'none';
         document.getElementById('team2_stats').style.display = 'none';
-        
+
+        // Show selected section
         if (section == 'match_stats') {
             document.getElementById(section).style.display = 'grid';
         } else {
             document.getElementById(section).style.display = 'block';
         }
 
-        document.getElementById('match_option').classList.remove('active');
-        document.getElementById('team1_option').classList.remove('active');
-        document.getElementById('team2_option').classList.remove('active');
+        // Update active states and ARIA attributes
+        const tabs = ['match_option', 'team1_option', 'team2_option'];
+        tabs.forEach(tab => {
+            const tabElement = document.getElementById(tab);
+            tabElement.classList.remove('active');
+            tabElement.setAttribute('aria-selected', 'false');
+            tabElement.setAttribute('tabindex', '-1');
+        });
 
         let activeTag = section.split('_')[0];
-        document.getElementById(`${activeTag}_option`).classList.add('active');
-        
+        const activeTab = document.getElementById(`${activeTag}_option`);
+        activeTab.classList.add('active');
+        activeTab.setAttribute('aria-selected', 'true');
+        activeTab.setAttribute('tabindex', '0');
+
         activeContent = section;
     }
 

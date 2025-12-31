@@ -6,29 +6,56 @@ h1 {
   margin-bottom: 15px;
 }
 
+/* Enhanced Table Styles */
 table {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .tbl-header {
-  background: #f3f3f3;
+  background: linear-gradient(135deg, #670000 0%, #8b0000 100%);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
+}
+
+.tbl-header th {
+  color: white !important;
+  font-weight: 600;
+  padding: 16px 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem;
 }
 
 .tbl-col1 {
-  background: #f3f3f3;
+  position: -webkit-sticky;
   position: sticky;
   left: 0;
-  z-index: 1;
+  z-index: 2;
+  background: #fff !important;
+  box-shadow: 3px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.tbl-header .tbl-col1 {
+  background: linear-gradient(135deg, #670000 0%, #8b0000 100%) !important;
+  z-index: 11;
+  box-shadow: 3px 0 8px rgba(0, 0, 0, 0.15);
 }
 
 .tbl-content {
-  height: auto;
+  width: 100%;
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow-y: visible;
+  border-radius: 8px;
+  background: white;
+  /* Smooth scrolling for better UX */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 th, td {
@@ -38,28 +65,104 @@ th, td {
 }
 
 th {
-  font-weight: 510;
-  background: #f9f9f9;
+  font-weight: 600;
+  background: linear-gradient(135deg, #670000 0%, #8b0000 100%);
+  color: white;
   text-transform: uppercase;
 }
 
 td {
-  font-weight: 300;
-  border-bottom: 1px solid #ddd;
+  font-weight: 400;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
 }
 
-tr:hover {
-  background: #f9f9f9;
+tbody tr {
+  transition: all 0.3s ease;
+  background: white;
+}
+
+tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+tbody tr:nth-child(even) .tbl-col1 {
+  background: #fafafa !important;
+}
+
+tbody tr:hover {
+  background: #fff5f5 !important;
   cursor: pointer;
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(103, 0, 0, 0.1);
+  position: relative;
+}
+
+tbody tr:hover td {
+  color: #670000;
+}
+
+tbody tr:hover .tbl-col1 {
+  font-weight: 600;
+  background: #fff5f5 !important;
+  box-shadow: 3px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+tbody tr:active {
+  transform: scale(0.99);
+}
+
+tbody tr:active .tbl-col1 {
+  background: #fff5f5 !important;
 }
 
 td:first-child, th:first-child {
   white-space: nowrap;
-  width: 100px;
+  min-width: 120px;
   text-align: left;
-  padding-left: 5px;
+  padding-left: 15px;
+  font-weight: 600;
 }
 
+/* Click Indicator */
+tbody tr::after {
+  content: '→';
+  position: absolute;
+  right: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  color: #670000;
+  font-weight: bold;
+  transform: translateX(-10px);
+}
+
+tbody tr:hover::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Custom Scrollbar for Tables */
+.tbl-content::-webkit-scrollbar {
+  height: 8px;
+  width: 3px;
+}
+
+.tbl-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tbl-content::-webkit-scrollbar-thumb {
+  background: rgba(103, 0, 0, 0.4);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.tbl-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(103, 0, 0, 0.6);
+}
+
+/* General Scrollbar */
 ::-webkit-scrollbar {
   width: 3px;
 }
@@ -70,10 +173,68 @@ td:first-child, th:first-child {
 @media (max-width: 900px) {
   .tbl-content {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
+
   th, td {
     font-size: 14px;
     white-space: nowrap;
+    padding: 12px 10px;
+  }
+
+  td:first-child, th:first-child {
+    min-width: 100px;
+    padding-left: 10px;
+  }
+
+  .tbl-header th {
+    padding: 14px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Maintain sticky column on tablet */
+  .tbl-col1 {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+  }
+
+  tbody tr:hover {
+    transform: none;
+  }
+
+  tbody tr::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  th, td {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+
+  td:first-child, th:first-child {
+    min-width: 90px;
+    padding-left: 8px;
+  }
+
+  .tbl-header th {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+  }
+
+  /* Enhance sticky column visibility on mobile */
+  .tbl-col1 {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.15);
+  }
+
+  .tbl-content::-webkit-scrollbar {
+    height: 6px;
   }
 }
 
