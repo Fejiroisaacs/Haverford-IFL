@@ -185,10 +185,9 @@
             let content = `<h2>Season ${activeSeason} Standings</h2>
                 <div class="tbl-content">
                     <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-                        <div class="tbl-header">
-                            <thead>
-                                <tr>
-                                    <th>Club</th>
+                        <thead class="tbl-header">
+                            <tr>
+                                <th class="tbl-col1">Club</th>
                                     <th>MP</th>
                                     <th>W</th>
                                     <th>D</th>
@@ -199,12 +198,11 @@
                                     <th><b>PTS</b></th>
                                     <th><b>Last 5</b></th>
                                 </tr>
-                            </thead>
-                        </div>
+                        </thead>
                         <tbody>`;
                             standings.forEach(team => {
                                 content += `<tr onclick="window.open('/teams/${team['Team']}', '_blank')" ${team["Team"] === '{{team}}' ? ' style="background-color:#faf4f3;"' : ''}>
-                                    <td>${team["Team"]}</td>
+                                    <td class="tbl-col1">${team["Team"]}</td>
                                     <td>${team["MP"]}</td>
                                     <td>${team["W"]}</td>
                                     <td>${team["D"]}</td>
@@ -240,10 +238,9 @@
                 content += `<br>
                 <div class="tbl-content">
                     <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-                        <div class="tbl-header">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
+                        <thead class="tbl-header">
+                            <tr>
+                                <th class="tbl-col1">Player</th>
                                     <th>MP</th>
                                     <th>Goals</th>
                                     <th>Assists</th>
@@ -251,13 +248,12 @@
                                     <th>POTM</th>
                                     <th>Cards (Y-R)</th>
                                 </tr>
-                            </thead>
-                        </div>
+                        </thead>
                         <tbody>`;
 
                 seasonPlayers.forEach(player => {
                     content += `<tr onclick="window.open('/players/${player.Name}', '_blank')">
-                        <td><b>${player.Name}</b></td>
+                        <td class="tbl-col1"><b>${player.Name}</b></td>
                         <td>${player.MP}</td>
                         <td>${player.Goals}</td>
                         <td>${player.Assists}</td>
@@ -443,10 +439,9 @@
             let content = `<h2>Head-to-Head Records</h2>
                 <div class="tbl-content">
                     <table cellpadding="0" cellspacing="0" border="1" frame="hsides" rules="rows">
-                        <div class="tbl-header">
-                            <thead>
-                                <tr>
-                                    <th>Opponent</th>
+                        <thead class="tbl-header">
+                            <tr>
+                                <th class="tbl-col1">Opponent</th>
                                     <th>Played</th>
                                     <th>W</th>
                                     <th>D</th>
@@ -455,13 +450,12 @@
                                     <th>GA</th>
                                     <th>GD</th>
                                 </tr>
-                            </thead>
-                        </div>
+                        </thead>
                         <tbody>`;
 
             headToHeadData.forEach(h2h => {
                 content += `<tr onclick="window.open('/teams/${h2h.opponent}', '_blank')">
-                    <td><b>${h2h.opponent}</b></td>
+                    <td class="tbl-col1"><b>${h2h.opponent}</b></td>
                     <td>${h2h.played}</td>
                     <td>${h2h.won}</td>
                     <td>${h2h.drawn}</td>
