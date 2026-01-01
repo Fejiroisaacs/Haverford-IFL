@@ -89,12 +89,18 @@ tbody tr:nth-child(even) .tbl-col1 {
   background: #fafafa !important;
 }
 
-tbody tr:hover {
+tbody tr:hover,
+tbody tr:focus {
   background: #fff5f5 !important;
   cursor: pointer;
   transform: scale(1.01);
   box-shadow: 0 4px 12px rgba(103, 0, 0, 0.1);
   position: relative;
+}
+
+tbody tr:focus {
+  outline: 3px solid #670000;
+  outline-offset: -3px;
 }
 
 tbody tr:hover td {
