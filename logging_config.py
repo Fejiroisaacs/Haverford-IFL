@@ -260,15 +260,16 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
             # Exclude static files, API endpoints, and health checks
             if not route.startswith('/static') and not route.startswith('/api/') and route != '/health':
                 clean_route = route.split('?')[0].lstrip('/')
-
+  
                 if clean_route == '':
                     clean_route = 'home'
 
-                log_queue.put({
-                    'log_type': 'counter',
-                    'path': f'page_views/{clean_route}',
-                    'increment': 1
-                })
+                if "." not in clean_route: # route not invalid (sitemap.xml / robots.txt)
+                    log_queue.put({
+                        'log_type': 'counter',
+                        'path': f'page_views/{clean_route}',
+                        'increment': 1
+                    })
 
     except Exception as e:
         logger.error(f"Error logging counters: {e}")
