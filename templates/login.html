@@ -32,44 +32,90 @@
 {% endif %}
 
 <script>
+    // Helper function to create form elements safely
+    function createFormField(type, placeholder, id, name, required = true) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.placeholder = placeholder;
+        input.id = id;
+        input.name = name;
+        if (required) input.required = true;
+        return input;
+    }
+
+    function createSubmitButton() {
+        const button = document.createElement('button');
+        button.className = 'opacity';
+        button.type = 'submit';
+        button.textContent = 'SUBMIT';
+        return button;
+    }
+
+    function createActionLink(text, onclickFunc) {
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = text;
+        link.onclick = onclickFunc;
+        return link;
+    }
+
+    function clearElement(element) {
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+    }
+
     function showRegisterForm() {
-        document.getElementById('form-title').innerText = 'REGISTER';
-        document.getElementById('auth-form').action = "/signup";
-        document.getElementById('auth-form').innerHTML = `
-            <input type="email" placeholder="EMAIL" id="email" name="email" required>
-            <input type="text" placeholder="USERNAME" id="username" name="username" required>
-            <input type="password" placeholder="PASSWORD" id="password" name="password" required>
-            <button class="opacity" type="submit">SUBMIT</button>
-        `;
-        document.getElementById('user-actions').innerHTML = `
-            <a href="#" onclick="showLoginForm()">LOGIN</a>
-        `;
+        document.getElementById('form-title').textContent = 'REGISTER';
+        const form = document.getElementById('auth-form');
+        form.action = "/signup";
+
+        // Clear and rebuild form safely
+        clearElement(form);
+        form.appendChild(createFormField('email', 'EMAIL', 'email', 'email'));
+        form.appendChild(createFormField('text', 'USERNAME', 'username', 'username'));
+        form.appendChild(createFormField('password', 'PASSWORD', 'password', 'password'));
+        form.appendChild(createSubmitButton());
+
+        // Update user actions
+        const userActions = document.getElementById('user-actions');
+        clearElement(userActions);
+        userActions.appendChild(createActionLink('LOGIN', showLoginForm));
     }
 
     function showForgotPasswordForm() {
-        document.getElementById('form-title').innerText = 'FORGOT PASSWORD';
-        document.getElementById('auth-form').action = "/forgot_password";
-        document.getElementById('auth-form').innerHTML = `
-            <input type="email" placeholder="EMAIL" id="email" name="email" required>
-            <button class="opacity" type="submit">SUBMIT</button>
-        `;
-        document.getElementById('user-actions').innerHTML = `
-            <a href="#" onclick="showLoginForm()">LOGIN</a>
-            <a href="#" onclick="showRegisterForm()">REGISTER</a>
-        `;
+        document.getElementById('form-title').textContent = 'FORGOT PASSWORD';
+        const form = document.getElementById('auth-form');
+        form.action = "/forgot_password";
+
+        // Clear and rebuild form safely
+        clearElement(form);
+        form.appendChild(createFormField('email', 'EMAIL', 'email', 'email'));
+        form.appendChild(createSubmitButton());
+
+        // Update user actions
+        const userActions = document.getElementById('user-actions');
+        clearElement(userActions);
+        userActions.appendChild(createActionLink('LOGIN', showLoginForm));
+        userActions.appendChild(createActionLink('REGISTER', showRegisterForm));
     }
+
     function showLoginForm() {
-        document.getElementById('form-title').innerText = 'LOGIN';
-        document.getElementById('auth-form').action = "/login";
-        document.getElementById('auth-form').innerHTML = `
-            <input type="email" placeholder="EMAIL" id="email" name="email" required>
-            <input type="password" placeholder="PASSWORD" id="password" name="password" required>
-            <button class="opacity" type="submit">SUBMIT</button>
-        `;
-        document.getElementById('user-actions').innerHTML = `
-            <a href="#" onclick="showRegisterForm()">REGISTER</a>
-            <a href="#" onclick="showForgotPasswordForm()">FORGOT PASSWORD</a>
-        `;
+        document.getElementById('form-title').textContent = 'LOGIN';
+        const form = document.getElementById('auth-form');
+        form.action = "/login";
+
+        // Clear and rebuild form safely
+        clearElement(form);
+        form.appendChild(createFormField('email', 'EMAIL', 'email', 'email'));
+        form.appendChild(createFormField('password', 'PASSWORD', 'password', 'password'));
+        form.appendChild(createSubmitButton());
+
+        // Update user actions
+        const userActions = document.getElementById('user-actions');
+        clearElement(userActions);
+        userActions.appendChild(createActionLink('REGISTER', showRegisterForm));
+        userActions.appendChild(createActionLink('FORGOT PASSWORD', showForgotPasswordForm));
     }
     document.addEventListener('DOMContentLoaded', function() {
         {% if Login %}

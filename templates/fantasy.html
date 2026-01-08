@@ -766,6 +766,14 @@
 // Make player data available to JavaScript
 const allPlayersData = {{ all_players|tojson }};
 
+// Security: HTML escaping function to prevent XSS
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
 // Utility function to find player by name (reusable)
 function findPlayerByName(playerName) {
     return allPlayersData.find(p => {
@@ -1643,12 +1651,12 @@ function initializePlayerComparison() {
         
         // Populate player 1
         document.getElementById('comparisonName1').textContent = data1.name;
-        document.getElementById('comparisonDetails1').innerHTML = 
+        document.getElementById('comparisonDetails1').textContent =
             `${data1.team} | ${data1.position} | OVR: ${data1.overall}`;
-        
+
         // Populate player 2
         document.getElementById('comparisonName2').textContent = data2.name;
-        document.getElementById('comparisonDetails2').innerHTML = 
+        document.getElementById('comparisonDetails2').textContent =
             `${data2.team} | ${data2.position} | OVR: ${data2.overall}`;
         
         // Create comparison stats
@@ -1663,27 +1671,27 @@ function initializePlayerComparison() {
             { label: 'Matches', key: 'matches', value1: data1.season_stats.matches_played, value2: data2.season_stats.matches_played }
         ];
         
-        // Generate stats HTML
+        // Generate stats HTML - using escapeHTML to prevent XSS
         const stats1HTML = stats.map(stat => {
             const isWinner = stat.value1 > stat.value2;
             return `
                 <div class="comparison-stat ${isWinner ? 'winner' : ''}">
-                    <div class="comparison-stat-label">${stat.label}</div>
-                    <div class="comparison-stat-value">${stat.value1}</div>
+                    <div class="comparison-stat-label">${escapeHTML(stat.label)}</div>
+                    <div class="comparison-stat-value">${escapeHTML(stat.value1)}</div>
                 </div>
             `;
         }).join('');
-        
+
         const stats2HTML = stats.map(stat => {
             const isWinner = stat.value2 > stat.value1;
             return `
                 <div class="comparison-stat ${isWinner ? 'winner' : ''}">
-                    <div class="comparison-stat-label">${stat.label}</div>
-                    <div class="comparison-stat-value">${stat.value2}</div>
+                    <div class="comparison-stat-label">${escapeHTML(stat.label)}</div>
+                    <div class="comparison-stat-value">${escapeHTML(stat.value2)}</div>
                 </div>
             `;
         }).join('');
-        
+
         document.getElementById('comparisonStats1').innerHTML = stats1HTML;
         document.getElementById('comparisonStats2').innerHTML = stats2HTML;
         
@@ -1705,10 +1713,10 @@ function initializePlayerComparison() {
         const winCount = player1Wins > player2Wins ? player1Wins : player2Wins;
         
         document.getElementById('comparisonRecommendation').innerHTML = `
-            <div class="recommendation-player">${recommendedPlayer.name}</div>
+            <div class="recommendation-player">${escapeHTML(recommendedPlayer.name)}</div>
             <div class="recommendation-reason">
-                Recommended based on superior performance in ${winCount} out of ${stats.length} key metrics.
-                ${recommendedPlayer.name} offers better value with stronger overall statistics.
+                Recommended based on superior performance in ${escapeHTML(winCount)} out of ${escapeHTML(stats.length)} key metrics.
+                ${escapeHTML(recommendedPlayer.name)} offers better value with stronger overall statistics.
             </div>
         `;
     }
@@ -2099,13 +2107,13 @@ function initializePlayerModal() {
             recentMatchesContainer.innerHTML = data.recent_matches.map(match => `
                 <div class="recent-match">
                     <div class="match-info">
-                        <span class="match-teams">${match['My Team']} vs ${match.Opponent}</span>
-                        <span class="match-season">S${match.Season}</span>
+                        <span class="match-teams">${escapeHTML(match['My Team'])} vs ${escapeHTML(match.Opponent)}</span>
+                        <span class="match-season">S${escapeHTML(match.Season)}</span>
                     </div>
                     <div class="match-stats">
-                        <span class="match-stat">G: ${match.G || 0}</span>
-                        <span class="match-stat">A: ${match.A || 0}</span>
-                        <span class="match-stat">S: ${match.S || 0}</span>
+                        <span class="match-stat">G: ${escapeHTML(match.G || 0)}</span>
+                        <span class="match-stat">A: ${escapeHTML(match.A || 0)}</span>
+                        <span class="match-stat">S: ${escapeHTML(match.S || 0)}</span>
                         ${match.POTM === 1 ? '<span class="potm-badge">POTM</span>' : ''}
                     </div>
                 </div>
@@ -2120,8 +2128,8 @@ function initializePlayerModal() {
         const awardsSection = document.getElementById('modalAwards');
         
         if (data.awards && data.awards.length > 0) {
-            awardsContainer.innerHTML = data.awards.map(award => 
-                `<div class="award-item">${award}</div>`
+            awardsContainer.innerHTML = data.awards.map(award =>
+                `<div class="award-item">${escapeHTML(award)}</div>`
             ).join('');
             awardsSection.style.display = 'block';
         } else {
