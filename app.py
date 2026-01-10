@@ -19,10 +19,11 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from middleware import RequestLoggingMiddleware
-from security import SecurityHeadersMiddleware, RateLimitMiddleware, generate_csrf_token
+from security import SecurityHeadersMiddleware, RateLimitMiddleware
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
+from contextlib import asynccontextmanager
 
 load_dotenv()
 
@@ -49,7 +50,66 @@ bucket = storage.bucket()
 
 secret_key = os.getenv("SECRET_KEY")
 
-app = FastAPI()
+# Cache configuration
+CACHE_DURATION_MINUTES = 300
+
+class DataCache:
+
+    def __init__(self, cache_duration_minutes: int = CACHE_DURATION_MINUTES):
+        self.cache_duration_minutes = cache_duration_minutes
+        self.schedule = None
+        self.results = None
+        self.standings = None
+        self.player_stats = None
+        self.last_updated = None
+
+    def refresh(self):
+        """Refresh the cache by loading CSV files."""
+        try:
+            self.schedule = pd.read_csv('data/F25 Futsal Schedule.csv')
+            self.results = pd.read_csv('data/Match_Results.csv')
+            self.standings = pd.read_csv('data/season_standings.csv')
+            self.player_stats = pd.read_csv('data/season_player_stats.csv')
+            self.last_updated = datetime.now()
+            print(f"Cache refreshed at {self.last_updated}")
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            if self.schedule is None:
+                self.schedule = pd.DataFrame()
+                self.results = pd.DataFrame()
+                self.standings = pd.DataFrame()
+                self.player_stats = pd.DataFrame()
+
+    def is_expired(self) -> bool:
+        """Check if cache has expired."""
+        if self.last_updated is None:
+            return True
+        return (datetime.now() - self.last_updated) > timedelta(minutes=self.cache_duration_minutes)
+
+    def get_data(self) -> dict:
+        """Get cached data, refreshing if necessary."""
+        if self.is_expired():
+            self.refresh()
+
+        return {
+            'schedule': self.schedule,
+            'results': self.results,
+            'standings': self.standings,
+            'player_stats': self.player_stats,
+            'last_updated': self.last_updated
+        }
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager for startup and shutdown events."""
+    # Startup: Initialize cache
+    app.state.cache = DataCache(CACHE_DURATION_MINUTES)
+    print("Application started - DataCache initialized")
+    yield
+    # Shutdown: Cleanup (if needed in the future)
+    print("Application shutting down")
+
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
@@ -100,40 +160,9 @@ app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 app.include_router(admin.router)
 app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
 
-_data_cache = {
-    'schedule': None,
-    'results': None,
-    'standings': None,
-    'player_stats': None,
-    'last_updated': None
-}
-
-CACHE_DURATION_MINUTES = 30
-
 def get_cached_data():
-    """Load and cache CSV data. Refresh cache if expired."""
-    global _data_cache
-
-    now = datetime.now()
-    if (_data_cache['last_updated'] is None or
-        (now - _data_cache['last_updated']) > timedelta(minutes=CACHE_DURATION_MINUTES)):
-
-        try:
-            _data_cache['schedule'] = pd.read_csv('data/F25 Futsal Schedule.csv')
-            _data_cache['results'] = pd.read_csv('data/Match_Results.csv')
-            _data_cache['standings'] = pd.read_csv('data/season_standings.csv')
-            _data_cache['player_stats'] = pd.read_csv('data/season_player_stats.csv')
-            _data_cache['last_updated'] = now
-            print(f"Cache refreshed at {now}")
-        except Exception as e:
-            print(f"Error loading data: {e}")
-            if _data_cache['schedule'] is None:
-                _data_cache['schedule'] = pd.DataFrame()
-                _data_cache['results'] = pd.DataFrame()
-                _data_cache['standings'] = pd.DataFrame()
-                _data_cache['player_stats'] = pd.DataFrame()
-
-    return _data_cache
+    """Get cached data from app state."""
+    return app.state.cache.get_data()
 
 # Helper functions for homepage
 def get_season_progress(season=6):
@@ -163,12 +192,6 @@ def get_next_matchday():
         data = get_cached_data()
         schedule = data['schedule']
         results_s6 = data['results'][data['results']['Season'] == '6']
-
-        # Get completed match IDs
-        if not results_s6.empty and 'Match ID' in results_s6.columns:
-            completed_ids = set(results_s6['Match ID'].dropna().tolist())
-        else:
-            completed_ids = set()
 
         # Filter for upcoming matches
         upcoming = schedule[~schedule.apply(lambda row: f"{row['Team 1']} vs {row['Team 2']}" in
