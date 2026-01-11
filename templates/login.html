@@ -19,8 +19,8 @@
                 <p style="color: red;">{{ error }}</p>
             {% endif %}
             <div class="register-forget opacity" id="user-actions">
-                <a href="#" onclick="showRegisterForm()">REGISTER</a>
-                <a href="#" onclick="showForgotPasswordForm()">FORGOT PASSWORD</a>
+                <a href="#" onclick="event.preventDefault(); showRegisterForm()" data-no-spinner="true">REGISTER</a>
+                <a href="#" onclick="event.preventDefault(); showForgotPasswordForm()" data-no-spinner="true">FORGOT PASSWORD</a>
             </div>
         </div>
         <div class="circle circle-two"></div>
@@ -55,7 +55,11 @@
         const link = document.createElement('a');
         link.href = '#';
         link.textContent = text;
-        link.onclick = onclickFunc;
+        link.onclick = function(e) {
+            e.preventDefault();
+            onclickFunc();
+        };
+        link.setAttribute('data-no-spinner', 'true');
         return link;
     }
 
