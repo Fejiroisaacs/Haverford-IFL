@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="X5h4TjQv5dzDO1Ku9dtk6Wnx0ukpjqx8dZ756Ric8so" />
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}Haverford IFL{% endblock %}</title>
+
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/Images/Logo/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/Images/Logo/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/Images/Logo/logo.png">
     <link rel="shortcut icon" href="/static/Images/Logo/logo.png" type="image/x-icon">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#670000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Haverford IFL">
 
     <!-- Preload Critical Assets -->
     <link rel="preload" href="/static/style.css" as="style">
@@ -20,10 +35,12 @@
 
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/loading-states.css">
+    <link rel="stylesheet" href="/static/breadcrumbs.css">
 
     {% block extra_css %}{% endblock %}
 
     <script src="/static/focus-trap.js"></script>
+    <script src="/static/breadcrumbs.js" defer></script>
     <script src="/static/script.js" defer></script>
 </head>
 
@@ -859,7 +876,7 @@
                     !link.hasAttribute('data-no-spinner') &&
                     !link.hasAttribute('target') &&
                     !link.href.startsWith('javascript:') &&
-                    !link.href.startsWith('#') &&
+                    !link.getAttribute('href').startsWith('#') &&
                     link.hostname === window.location.hostname) {
                 showSpinner();
                 }
@@ -887,6 +904,241 @@
                 }, 30000);
             };
 
+        })();
+
+        // Session timeout warning system
+        (function() {
+            {% if user is not none and ('user_id' in user or 'uid' in user) %}
+            const SESSION_TIMEOUT = 3600000; // 60 minutes in milliseconds
+            const WARNING_TIME = 300000; // Show warning 5 minutes before timeout
+            let lastActivityTime = Date.now();
+            let warningShown = false;
+            let timeoutWarningModal = null;
+
+            // Track user activity
+            function resetActivityTimer() {
+                lastActivityTime = Date.now();
+                warningShown = false;
+                if (timeoutWarningModal) {
+                    hideTimeoutWarning();
+                }
+            }
+
+            // Create warning modal
+            function createWarningModal() {
+                const modal = document.createElement('div');
+                modal.id = 'session-timeout-modal';
+                modal.innerHTML = `
+                    <div class="timeout-modal-overlay"></div>
+                    <div class="timeout-modal-content">
+                        <div class="timeout-modal-header">
+                            <i class="fas fa-clock"></i>
+                            <h3>Session Expiring Soon</h3>
+                        </div>
+                        <div class="timeout-modal-body">
+                            <p>Your session will expire in <strong id="timeout-countdown">5:00</strong> due to inactivity.</p>
+                            <p>Would you like to stay logged in?</p>
+                        </div>
+                        <div class="timeout-modal-actions">
+                            <button onclick="sessionTimeout.stayLoggedIn()" class="btn-primary">
+                                Stay Logged In
+                            </button>
+                            <button onclick="sessionTimeout.logoutNow()" class="btn-secondary">
+                                Logout Now
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Add styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    #session-timeout-modal {
+                        display: none;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 10000;
+                    }
+
+                    .timeout-modal-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.7);
+                        backdrop-filter: blur(3px);
+                    }
+
+                    .timeout-modal-content {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        border-radius: 15px;
+                        padding: 2rem;
+                        max-width: 450px;
+                        width: 90%;
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                        animation: slideDown 0.3s ease;
+                    }
+
+                    @keyframes slideDown {
+                        from {
+                            transform: translate(-50%, -60%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translate(-50%, -50%);
+                            opacity: 1;
+                        }
+                    }
+
+                    .timeout-modal-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+                        margin-bottom: 1.5rem;
+                        color: #670000;
+                    }
+
+                    .timeout-modal-header i {
+                        font-size: 2.5rem;
+                    }
+
+                    .timeout-modal-header h3 {
+                        margin: 0;
+                        font-size: 1.5rem;
+                    }
+
+                    .timeout-modal-body {
+                        margin-bottom: 2rem;
+                        color: #333;
+                        line-height: 1.6;
+                    }
+
+                    .timeout-modal-body p {
+                        margin: 0.5rem 0;
+                    }
+
+                    .timeout-modal-body strong {
+                        color: #670000;
+                        font-size: 1.2rem;
+                    }
+
+                    .timeout-modal-actions {
+                        display: flex;
+                        gap: 1rem;
+                        justify-content: flex-end;
+                    }
+
+                    .timeout-modal-actions button {
+                        padding: 0.75rem 1.5rem;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+
+                    @media (max-width: 480px) {
+                        .timeout-modal-actions {
+                            flex-direction: column-reverse;
+                        }
+
+                        .timeout-modal-actions button {
+                            width: 100%;
+                        }
+                    }
+                `;
+
+                document.head.appendChild(style);
+                document.body.appendChild(modal);
+                return modal;
+            }
+
+            // Show timeout warning
+            function showTimeoutWarning() {
+                if (!timeoutWarningModal) {
+                    timeoutWarningModal = createWarningModal();
+                }
+
+                timeoutWarningModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                warningShown = true;
+
+                // Start countdown
+                startCountdown();
+            }
+
+            // Hide timeout warning
+            function hideTimeoutWarning() {
+                if (timeoutWarningModal) {
+                    timeoutWarningModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+
+            // Countdown timer
+            function startCountdown() {
+                let secondsLeft = WARNING_TIME / 1000;
+                const countdownElement = document.getElementById('timeout-countdown');
+
+                const countdownInterval = setInterval(() => {
+                    secondsLeft--;
+
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = secondsLeft % 60;
+                    countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                    if (secondsLeft <= 0 || !warningShown) {
+                        clearInterval(countdownInterval);
+                        if (secondsLeft <= 0) {
+                            window.location.href = '/logout';
+                        }
+                    }
+                }, 1000);
+            }
+
+            // Check for timeout periodically
+            function checkTimeout() {
+                const timeSinceActivity = Date.now() - lastActivityTime;
+
+                if (timeSinceActivity >= SESSION_TIMEOUT - WARNING_TIME && !warningShown) {
+                    showTimeoutWarning();
+                } else if (timeSinceActivity >= SESSION_TIMEOUT) {
+                    window.location.href = '/logout';
+                }
+            }
+
+            // Public API
+            window.sessionTimeout = {
+                stayLoggedIn: function() {
+                    resetActivityTimer();
+                    // Make a simple API call to refresh the session
+                    fetch('/health').catch(() => {});
+                },
+                logoutNow: function() {
+                    window.location.href = '/logout';
+                }
+            };
+
+            // Listen for user activity
+            const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+            activityEvents.forEach(event => {
+                document.addEventListener(event, resetActivityTimer, { passive: true });
+            });
+
+            // Check timeout every 30 seconds
+            setInterval(checkTimeout, 30000);
+
+            // Initial check
+            checkTimeout();
+            {% endif %}
         })();
     </script>
 </body>
