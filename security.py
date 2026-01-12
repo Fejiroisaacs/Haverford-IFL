@@ -53,11 +53,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - adjust based on your needs
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com",
-            "style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com",
+            "script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net fonts.googleapis.com",
             "img-src 'self' data: https:",
-            "font-src 'self' cdnjs.cloudflare.com",
-            "connect-src 'self'",
+            "font-src 'self' cdnjs.cloudflare.com fonts.gstatic.com data:",
+            "connect-src 'self' cdn.jsdelivr.net",
             "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
             "frame-ancestors 'none'",
             "base-uri 'self'",

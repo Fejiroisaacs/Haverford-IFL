@@ -8,6 +8,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+<!-- Choices.js for searchable dropdowns -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/choices.js/10.2.0/choices.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/choices.js/10.2.0/choices.min.js"></script>
+
 
 <div class="statistics-container" id="top">
     <h1><i class="fas fa-chart-bar"></i> Statistics Dashboard</h1>
@@ -30,7 +34,8 @@
     <div class="quick-nav" id="quick-nav">
         <a href="#leaderboards" class="nav-link"><i class="fas fa-trophy"></i> Leaderboards</a>
         <a href="#team-comparison" class="nav-link"><i class="fas fa-balance-scale"></i> Team Comparison</a>
-        <a href="#trends" class="nav-link"><i class="fas fa-chart-line"></i> Season Trends</a>
+        <a href="#player-compare" class="nav-link"><i class="fas fa-user-friends"></i> Player Comparison</a>
+        <a href="#season-compare" class="nav-link"><i class="fas fa-calendar-alt"></i> Season Comparison</a>
         <a href="#distributions" class="nav-link"><i class="fas fa-chart-pie"></i> Distributions</a>
         <a href="#top" class="nav-link"><i class="fas fa-arrow-up"></i> Top</a>
     </div>
@@ -192,29 +197,93 @@
         </div>
     </div>
 
-    <!-- Section 3: Season Trends -->
-    <div id="trends" class="section">
-        <h2><i class="fas fa-chart-line"></i> Season Trends</h2>
-        <p class="section-subtitle">Six seasons of Haverford IFL history</p>
+    <!-- Section 4: Player Comparison Tool -->
+    <div id="player-compare" class="section">
+        <h2><i class="fas fa-user-friends"></i> Player vs Player Comparison</h2>
+        <p class="section-subtitle">Compare two players' career statistics</p>
 
-        <div class="chart-container">
-            <h3>Total Goals by Season</h3>
-            <canvas id="goalsTrendChart"></canvas>
+        <div class="comparison-selector">
+            <div class="player-select-group">
+                <label for="player1Select">Player 1</label>
+                <select id="player1Select" class="player-select">
+                    <option value="">Select Player...</option>
+                    {% for player_name in all_players %}
+                    <option value="{{player_name}}" class="player-select-name">{{player_name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="vs-divider">VS</div>
+
+            <div class="player-select-group">
+                <label for="player2Select">Player 2</label>
+                <select id="player2Select" class="player-select">
+                    <option value="">Select Player...</option>
+                    {% for player_name in all_players %}
+                    <option value="{{player_name}}" class="player-select-name">{{player_name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button onclick="comparePlayer()" class="btn-compare">
+                <i class="fas fa-chart-bar"></i> Compare
+            </button>
         </div>
 
-        <div class="charts-row">
-            <div class="chart-container half">
-                <h3>Average Goals per Match</h3>
-                <canvas id="avgGoalsTrendChart"></canvas>
-            </div>
-            <div class="chart-container half">
-                <h3>Number of Teams by Season</h3>
-                <canvas id="teamsTrendChart"></canvas>
+        <div id="comparisonResult" class="comparison-result" style="display: none;">
+            <div class="chart-container">
+                <h3>Career Statistics Comparison</h3>
+                <canvas id="playerComparisonChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Section 4: Rating Distribution -->
+    <!-- Section 5: Season Comparison -->
+    <div id="season-compare" class="section">
+        <h2><i class="fas fa-calendar-alt"></i> Season-by-Season Comparison</h2>
+        <p class="section-subtitle">Compare statistics across all seasons</p>
+
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Goals Across Seasons</h3>
+                <canvas id="seasonGoalsCompareChart"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Teams Per Season</h3>
+                <canvas id="seasonTeamsCompareChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>Complete Season Statistics</h3>
+            <table class="tbl-content">
+                <thead>
+                    <tr>
+                        <th>Season</th>
+                        <th>Champion</th>
+                        <th>Matches</th>
+                        <th>Total Goals</th>
+                        <th>Avg Goals/Match</th>
+                        <th>Teams</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for season in season_comparison %}
+                    <tr>
+                        <td><strong>Season {{season.season}}</strong></td>
+                        <td>{{season.champion}}</td>
+                        <td>{{season.matches}}</td>
+                        <td>{{season.total_goals}}</td>
+                        <td>{{season.avg_goals}}</td>
+                        <td>{{season.teams}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 6: Rating Distribution -->
     <div id="distributions" class="section">
         <h2><i class="fas fa-chart-pie"></i> Rating Distributions</h2>
         <p class="section-subtitle">Overall rating breakdowns</p>
@@ -633,6 +702,31 @@ function showLeaderTab(tabId) {
 
 // Initialize Charts
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize searchable player dropdowns with Choices.js
+    const player1Select = new Choices('#player1Select', {
+        searchEnabled: true,
+        searchPlaceholderValue: 'Search for a player...',
+        itemSelectText: '',
+        noResultsText: 'No players found',
+        shouldSort: true,
+        searchResultLimit: 100,
+        position: 'bottom'
+    });
+
+    const player2Select = new Choices('#player2Select', {
+        searchEnabled: true,
+        searchPlaceholderValue: 'Search for a player...',
+        itemSelectText: '',
+        noResultsText: 'No players found',
+        shouldSort: true,
+        searchResultLimit: 100,
+        position: 'bottom'
+    });
+
+    // Make select instances globally accessible for the comparison function
+    window.player1Select = player1Select;
+    window.player2Select = player2Select;
+
     // Sticky quick-nav observer
     const quickNav = document.querySelector('.quick-nav');
     if (quickNav) {
@@ -650,12 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const teamData = {{ team_comparison|tojson|safe }};
-    const trendData = {{ season_trends|tojson|safe }};
     const ratingDist = {{ rating_distribution|tojson|safe }};
-
-    console.log('Team Data:', teamData);
-    console.log('Trend Data:', trendData);
-    console.log('Rating Distribution:', ratingDist);
 
     // Win Percentage Chart
     if (teamData && teamData.length > 0) {
@@ -756,81 +845,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('No team data available - teamData:', teamData);
     }
 
-    // Season Trends Charts
-    if (trendData && trendData.length > 0) {
-        console.log('Creating Trend Charts with', trendData.length, 'seasons');
-        // Total Goals Trend
-        new Chart(document.getElementById('goalsTrendChart'), {
-            type: 'line',
-            data: {
-                labels: trendData.map(s => 'Season ' + s.season),
-                datasets: [{
-                    label: 'Total Goals',
-                    data: trendData.map(s => s.total_goals),
-                    borderColor: '#670000',
-                    backgroundColor: 'rgba(103, 0, 0, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Avg Goals per Match
-        new Chart(document.getElementById('avgGoalsTrendChart'), {
-            type: 'line',
-            data: {
-                labels: trendData.map(s => 'S' + s.season),
-                datasets: [{
-                    label: 'Avg Goals/Match',
-                    data: trendData.map(s => s.avg_goals),
-                    borderColor: '#FFA500',
-                    backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Teams Count
-        new Chart(document.getElementById('teamsTrendChart'), {
-            type: 'line',
-            data: {
-                labels: trendData.map(s => 'S' + s.season),
-                datasets: [{
-                    label: 'Teams',
-                    data: trendData.map(s => s.teams_count),
-                    borderColor: '#4CAF50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    } else {
-        console.warn('No trend data available - trendData:', trendData);
-    }
-
     // Rating Distributions
     if (ratingDist) {
         console.log('Creating Rating Distribution Charts');
@@ -882,7 +896,387 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.warn('No rating distribution data available - ratingDist:', ratingDist);
     }
+
+
+    // Season Comparison Charts
+    const seasonCompData = {{ season_comparison|tojson|safe }};
+    if (seasonCompData && seasonCompData.length > 0) {
+        // Goals comparison
+        new Chart(document.getElementById('seasonGoalsCompareChart'), {
+            type: 'bar',
+            data: {
+                labels: seasonCompData.map(s => 'Season ' + s.season),
+                datasets: [{
+                    label: 'Total Goals',
+                    data: seasonCompData.map(s => s.total_goals),
+                    backgroundColor: 'rgba(103, 0, 0, 0.8)',
+                    borderColor: '#670000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Teams comparison
+        new Chart(document.getElementById('seasonTeamsCompareChart'), {
+            type: 'line',
+            data: {
+                labels: seasonCompData.map(s => 'Season ' + s.season),
+                datasets: [{
+                    label: 'Number of Teams',
+                    data: seasonCompData.map(s => s.teams),
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
 });
+
+// Player Comparison Function
+let comparisonChart = null;
+
+async function comparePlayer() {
+    // Get values from Choices.js instances
+    const player1 = window.player1Select ? window.player1Select.getValue(true) : document.getElementById('player1Select').value;
+    const player2 = window.player2Select ? window.player2Select.getValue(true) : document.getElementById('player2Select').value;
+
+    if (!player1 || !player2) {
+        alert('Please select both players to compare');
+        return;
+    }
+
+    if (player1 === player2) {
+        alert('Please select two different players');
+        return;
+    }
+
+    try {
+        // Show loading
+        const resultDiv = document.getElementById('comparisonResult');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p class="loading-text">Loading comparison...</p></div>';
+
+        // Fetch comparison data (you'll need to create this endpoint)
+        const response = await fetch(`/api/compare-players?player1=${encodeURIComponent(player1)}&player2=${encodeURIComponent(player2)}`);
+        const data = await response.json();
+
+        if (!data || data.error) {
+            throw new Error(data.error || 'Failed to load comparison data');
+        }
+
+        // Restore the canvas
+        resultDiv.innerHTML = `
+            <div class="chart-container">
+                <h3>Career Statistics Comparison</h3>
+                <div class="comparison-summary">
+                    <div class="player-summary">
+                        <h4>${data.player1.name}</h4>
+                        <p class="team-name">${data.player1.team}</p>
+                        <p class="rating-badge">Rating: ${data.player1.rating}</p>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="player-summary">
+                        <h4>${data.player2.name}</h4>
+                        <p class="team-name">${data.player2.team}</p>
+                        <p class="rating-badge">Rating: ${data.player2.rating}</p>
+                    </div>
+                </div>
+                <canvas id="playerComparisonChart"></canvas>
+            </div>
+        `;
+
+        // Destroy old chart if exists
+        if (comparisonChart) {
+            comparisonChart.destroy();
+        }
+
+        // Create comparison chart
+        const ctx = document.getElementById('playerComparisonChart');
+        comparisonChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Goals', 'Assists', 'Saves', 'POTM Awards', 'Matches Played'],
+                datasets: [
+                    {
+                        label: data.player1.name,
+                        data: [
+                            data.player1.goals,
+                            data.player1.assists,
+                            data.player1.saves,
+                            data.player1.potm,
+                            data.player1.matches
+                        ],
+                        backgroundColor: 'rgba(103, 0, 0, 0.2)',
+                        borderColor: '#670000',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#670000'
+                    },
+                    {
+                        label: data.player2.name,
+                        data: [
+                            data.player2.goals,
+                            data.player2.assists,
+                            data.player2.saves,
+                            data.player2.potm,
+                            data.player2.matches
+                        ],
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: '#4CAF50',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4CAF50'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error comparing players:', error);
+        document.getElementById('comparisonResult').innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading comparison data. Please try again.</p>
+            </div>
+        `;
+    }
+}
 </script>
+
+<style>
+/* Choices.js Custom Styling */
+.choices {
+    margin-bottom: 0;
+}
+
+.choices__inner {
+    border: 2px solid #ddd !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 1rem !important;
+    background: white !important;
+    min-height: 45px !important;
+}
+
+.choices__inner:focus,
+.choices.is-focused .choices__inner {
+    border-color: #670000 !important;
+    box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.1) !important;
+}
+
+.choices__list--dropdown {
+    border: 2px solid #670000 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    max-height: 300px !important;
+}
+
+.choices__list--dropdown .choices__item {
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background-color: rgba(103, 0, 0, 0.1) !important;
+    color: #670000 !important;
+}
+
+.choices__input {
+    font-size: 1rem !important;
+    padding: 0.25rem 0 !important;
+}
+
+.choices__placeholder {
+    opacity: 0.6 !important;
+}
+
+/* Player Comparison Styles */
+.comparison-selector {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    background: #f9f9f9;
+    padding: 2rem;
+    border-radius: 10px;
+}
+
+.player-select-name {
+    font-weight: 500;
+    text-align: center;
+}
+
+.player-select-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.player-select-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.player-select {
+    max-width: 100%;
+    /* Tom Select will handle the styling */
+}
+
+.vs-divider {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #670000;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.btn-compare {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(103, 0, 0, 0.3);
+}
+
+.btn-compare:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(103, 0, 0, 0.4);
+}
+
+.comparison-result {
+    margin-top: 2rem;
+}
+
+.comparison-summary {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.player-summary {
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.player-summary h4 {
+    color: #670000;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.team-name {
+    color: #666;
+    margin: 0.25rem 0;
+}
+
+.rating-badge {
+    display: inline-block;
+    background: #670000;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.vs-badge {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #670000;
+    background: #f0f0f0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    color: #dc2626;
+}
+
+.error-message i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .comparison-selector {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+    }
+
+    .vs-divider {
+        justify-content: center;
+    }
+
+    .btn-compare {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .comparison-summary {
+        flex-direction: column;
+    }
+
+    /* Choices.js Mobile Adjustments */
+    .choices__list--dropdown {
+        max-height: 250px !important;
+    }
+
+    .choices__inner {
+        font-size: 0.9rem !important;
+    }
+}
+</style>
 
 {% endblock %}

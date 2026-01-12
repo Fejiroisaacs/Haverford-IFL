@@ -154,42 +154,6 @@ def get_team_performance_comparison(season='6'):
         print(f"Error in get_team_performance_comparison: {e}")
         return []
 
-def get_season_trends():
-    """Season-over-season evolution: goals, matches, teams"""
-    try:
-        matches_df = data_cache.get('match_results', load_match_results)
-
-        trends = []
-        for season in range(1, 7):
-            season_matches = matches_df[matches_df['Season'] == season]
-
-            if season_matches.empty:
-                continue
-
-            # Calculate total goals
-            team1_goals = season_matches['Score Team 1'].apply(parse_score).sum()
-            team2_goals = season_matches['Score Team 2'].apply(parse_score).sum()
-            total_goals = int(team1_goals + team2_goals)
-            matches_count = len(season_matches)
-            avg_goals = round(total_goals / matches_count, 2) if matches_count > 0 else 0
-
-            # Count unique teams
-            teams_1 = set(season_matches['Team 1'].unique())
-            teams_2 = set(season_matches['Team 2'].unique())
-            unique_teams = len(teams_1.union(teams_2))
-
-            trends.append({
-                'season': season,
-                'total_goals': int(total_goals),
-                'matches': matches_count,
-                'avg_goals': avg_goals,
-                'teams_count': unique_teams
-            })
-
-        return trends
-    except Exception as e:
-        print(f"Error in get_season_trends: {e}")
-        return []
 
 def get_rating_distribution():
     """Player/team rating histograms"""
@@ -230,6 +194,109 @@ def get_rating_distribution():
     except Exception as e:
         print(f"Error in get_rating_distribution: {e}")
         return {'player_ratings': [], 'team_ratings': []}
+
+def get_player_comparison_data(player1_name, player2_name):
+    """Get comparison data for two players"""
+    try:
+        stats_df = data_cache.get('player_stats', load_player_stats)
+        ratings_df = data_cache.get('player_ratings', load_player_ratings)
+
+        # Get career stats for both players
+        player1_career = stats_df[(stats_df['Name'] == player1_name) & (stats_df['Season'] == 'Total')]
+        player2_career = stats_df[(stats_df['Name'] == player2_name) & (stats_df['Season'] == 'Total')]
+
+        if player1_career.empty or player2_career.empty:
+            return None
+
+        player1 = player1_career.iloc[0]
+        player2 = player2_career.iloc[0]
+
+        # Get ratings
+        player1_rating = ratings_df[ratings_df['Name'] == player1_name]
+        player2_rating = ratings_df[ratings_df['Name'] == player2_name]
+
+        player1_ovr = player1_rating.iloc[0]['OVR Rating'] if not player1_rating.empty else 0
+        player2_ovr = player2_rating.iloc[0]['OVR Rating'] if not player2_rating.empty else 0
+
+        # Get season-by-season stats
+        player1_seasons = stats_df[(stats_df['Name'] == player1_name) & (stats_df['Season'] != 'Total')]
+        player2_seasons = stats_df[(stats_df['Name'] == player2_name) & (stats_df['Season'] != 'Total')]
+
+        return {
+            'player1': {
+                'name': player1_name,
+                'team': player1['Team'],
+                'rating': int(player1_ovr) if isinstance(player1_ovr, (int, float)) else 0,
+                'goals': int(player1['Goals']),
+                'assists': int(player1['Assists']),
+                'saves': int(player1['Saves']),
+                'potm': int(player1['POTM']),
+                'matches': int(player1['MP']),
+                'seasons': player1_seasons[['Season', 'Goals', 'Assists', 'Saves']].to_dict('records')
+            },
+            'player2': {
+                'name': player2_name,
+                'team': player2['Team'],
+                'rating': int(player2_ovr) if isinstance(player2_ovr, (int, float)) else 0,
+                'goals': int(player2['Goals']),
+                'assists': int(player2['Assists']),
+                'saves': int(player2['Saves']),
+                'potm': int(player2['POTM']),
+                'matches': int(player2['MP']),
+                'seasons': player2_seasons[['Season', 'Goals', 'Assists', 'Saves']].to_dict('records')
+            }
+        }
+    except Exception as e:
+        print(f"Error in get_player_comparison_data: {e}")
+        return None
+
+def get_season_comparison_data(seasons):
+    """Get comparison data across multiple seasons"""
+    try:
+        matches_df = data_cache.get('match_results', load_match_results)
+        standings_df = data_cache.get('team_standings', load_team_standings)
+
+        comparison_data = []
+
+        for season in seasons:
+            season_matches = matches_df[matches_df['Season'] == season]
+            season_standings = standings_df[standings_df['Season'] == season]
+
+            if season_matches.empty:
+                continue
+
+            # Calculate stats
+            team1_goals = season_matches['Score Team 1'].apply(parse_score).sum()
+            team2_goals = season_matches['Score Team 2'].apply(parse_score).sum()
+            total_goals = int(team1_goals + team2_goals)
+            matches_count = len(season_matches)
+            avg_goals = round(total_goals / matches_count, 2) if matches_count > 0 else 0
+
+            # Count unique teams
+            teams_1 = set(season_matches['Team 1'].unique())
+            teams_2 = set(season_matches['Team 2'].unique())
+            unique_teams = len(teams_1.union(teams_2))
+
+            # Get champion (team with most points)
+            if not season_standings.empty:
+                champion = season_standings.nlargest(1, 'PTS').iloc[0]['Team']
+            else:
+                champion = 'N/A'
+
+            comparison_data.append({
+                'season': season,
+                'total_goals': total_goals,
+                'avg_goals': avg_goals,
+                'matches': matches_count,
+                'teams': unique_teams,
+                'champion': champion
+            })
+
+        return comparison_data
+    except Exception as e:
+        print(f"Error in get_season_comparison_data: {e}")
+        return []
+
 
 def get_hall_of_fame_members():
     """
@@ -618,8 +685,12 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
         all_time_leaders = get_all_time_leaders()
         current_leaders = get_current_season_leaders(str(season))
         team_comparison = get_team_performance_comparison(str(season))
-        season_trends = get_season_trends()
         rating_dist = get_rating_distribution()
+        season_comparison = get_season_comparison_data(list(range(1, 7)))
+
+        # Get all players for comparison dropdown
+        stats_df = data_cache.get('player_stats', load_player_stats)
+        all_players = stats_df[stats_df['Season'] == 'Total']['Name'].sort_values().unique().tolist()
 
         return templates.TemplateResponse("statistics.html", {
             "request": request,
@@ -629,8 +700,9 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
             "all_time_leaders": all_time_leaders,
             "current_leaders": current_leaders,
             "team_comparison": team_comparison,
-            "season_trends": season_trends,
-            "rating_distribution": rating_dist
+            "rating_distribution": rating_dist,
+            "season_comparison": season_comparison,
+            "all_players": all_players
         })
     except Exception as e:
         print(f"Error in statistics_page: {e}")
@@ -644,8 +716,9 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
             "all_time_leaders": {'goals': [], 'assists': [], 'saves': [], 'potm': []},
             "current_leaders": {'goals': [], 'assists': [], 'saves': [], 'potm': []},
             "team_comparison": [],
-            "season_trends": [],
-            "rating_distribution": {'player_ratings': [], 'team_ratings': []}
+            "rating_distribution": {'player_ratings': [], 'team_ratings': []},
+            "season_comparison": [],
+            "all_players": []
         })
 
 @router.get("/hall-of-fame", response_class=HTMLResponse)
@@ -685,6 +758,18 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
             "total_inductees": 0,
             "total_awards": 0
         })
+
+@router.get("/api/compare-players")
+async def compare_players_api(player1: str, player2: str):
+    """API endpoint for player comparison"""
+    try:
+        comparison_data = get_player_comparison_data(player1, player2)
+        if comparison_data:
+            return comparison_data
+        return {"error": "One or both players not found"}
+    except Exception as e:
+        print(f"Error in compare_players_api: {e}")
+        return {"error": str(e)}
 
 @router.get("/archives", response_class=HTMLResponse)
 async def archives_page(request: Request, user = Depends(get_current_user)):
