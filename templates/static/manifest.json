@@ -1,0 +1,64 @@
+{
+  "name": "Haverford Intramural Futsal League",
+  "short_name": "Haverford IFL",
+  "description": "Official website for Haverford College Intramural Futsal League - matches, standings, statistics, and more",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#670000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/Images/Logo/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/Images/Logo/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "View Matches",
+      "short_name": "Matches",
+      "description": "View match schedule and results",
+      "url": "/matches",
+      "icons": [
+        {
+          "src": "/static/Images/Logo/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Teams",
+      "short_name": "Teams",
+      "description": "Browse all teams",
+      "url": "/teams",
+      "icons": [
+        {
+          "src": "/static/Images/Logo/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "short_name": "Stats",
+      "description": "View league statistics",
+      "url": "/statistics",
+      "icons": [
+        {
+          "src": "/static/Images/Logo/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

@@ -19,7 +19,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from middleware import RequestLoggingMiddleware
-from security import SecurityHeadersMiddleware, RateLimitMiddleware
+from security import SecurityHeadersMiddleware, RateLimitMiddleware#, CSRFProtectionMiddleware
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
@@ -115,6 +115,10 @@ app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
+# Register CSRF helpers for template usage
+# from csrf_helpers import register_csrf_helpers
+# register_csrf_helpers(templates)
+
 # DEVELOPMENT TOGGLE FOR GALLERY
 IS_DEV = os.getenv("DEV", False) == "true"
 
@@ -146,8 +150,11 @@ async def add_cache_headers(request: Request, call_next):
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(RateLimitMiddleware)
+# app.add_middleware(CSRFProtectionMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(SessionMiddleware, secret_key=secret_key, same_site='lax', https_only=True)
+# SessionMiddleware: https_only should be False for localhost development
+is_production = not IS_DEV
+app.add_middleware(SessionMiddleware, secret_key=secret_key, same_site='lax', https_only=is_production)
 
 app.include_router(matches.router, dependencies=[Depends(lambda: db)])
 app.include_router(signup.router, dependencies=[Depends(lambda: db), Depends(lambda: auth)])
@@ -350,7 +357,7 @@ async def validation_exception_handler(request, exc):
     try:
         if exc.status_code == 404:
             return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
-    except Exception as e:
+    except Exception:
         return templates.TemplateResponse("error.html", {"request": request})
 
 @app.exception_handler(HTTPException) 
@@ -465,34 +472,126 @@ async def get_pdf():
 
 @app.get("/robots.txt", include_in_schema=False)
 async def robots_txt():
-    content = """User-agent: *
-    Allow: /
-    Sitemap: https://quickest-doralyn-haverford-167803e3.koyeb.app/sitemap.xml
-    """
+    """Generate robots.txt with comprehensive SEO directives"""
+    base_url = os.getenv("BASE_URL", "https://quickest-doralyn-haverford-167803e3.koyeb.app")
+
+    content = f"""# Haverford Intramural Futsal League - Robots.txt
+# Website: {base_url}
+
+# Allow all crawlers to access public content
+User-agent: *
+Allow: /
+Allow: /matches
+Allow: /teams
+Allow: /players
+Allow: /statistics
+Allow: /gallery
+Allow: /hall-of-fame
+Allow: /archives
+Allow: /contact
+
+# Disallow admin and user-specific pages
+Disallow: /admin
+Disallow: /settings
+Disallow: /logout
+Disallow: /api/
+
+# Disallow certain query parameters that don't change content
+Disallow: /*?session=
+Disallow: /*?utm_
+
+# Crawl delay to be respectful (in seconds)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: {base_url}/sitemap.xml
+
+# Google-specific directives
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing-specific directives
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots and scrapers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+"""
     return Response(content=content, media_type="text/plain")
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap():
-    # URLs with priority based on page importance
-    urls = [
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/", "1.0"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/matches", "0.9"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/teams", "0.9"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/players", "0.9"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/statistics", "0.8"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/gallery", "0.8"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/hall-of-fame", "0.7"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/archives", "0.7"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/contact", "0.7"),
-        ("https://quickest-doralyn-haverford-167803e3.koyeb.app/fantasy", "0.7")
+    """Generate dynamic sitemap with all pages, teams, players, and seasons"""
+    base_url = os.getenv("BASE_URL", "https://quickest-doralyn-haverford-167803e3.koyeb.app")
+
+    # Static pages with priority and change frequency
+    urls = []
+
+    # High priority pages
+    static_pages = [
+        ("/", "1.0", "daily"),
+        ("/matches", "0.9", "daily"),
+        ("/teams", "0.9", "weekly"),
+        ("/players", "0.9", "weekly"),
+        ("/statistics", "0.8", "weekly"),
+        ("/gallery", "0.7", "monthly"),
+        ("/hall-of-fame", "0.7", "monthly"),
+        ("/archives", "0.7", "monthly"),
+        ("/contact", "0.6", "yearly"),
+        ("/fantasy", "0.7", "weekly"),
+        ("/patch-notes", "0.5", "monthly"),
     ]
 
+    for path, priority, changefreq in static_pages:
+        urls.append((f"{base_url}{path}", priority, changefreq))
+
+    try:
+        data = get_cached_data()
+
+        # Add team pages (0.8 priority)
+        if not data['standings'].empty:
+            teams = data['standings']['Team'].unique()
+            for team in teams:
+                team_encoded = team.replace(' ', '%20')
+                urls.append((f"{base_url}/teams/{team_encoded}", "0.8", "weekly"))
+
+        # Add player pages (0.7 priority)
+        if not data['player_stats'].empty:
+            players = data['player_stats'][data['player_stats']['Season'] == '6']['Name'].unique()
+            for player in players[:100]:  # Limit to top 100 active players
+                player_encoded = player.replace(' ', '%20')
+                urls.append((f"{base_url}/players/{player_encoded}", "0.7", "weekly"))
+
+        # Add season-specific statistics pages (0.6 priority)
+        for season in range(1, 7):
+            urls.append((f"{base_url}/statistics?season={season}", "0.6", "monthly"))
+
+    except Exception as e:
+        print(f"Error generating dynamic sitemap entries: {e}")
+
+    # Build XML
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>\n"""
     xml_content += """<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n"""
 
-    for url, priority in urls:
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    for url, priority, changefreq in urls:
         xml_content += f"""    <url>
         <loc>{url}</loc>
+        <lastmod>{current_date}</lastmod>
+        <changefreq>{changefreq}</changefreq>
         <priority>{priority}</priority>
     </url>\n"""
 
