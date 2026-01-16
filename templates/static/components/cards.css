@@ -1,0 +1,459 @@
+/**
+ * Card Components - Haverford IFL
+ * Reusable card system for consistent UI
+ */
+
+/* ========== Base Card ========== */
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Card without hover effect */
+.card-static {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ========== Card Variants ========== */
+
+/* Glass Card - Frosted glass effect */
+.card-glass {
+  background: var(--glass-white);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo),
+              background 0.3s ease;
+}
+
+.card-glass:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  background: var(--glass-white-light);
+}
+
+/* Dark Glass Card */
+.card-glass-dark {
+  background: var(--glass-dark);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  color: var(--color-white);
+}
+
+/* Bordered Card */
+.card-bordered {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color 0.3s ease,
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-bordered:hover {
+  border-color: var(--color-maroon);
+  box-shadow: var(--shadow-maroon-sm);
+}
+
+/* Gradient Border Card */
+.card-gradient-border {
+  position: relative;
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  overflow: visible;
+}
+
+.card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--gradient-maroon);
+  border-radius: calc(var(--radius-xl) + 2px);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* ========== Stat Card ========== */
+.card-stat {
+  background: var(--gradient-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-maroon);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease-out-expo);
+}
+
+.card-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-stat:hover::before {
+  transform: scaleX(1);
+}
+
+.card-stat-value {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-maroon);
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.card-stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Stat Card with Glow */
+.card-stat-glow {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s ease;
+}
+
+.card-stat-glow:hover {
+  box-shadow: var(--shadow-glow-maroon);
+}
+
+/* ========== Player Card ========== */
+.card-player {
+  background: var(--gradient-card);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-player::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-maroon);
+}
+
+.card-player:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-player-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--color-gray-100);
+}
+
+.card-player-content {
+  padding: var(--space-4);
+}
+
+.card-player-name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-1);
+}
+
+.card-player-position {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+}
+
+.card-player-stats {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.card-player-stat {
+  text-align: center;
+}
+
+.card-player-stat-value {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-maroon);
+}
+
+.card-player-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+}
+
+/* ========== Match Card ========== */
+.card-match {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-match:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-match-header {
+  background: var(--gradient-maroon);
+  color: var(--color-white);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.card-match-content {
+  padding: var(--space-4);
+}
+
+.card-match-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.card-match-team {
+  text-align: center;
+  flex: 1;
+}
+
+.card-match-team-logo {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--space-2);
+  border-radius: var(--radius-circle);
+  object-fit: contain;
+}
+
+.card-match-team-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-gray-800);
+}
+
+.card-match-score {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-maroon);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-maroon-50);
+  border-radius: var(--radius-md);
+}
+
+.card-match-vs {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  font-weight: var(--font-medium);
+}
+
+/* ========== Team Card ========== */
+.card-team {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-team:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-team-banner {
+  height: 80px;
+  background: var(--gradient-maroon);
+  position: relative;
+}
+
+.card-team-logo {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-circle);
+  border: 3px solid var(--color-white);
+  background: var(--color-white);
+  object-fit: contain;
+  box-shadow: var(--shadow-md);
+}
+
+.card-team-content {
+  padding: var(--space-10) var(--space-4) var(--space-4);
+  text-align: center;
+}
+
+.card-team-name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-1);
+}
+
+.card-team-group {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+}
+
+/* ========== Feature Card ========== */
+.card-feature {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+  transition: transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+
+.card-feature:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-feature-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-maroon-50);
+  border-radius: var(--radius-lg);
+  color: var(--color-maroon);
+  font-size: var(--text-2xl);
+  transition: background 0.3s ease, transform 0.3s var(--ease-spring);
+}
+
+.card-feature:hover .card-feature-icon {
+  background: var(--gradient-maroon);
+  color: var(--color-white);
+  transform: scale(1.1);
+}
+
+.card-feature-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.card-feature-description {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+  line-height: var(--leading-relaxed);
+}
+
+/* ========== Card Grid Layouts ========== */
+.card-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.card-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ========== Card Sections ========== */
+.card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.card-body {
+  padding: var(--space-5);
+}
+
+.card-footer {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+}
+
+/* ========== Interactive States ========== */
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:active {
+  transform: translateY(-2px);
+}
+
+/* Card with link overlay */
+.card-link {
+  position: relative;
+}
+
+.card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.card-link a {
+  position: relative;
+  z-index: 2;
+}

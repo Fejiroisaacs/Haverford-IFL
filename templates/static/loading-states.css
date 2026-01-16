@@ -541,3 +541,351 @@
 .transition-all {
     transition: all 0.3s ease;
 }
+
+/* ===========================
+   ENHANCED LOADING STATES
+   =========================== */
+
+/* Dot Pulse Spinner */
+.spinner-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.spinner-dots span {
+    width: 10px;
+    height: 10px;
+    background: var(--color-maroon, #670000);
+    border-radius: 50%;
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.spinner-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.spinner-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+    0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Spinner with Label */
+.spinner-labeled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3, 0.75rem);
+}
+
+.spinner-labeled .spinner-label {
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-gray-600, #7F8C8D);
+    font-weight: var(--font-medium, 500);
+}
+
+/* Progress Bar with Glow */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-gray-200, #e9ecef);
+    border-radius: var(--radius-full, 9999px);
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--gradient-maroon, linear-gradient(135deg, #670000 0%, #a70000 100%));
+    border-radius: inherit;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-bar-glow .progress-bar-fill {
+    box-shadow: 0 0 10px rgba(103, 0, 0, 0.4);
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: progressShine 2s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Progress with Label */
+.progress-labeled {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+}
+
+.progress-labeled .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-gray-700, #414141);
+}
+
+.progress-labeled .progress-value {
+    font-weight: var(--font-semibold, 600);
+    color: var(--color-maroon, #670000);
+}
+
+/* Enhanced Skeleton Card v2 */
+.skeleton-card-v2 {
+    background: linear-gradient(180deg, #f5f5f5 0%, #fafafa 100%);
+    border-radius: var(--radius-xl, 16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.skeleton-card-v2 .skeleton-header {
+    height: 120px;
+    background: linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%);
+    position: relative;
+}
+
+.skeleton-card-v2 .skeleton-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--color-gray-300, #E1E8ED);
+}
+
+.skeleton-card-v2 .skeleton-body {
+    padding: var(--space-4, 1rem);
+}
+
+/* Skeleton Player Card v2 */
+.skeleton-player-v2 {
+    background: white;
+    border-radius: var(--radius-xl, 16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.skeleton-player-v2 .skeleton-avatar {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%);
+}
+
+.skeleton-player-v2 .skeleton-info {
+    padding: var(--space-4, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+}
+
+.skeleton-player-v2 .skeleton-name {
+    height: 1.25rem;
+    width: 70%;
+    border-radius: var(--radius-sm, 4px);
+}
+
+.skeleton-player-v2 .skeleton-team {
+    height: 1rem;
+    width: 50%;
+    border-radius: var(--radius-sm, 4px);
+}
+
+.skeleton-player-v2 .skeleton-stats-row {
+    display: flex;
+    gap: var(--space-4, 1rem);
+    margin-top: var(--space-3, 0.75rem);
+    padding-top: var(--space-3, 0.75rem);
+    border-top: 1px solid var(--color-gray-200, #e9ecef);
+}
+
+.skeleton-player-v2 .skeleton-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.skeleton-player-v2 .skeleton-stat-value {
+    height: 1.5rem;
+    width: 60%;
+    margin: 0 auto var(--space-1, 0.25rem);
+    border-radius: var(--radius-sm, 4px);
+}
+
+.skeleton-player-v2 .skeleton-stat-label {
+    height: 0.75rem;
+    width: 80%;
+    margin: 0 auto;
+    border-radius: var(--radius-sm, 4px);
+}
+
+/* Skeleton Match Card v2 */
+.skeleton-match-v2 {
+    background: white;
+    border-radius: var(--radius-xl, 16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.skeleton-match-v2 .skeleton-match-date {
+    height: 2.5rem;
+    background: linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%);
+}
+
+.skeleton-match-v2 .skeleton-match-body {
+    padding: var(--space-4, 1rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4, 1rem);
+}
+
+.skeleton-match-v2 .skeleton-team-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+}
+
+.skeleton-match-v2 .skeleton-team-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.skeleton-match-v2 .skeleton-team-name {
+    height: 1rem;
+    width: 80%;
+    border-radius: var(--radius-sm, 4px);
+}
+
+.skeleton-match-v2 .skeleton-score {
+    width: 80px;
+    height: 2.5rem;
+    border-radius: var(--radius-md, 8px);
+}
+
+/* Pulse Animation for Skeleton */
+.skeleton-pulse {
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Content Placeholder */
+.content-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12, 3rem) var(--space-4, 1rem);
+    text-align: center;
+}
+
+.content-placeholder-icon {
+    font-size: 3rem;
+    color: var(--color-gray-400, #ddd);
+    margin-bottom: var(--space-4, 1rem);
+}
+
+.content-placeholder-title {
+    font-size: var(--text-lg, 1.125rem);
+    font-weight: var(--font-semibold, 600);
+    color: var(--color-gray-700, #414141);
+    margin-bottom: var(--space-2, 0.5rem);
+}
+
+.content-placeholder-text {
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-gray-500, #bdbdbd);
+    max-width: 300px;
+}
+
+/* Error State */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8, 2rem);
+    text-align: center;
+    background: var(--color-error-bg, #f8d7da);
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--color-error, #dc3545);
+}
+
+.error-state-icon {
+    font-size: 2.5rem;
+    color: var(--color-error, #dc3545);
+    margin-bottom: var(--space-3, 0.75rem);
+}
+
+.error-state-title {
+    font-size: var(--text-lg, 1.125rem);
+    font-weight: var(--font-semibold, 600);
+    color: var(--color-error-dark, #721c24);
+    margin-bottom: var(--space-2, 0.5rem);
+}
+
+.error-state-text {
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-error-dark, #721c24);
+}
+
+/* Success State */
+.success-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8, 2rem);
+    text-align: center;
+    background: var(--color-success-bg, #d4edda);
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--color-success, #28a745);
+}
+
+.success-state-icon {
+    font-size: 2.5rem;
+    color: var(--color-success, #28a745);
+    margin-bottom: var(--space-3, 0.75rem);
+}
+
+.success-state-title {
+    font-size: var(--text-lg, 1.125rem);
+    font-weight: var(--font-semibold, 600);
+    color: var(--color-success-dark, #155724);
+}

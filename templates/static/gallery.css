@@ -387,8 +387,9 @@
     font-size: var(--text-xs);
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
+    background: var(--glass-white-light, rgba(255, 255, 255, 0.6));
+    backdrop-filter: var(--blur-sm, blur(4px));
+    -webkit-backdrop-filter: var(--blur-sm, blur(4px));
 }
 
 .image-tags {
@@ -623,12 +624,15 @@
    =========================== */
 
 .lightbox-info {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--glass-white, rgba(255, 255, 255, 0.85));
+    backdrop-filter: var(--blur-lg, blur(16px));
+    -webkit-backdrop-filter: var(--blur-lg, blur(16px));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
     padding: var(--space-4);
     border-radius: var(--radius-lg);
     max-width: 800px;
     overflow-y: auto;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06));
 }
 
 .lightbox-header {
@@ -732,8 +736,9 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: var(--glass-dark-light, rgba(0, 0, 0, 0.5));
+    backdrop-filter: var(--blur-sm, blur(4px));
+    -webkit-backdrop-filter: var(--blur-sm, blur(4px));
     color: var(--color-white);
     border: none;
     font-size: 2rem;

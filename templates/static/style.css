@@ -129,50 +129,91 @@ body {
   z-index: 1000;
   top: 0;
   left: 0;
-  background-color: #000;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
   overflow-x: hidden;
-  transition: 0.5s;
+  transition: width 0.4s var(--ease-out-expo, cubic-bezier(0.19, 1, 0.22, 1));
   padding-top: 60px;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
 }
 
 .sidenav a {
-  padding: 8px 8px 8px 32px;
+  padding: 14px 24px 14px 24px;
   text-decoration: none;
-  font-size: 20px;
+  font-size: 17px;
   color: #fff;
-  display: block;
-  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  border-left: 3px solid transparent;
+  transition: all 0.25s var(--ease-out-expo, cubic-bezier(0.19, 1, 0.22, 1));
 }
 
-.sidenav a:hover {
-  
-  background: -webkit-linear-gradient(left, #670000, #000000);
-  background: linear-gradient(to right, #670000, #000000);
+.sidenav a:hover,
+.sidenav a.active {
+  background: rgba(103, 0, 0, 0.4);
+  border-left-color: var(--color-maroon, #670000);
+  padding-left: 28px;
+}
+
+.sidenav a:active {
+  background: rgba(103, 0, 0, 0.6);
+}
+
+/* Sidenav Overlay Backdrop */
+.sidenav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidenav-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sidenav .closebtn,
 .sidenav .closebtnMobile {
   position: absolute;
-  top: 0;
-  right: 25px;
-  font-size: 36px;
-  margin-left: 50px;
-  background: none;
+  top: 8px;
+  right: 16px;
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
+  border-radius: 8px;
   color: #fff;
   cursor: pointer;
-  padding: 8px 16px;
-  transition: all 0.3s;
+  transition: all 0.25s var(--ease-out-expo, cubic-bezier(0.19, 1, 0.22, 1));
 }
 
 .sidenav .closebtn:hover,
 .sidenav .closebtnMobile:hover {
-  color: #ccc;
+  background: rgba(103, 0, 0, 0.6);
+  transform: scale(1.05);
+}
+
+.sidenav .closebtn:active,
+.sidenav .closebtnMobile:active {
+  transform: scale(0.95);
 }
 
 .sidenav .closebtn:focus,
 .sidenav .closebtnMobile:focus {
-  outline: 2px solid #ffcc00;
+  outline: 2px solid var(--color-gold, #D4AF37);
   outline-offset: 2px;
 }
 

@@ -557,17 +557,17 @@
 .modal-section {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.3s ease;
+  background: var(--gradient-card, linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%));
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08));
+  transition: transform 0.3s var(--ease-out-expo, cubic-bezier(0.19, 1, 0.22, 1)), box-shadow 0.3s ease;
   will-change: transform;
   transform: translateZ(0);
 }
 
 .modal-section:hover {
-  transform: translateY(-2px) translateZ(0);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.12));
 }
 
 .modal-section h2 {

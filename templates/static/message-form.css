@@ -1,19 +1,20 @@
-/* From Uiverse.io by gharsh11032000 */ 
+/* From Uiverse.io by gharsh11032000 */
 .form-container {
   width: 80vw;
   max-width: 400px;
-  background: linear-gradient(#212121, #212121) padding-box,
-              linear-gradient(145deg, transparent 35%, #670000, #370000) border-box;
+  background: linear-gradient(var(--color-gray-900, #212121), var(--color-gray-900, #212121)) padding-box,
+              linear-gradient(145deg, transparent 35%, var(--color-maroon, #670000), var(--color-maroon-800, #3d0000)) border-box;
   border: 2px solid transparent;
   padding: 32px 24px;
-  font-size: 14px;
+  font-size: var(--text-sm, 14px);
   font-family: inherit;
   color: white;
   display: flex;
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
-  border-radius: 16px;
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: var(--shadow-xl, 0 12px 24px rgba(0, 0, 0, 0.2));
 }
 
 .form-container button:active {
@@ -68,36 +69,41 @@
 
 .form-container .form-group input:focus {
   outline: none;
-  border-color: #670000;
+  border-color: var(--color-maroon, #670000);
+  box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.2);
 }
 
 .form-container .form-group textarea:focus {
   outline: none;
-  border-color: #670000;
+  border-color: var(--color-maroon, #670000);
+  box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.2);
 }
 
 .form-container .form-submit-btn {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   align-self: flex-start;
   font-family: inherit;
   color: whitesmoke;
-  font-weight: 600;
+  font-weight: var(--font-semibold, 600);
   width: 40%;
-  background: #313131;
-  border: 1px solid #414141;
+  background: var(--color-gray-800, #313131);
+  border: 1px solid var(--color-gray-700, #414141);
   padding: 12px 16px;
   font-size: inherit;
   gap: 8px;
   margin-top: 8px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--radius-md, 8px);
+  transition: all 0.3s var(--ease-out-expo, cubic-bezier(0.19, 1, 0.22, 1));
 }
 
 .form-container .form-submit-btn:hover {
-  background-color: #670000;
-  border-color: #fff;
+  background: var(--gradient-maroon, linear-gradient(135deg, #670000 0%, #a70000 100%));
+  border-color: var(--color-white, #fff);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-maroon-md, 0 4px 16px rgba(103, 0, 0, 0.15));
 }
 
 .btn {

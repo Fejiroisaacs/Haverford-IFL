@@ -155,10 +155,11 @@
 }
 
 .hero-video-content {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: var(--glass-white-light, rgba(255, 255, 255, 0.6));
+    backdrop-filter: var(--blur-lg, blur(16px));
+    -webkit-backdrop-filter: var(--blur-lg, blur(16px));
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
 }
 
 .hero-video-content h1,
