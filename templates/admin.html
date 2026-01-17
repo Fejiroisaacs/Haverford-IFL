@@ -37,6 +37,131 @@
 .alert {
     margin-top: 16px;
 }
+/* Verification Panel Styles */
+.verification-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e9ecef;
+}
+.verification-section h3 {
+    color: #2c3e50;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.verification-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+.verification-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.verification-card .player-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #670000;
+}
+.verification-card .user-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 8px 0;
+}
+.verification-card .request-time {
+    color: #adb5bd;
+    font-size: 0.8rem;
+}
+.verification-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+.verification-actions form {
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+}
+.btn-approve {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.btn-approve:hover {
+    background: #218838;
+}
+.btn-deny {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.btn-deny:hover {
+    background: #c82333;
+}
+.no-requests {
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+/* Dark mode support */
+[data-theme="dark"] .admin-panel-container {
+    background: var(--color-gray-800, #313131);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .admin-panel-container h2,
+[data-theme="dark"] .admin-panel-container h3 {
+    color: var(--color-gray-100, #f3f3f3);
+}
+[data-theme="dark"] .admin-panel-container form {
+    background: var(--color-gray-700, #414141);
+}
+[data-theme="dark"] .admin-panel-container label {
+    color: var(--color-gray-200, #e9ecef);
+}
+[data-theme="dark"] .admin-panel-container input {
+    background: var(--color-gray-800, #313131);
+    border-color: var(--color-gray-600, #7F8C8D);
+    color: var(--color-gray-100, #f3f3f3);
+}
+[data-theme="dark"] .verification-section {
+    border-top-color: var(--color-gray-600, #7F8C8D);
+}
+[data-theme="dark"] .verification-card {
+    background: var(--color-gray-700, #414141);
+    border-color: var(--color-gray-600, #7F8C8D);
+}
+[data-theme="dark"] .verification-card .player-name {
+    color: #ff6b6b;
+}
+[data-theme="dark"] .verification-card .user-info {
+    color: var(--color-gray-300, #E1E8ED);
+}
+[data-theme="dark"] .no-requests {
+    background: var(--color-gray-700, #414141);
+    color: var(--color-gray-400, #ddd);
+}
 </style>
 <div class="admin-panel-container">
     <h2>Admin Panel</h2>
@@ -59,6 +184,50 @@
         </div>
         <button type="submit" class="btn btn-success">Update All Users' Teams for This Week</button>
     </form>
+
+    <!-- Player Verification Requests Section -->
+    <div class="verification-section">
+        <h3>
+            Player Verification Requests
+            {% if pending_verifications and pending_verifications|length > 0 %}
+                <span class="verification-badge">{{ pending_verifications|length }}</span>
+            {% endif %}
+        </h3>
+
+        {% if pending_verifications and pending_verifications|length > 0 %}
+            {% for request in pending_verifications %}
+                <div class="verification-card">
+                    <div class="player-name">{{ request.player_name }}</div>
+                    <div class="user-info">
+                        <strong>Requested by:</strong> {{ request.user_name }} ({{ request.user_email }})
+                    </div>
+                    <div class="request-time">
+                        Submitted: {{ request.requested_at[:10] if request.requested_at else 'Unknown' }}
+                    </div>
+                    <div class="verification-actions">
+                        <form method="post" action="/admin/verify-player/approve">
+                            <input type="hidden" name="user_id" value="{{ request.user_id }}">
+                            <button type="submit" class="btn-approve" onclick="return confirm('Approve verification for {{ request.player_name }}?')">
+                                Approve
+                            </button>
+                        </form>
+                        <form method="post" action="/admin/verify-player/deny" onsubmit="return handleDeny(this, '{{ request.player_name }}')">
+                            <input type="hidden" name="user_id" value="{{ request.user_id }}">
+                            <input type="hidden" name="reason" id="reason-{{ request.user_id }}" value="">
+                            <button type="submit" class="btn-deny">
+                                Deny
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-requests">
+                No pending verification requests
+            </div>
+        {% endif %}
+    </div>
+
     {% if success %}
         <div class="alert alert-success">{{ success }}</div>
     {% endif %}
@@ -66,4 +235,16 @@
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 </div>
+
+<script>
+function handleDeny(form, playerName) {
+    const reason = prompt('Reason for denying verification for ' + playerName + ' (optional):');
+    if (reason === null) {
+        return false; // User cancelled
+    }
+    const userId = form.querySelector('input[name="user_id"]').value;
+    document.getElementById('reason-' + userId).value = reason;
+    return confirm('Deny verification for ' + playerName + '?');
+}
+</script>
 {% endblock %}

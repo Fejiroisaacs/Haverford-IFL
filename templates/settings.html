@@ -43,6 +43,97 @@
     gap: 16px;
     margin-bottom: 24px;
 }
+.player-link-section {
+    margin-top: 32px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+}
+.player-link-section h3 {
+    margin-bottom: 16px;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+.link-status {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+.link-status.pending {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+.link-status.approved {
+    background: #d4edda;
+    border: 1px solid #28a745;
+    color: #155724;
+}
+.link-status .status-icon {
+    margin-right: 8px;
+}
+.player-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+.player-select:focus {
+    border-color: #670000;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.1);
+}
+.my-stats-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.my-stats-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+    color: white;
+    text-decoration: none;
+}
+/* Dark mode support */
+[data-theme="dark"] .settings-container {
+    background: var(--color-gray-800, #313131);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .settings-container h2 {
+    color: var(--color-gray-100, #f3f3f3);
+}
+[data-theme="dark"] .settings-container form {
+    background: var(--color-gray-700, #414141);
+}
+[data-theme="dark"] .settings-container label {
+    color: var(--color-gray-200, #e9ecef);
+}
+[data-theme="dark"] .settings-container input {
+    background: var(--color-gray-800, #313131);
+    border-color: var(--color-gray-600, #7F8C8D);
+    color: var(--color-gray-100, #f3f3f3);
+}
+[data-theme="dark"] .player-link-section {
+    background: linear-gradient(135deg, var(--color-gray-700, #414141) 0%, var(--color-gray-800, #313131) 100%);
+    border-color: var(--color-gray-600, #7F8C8D);
+}
+[data-theme="dark"] .player-link-section h3 {
+    color: var(--color-gray-100, #f3f3f3);
+}
+[data-theme="dark"] .player-select {
+    background: var(--color-gray-800, #313131);
+    border-color: var(--color-gray-600, #7F8C8D);
+    color: var(--color-gray-100, #f3f3f3);
+}
 </style>
 <div class="settings-container">
     <div class="settings-nav">
@@ -84,6 +175,52 @@
     <form method="post" action="/settings/delete" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
         <button type="submit" class="btn btn-danger" style="width:100%;margin-bottom:12px;">Delete Account</button>
     </form>
+
+    <!-- Player Profile Linking Section -->
+    <div class="player-link-section">
+        <h3>Link Player Profile</h3>
+        <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 16px;">
+            Are you a player in the IFL? Link your account to your player profile to access your personal stats dashboard.
+        </p>
+
+        {% if player_link %}
+            {% if player_link.status == 'approved' %}
+                <div class="link-status approved">
+                    <span class="status-icon">&#10003;</span>
+                    <strong>Verified!</strong> Your account is linked to <strong>{{ player_link.player_name }}</strong>
+                </div>
+                <a href="/my-stats" class="my-stats-btn">View My Stats</a>
+            {% elif player_link.status == 'pending' %}
+                <div class="link-status pending">
+                    <span class="status-icon">&#9203;</span>
+                    <strong>Pending Verification</strong><br>
+                    Your request to link to <strong>{{ player_link.player_name }}</strong> is awaiting admin approval.
+                </div>
+                <p style="color: #6c757d; font-size: 0.85rem;">
+                    You'll receive an email once your request has been reviewed.
+                </p>
+            {% endif %}
+        {% else %}
+            <form method="post" action="/settings/link-player">
+                <label for="player_name" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    Select your player profile:
+                </label>
+                <select name="player_name" id="player_name" class="player-select" required>
+                    <option value="">-- Choose a player --</option>
+                    {% for player in all_players %}
+                        <option value="{{ player }}">{{ player }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Request Verification
+                </button>
+            </form>
+            <p style="color: #6c757d; font-size: 0.85rem; margin-top: 12px;">
+                An admin will review your request to verify you are the player.
+            </p>
+        {% endif %}
+    </div>
+
     {% if success %}
         <div class="alert alert-success">{{ success }}</div>
     {% endif %}
