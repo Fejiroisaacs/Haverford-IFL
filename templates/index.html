@@ -71,6 +71,33 @@
                 <div class="next-match-content">
                     <div class="matchday-badge">MD {{ next_matchday.matchday }}</div>
                     <p class="matchday-date">{{ next_matchday.date }}</p>
+
+                    <!-- Countdown Timer -->
+                    <div class="countdown-container" id="countdownContainer" data-date="{{ next_matchday.date }}" data-time="{{ next_matchday.matches[0].time if next_matchday.matches else '' }}">
+                        <div class="countdown-label">Starts in</div>
+                        <div class="countdown-timer" id="countdownTimer">
+                            <div class="countdown-unit">
+                                <span class="countdown-value" id="countdownDays">--</span>
+                                <span class="countdown-suffix">d</span>
+                            </div>
+                            <div class="countdown-separator">:</div>
+                            <div class="countdown-unit">
+                                <span class="countdown-value" id="countdownHours">--</span>
+                                <span class="countdown-suffix">h</span>
+                            </div>
+                            <div class="countdown-separator">:</div>
+                            <div class="countdown-unit">
+                                <span class="countdown-value" id="countdownMinutes">--</span>
+                                <span class="countdown-suffix">m</span>
+                            </div>
+                            <div class="countdown-separator">:</div>
+                            <div class="countdown-unit">
+                                <span class="countdown-value" id="countdownSeconds">--</span>
+                                <span class="countdown-suffix">s</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="upcoming-matches">
                         {% for match in next_matchday.matches[:3] %}
                             <div class="mini-match">

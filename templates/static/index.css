@@ -414,6 +414,93 @@
   margin-top: 0.5rem;
 }
 
+/* Countdown Timer Styles */
+.countdown-container {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.countdown-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.countdown-timer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+
+.countdown-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.countdown-suffix {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+
+.countdown-separator {
+  font-size: 1.5rem;
+  font-weight: bold;
+  opacity: 0.6;
+  margin: 0 0.1rem;
+}
+
+.countdown-expired {
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  animation: pulse 2s infinite;
+}
+
+/* Dark mode already handled by highlight-card parent */
+
+@media (max-width: 480px) {
+  .countdown-value {
+    font-size: 1.4rem;
+    min-width: 32px;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .countdown-unit {
+    min-width: 40px;
+  }
+
+  .countdown-separator {
+    font-size: 1.2rem;
+  }
+
+  .countdown-suffix {
+    font-size: 0.65rem;
+  }
+}
+
 .quick-stats {
   display: flex;
   justify-content: space-around;
