@@ -1,10 +1,285 @@
 {% extends "base.html" %}
 
-{% block title %}Error Page{% endblock %}
+{% block title %}Page Not Found - Haverford IFL{% endblock %}
 
 {% block content %}
-{% if error %}
-    <h1 style="color: red;">{{ error }}</h1>
-{% endif %}
-<img src="/static/Images/Elements/404.png" alt="OOPS 404..." width="fit-content" height="fit-content" class = 'error-image'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-visual">
+            <img src="/static/Images/Elements/404.png" alt="404 Error - Page Not Found" class="error-image">
+            <h1 class="error-code">404</h1>
+        </div>
+
+        <div class="error-message">
+            <h2>Oops! Page Not Found</h2>
+            <p class="error-description">
+                The page you're looking for seems to have been moved or doesn't exist.
+                Don't worry, even the best strikers miss sometimes!
+            </p>
+
+            {% if error %}
+            <div class="error-details">
+                <i class="fas fa-info-circle"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="error-navigation">
+            <h3>Quick Links</h3>
+            <div class="quick-links-grid">
+                <a href="/" class="quick-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/matches" class="quick-link">
+                    <i class="fas fa-futbol"></i>
+                    <span>Matches</span>
+                </a>
+                <a href="/teams" class="quick-link">
+                    <i class="fas fa-users"></i>
+                    <span>Teams</span>
+                </a>
+                <a href="/players" class="quick-link">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Players</span>
+                </a>
+                <a href="/statistics" class="quick-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistics</span>
+                </a>
+                <a href="/gallery" class="quick-link">
+                    <i class="fas fa-images"></i>
+                    <span>Gallery</span>
+                </a>
+            </div>
+
+            <div class="help-section">
+                <p>Still can't find what you're looking for?</p>
+                <a href="/contact" class="btn-contact">
+                    <i class="fas fa-envelope"></i>
+                    Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+}
+
+.error-content {
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+}
+
+.error-visual {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.error-image {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.1));
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: bold;
+    color: #670000;
+    margin: 0;
+    text-shadow: 2px 2px 10px rgba(103, 0, 0, 0.2);
+    letter-spacing: -0.05em;
+}
+
+.error-message {
+    margin: 2rem 0 3rem;
+}
+
+.error-message h2 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.error-description {
+    font-size: 1.2rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.6;
+}
+
+.error-details {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #fff5f5;
+    border-left: 4px solid #670000;
+    border-radius: 5px;
+    color: #670000;
+    font-weight: 500;
+}
+
+.error-details i {
+    font-size: 1.2rem;
+}
+
+.error-navigation {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.error-navigation h3 {
+    color: #670000;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quick-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    background: #f9f9f9;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.quick-link i {
+    font-size: 2rem;
+    color: #670000;
+    transition: transform 0.3s ease;
+}
+
+.quick-link:hover {
+    transform: translateY(-5px);
+    border-color: #670000;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(103, 0, 0, 0.15);
+}
+
+.quick-link:hover i {
+    transform: scale(1.1);
+}
+
+.help-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+.help-section p {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.btn-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(103, 0, 0, 0.3);
+}
+
+.btn-contact:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(103, 0, 0, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 5rem;
+    }
+
+    .error-message h2 {
+        font-size: 1.8rem;
+    }
+
+    .error-description {
+        font-size: 1rem;
+    }
+
+    .error-navigation {
+        padding: 1.5rem;
+    }
+
+    .quick-links-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .quick-link {
+        padding: 1rem 0.5rem;
+    }
+
+    .quick-link i {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-image {
+        max-width: 280px;
+    }
+
+    .error-code {
+        font-size: 4rem;
+    }
+
+    .quick-links-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 {% endblock %}
