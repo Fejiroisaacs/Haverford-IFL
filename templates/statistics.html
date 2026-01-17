@@ -17,6 +17,12 @@
     <h1><i class="fas fa-chart-bar"></i> Statistics Dashboard</h1>
     <p class="subtitle">Comprehensive league statistics and performance analytics</p>
 
+    {% if last_updated %}
+    <div style="text-align: center;">
+        <p class="last-updated"><i class="fas fa-clock"></i> Last updated: {{ last_updated }}</p>
+    </div>
+    {% endif %}
+
     <!-- Season Selector -->
     <div class="season-selector">
         <h3>Select Season:</h3>
@@ -37,7 +43,6 @@
         <a href="#player-compare" class="nav-link"><i class="fas fa-user-friends"></i> Player Comparison</a>
         <a href="#season-compare" class="nav-link"><i class="fas fa-calendar-alt"></i> Season Comparison</a>
         <a href="#distributions" class="nav-link"><i class="fas fa-chart-pie"></i> Distributions</a>
-        <a href="#top" class="nav-link"><i class="fas fa-arrow-up"></i> Top</a>
     </div>
 
     <!-- Section 1: Leaderboards -->
@@ -326,6 +331,35 @@ html {
     color: #666;
     margin-top: -0.5rem;
     margin-bottom: 1.5rem;
+}
+
+/* Last Updated Timestamp */
+.last-updated {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(103, 0, 0, 0.05);
+    border-radius: 20px;
+    display: inline-block;
+    width: auto;
+}
+
+.last-updated i {
+    margin-right: 0.5rem;
+    color: #670000;
+}
+
+/* Dark mode support for last-updated */
+[data-theme="dark"] .last-updated {
+    background: rgba(255, 255, 255, 0.05);
+    color: #aaa;
+}
+
+[data-theme="dark"] .last-updated i {
+    color: #ff6b6b;
 }
 
 /* Season Selector */
