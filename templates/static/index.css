@@ -155,7 +155,7 @@
 }
 
 .hero-video-content {
-    background: var(--glass-white-light, rgba(255, 255, 255, 0.6));
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: var(--blur-lg, blur(16px));
     -webkit-backdrop-filter: var(--blur-lg, blur(16px));
     color: white;
