@@ -264,6 +264,13 @@
             </div>
         </div>
     </div>
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" class="back-to-top-btn" onclick="scrollToTop()" aria-label="Back to top" title="Back to top">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
     <!-- Global Loading Spinner -->
     <div id="global-loading-spinner" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading">
         <div class="spinner-ring"></div>
@@ -312,6 +319,57 @@
             opacity: 0.8;
         }
         }
+        /* Back to Top Button Styles */
+        .back-to-top-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 996;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(103, 0, 0, 0.3);
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-to-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 18px rgba(103, 0, 0, 0.4);
+        }
+
+        .back-to-top-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        /* Dark mode support for back-to-top */
+        [data-theme="dark"] .back-to-top-btn {
+            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+            box-shadow: 0 3px 12px rgba(139, 0, 0, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .back-to-top-btn {
+                bottom: 20px;
+                left: 20px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
         /* Feedback Button Styles */
         .feedback-btn {
             position: fixed;
@@ -621,7 +679,27 @@
     </style>
 
     <script>
+        // Back to Top Button functionality
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Back to Top Button visibility
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 300) {
+                        backToTopBtn.classList.add('visible');
+                    } else {
+                        backToTopBtn.classList.remove('visible');
+                    }
+                }, { passive: true });
+            }
+
             window.addEventListener('scroll', function() {
                 const header = document.querySelector('body');
                 if (window.scrollY > 50) {
