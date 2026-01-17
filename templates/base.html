@@ -15,6 +15,9 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/static/manifest.json">
 
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="Haverford IFL Match Results" href="/feed/matches.xml">
+
     <!-- Theme Color for Mobile Browsers -->
     <meta name="theme-color" content="#670000">
     <meta name="mobile-web-app-capable" content="yes">
@@ -32,7 +35,6 @@
 
     <link rel="stylesheet" href="/static/design-tokens.css">
     <link rel="stylesheet" href="/static/components/buttons.css">
-    <link rel="stylesheet" href="/static/components/cards.css">
     <link rel="stylesheet" href="/static/animations.css">
 
     <link rel="stylesheet" href="/static/style.css">
@@ -264,6 +266,14 @@
             </div>
         </div>
     </div>
+    <!-- Floating Search Button -->
+    <button id="floatingSearchBtn" class="floating-search-btn" onclick="toggleGlobalSearch()" aria-label="Search" title="Search (Ctrl+K)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+    </button>
+
     <!-- Back to Top Button -->
     <button id="backToTopBtn" class="back-to-top-btn" onclick="scrollToTop()" aria-label="Back to top" title="Back to top">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -355,15 +365,47 @@
             transform: translateY(-1px) scale(0.98);
         }
 
-        /* Dark mode support for back-to-top */
-        [data-theme="dark"] .back-to-top-btn {
-            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
-            box-shadow: 0 3px 12px rgba(139, 0, 0, 0.4);
-        }
-
         @media (max-width: 768px) {
             .back-to-top-btn {
                 bottom: 20px;
+                left: 20px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Floating Search Button */
+        .floating-search-btn {
+            position: fixed;
+            bottom: 95px;
+            left: 30px;
+            z-index: 996;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(103, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-search-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 18px rgba(103, 0, 0, 0.4);
+        }
+
+        .floating-search-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        @media (max-width: 768px) {
+            .floating-search-btn {
+                bottom: 79px;
                 left: 20px;
                 width: 44px;
                 height: 44px;
@@ -1220,6 +1262,425 @@
             checkTimeout();
             {% endif %}
         })();
+    </script>
+
+    <!-- Global Search Modal -->
+    <div id="globalSearchModal" class="search-modal" style="display: none;">
+        <div class="search-modal-backdrop" onclick="closeGlobalSearch()"></div>
+        <div class="search-modal-content">
+            <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="globalSearchInput" placeholder="Search players, teams..." autocomplete="off" autofocus>
+                <button class="search-close-btn" onclick="closeGlobalSearch()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div id="searchResults" class="search-results">
+                <div class="search-hint">
+                    <p>Start typing to search...</p>
+                    <div class="search-shortcuts">
+                        <span><kbd>Enter</kbd> to select</span>
+                        <span><kbd>Esc</kbd> to close</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* Global Search Modal Styles */
+    .search-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        padding-top: 10vh;
+    }
+
+    .search-modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+
+    .search-modal-content {
+        position: relative;
+        width: 90%;
+        max-width: 600px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        animation: searchSlideIn 0.2s ease-out;
+    }
+
+    @keyframes searchSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .search-input-wrapper {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #eee;
+        gap: 1rem;
+    }
+
+    .search-icon {
+        color: #670000;
+        font-size: 1.2rem;
+    }
+
+    #globalSearchInput {
+        flex: 1;
+        border: none;
+        font-size: 1.1rem;
+        padding: 0.5rem 0;
+        outline: none;
+        background: transparent;
+    }
+
+    #globalSearchInput::placeholder {
+        color: #999;
+    }
+
+    .search-close-btn {
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: #666;
+        font-size: 1.2rem;
+        transition: color 0.2s;
+    }
+
+    .search-close-btn:hover {
+        color: #333;
+    }
+
+    .search-results {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .search-hint {
+        text-align: center;
+        padding: 2rem;
+        color: #888;
+    }
+
+    .search-hint p {
+        margin-bottom: 1rem;
+    }
+
+    .search-shortcuts {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+
+    .search-shortcuts kbd {
+        background: #f0f0f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-family: monospace;
+        border: 1px solid #ddd;
+    }
+
+    .search-category {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-category-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #888;
+        margin-bottom: 0.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .search-result-item:hover,
+    .search-result-item.selected {
+        background: rgba(103, 0, 0, 0.08);
+    }
+
+    .search-result-item i {
+        width: 32px;
+        height: 32px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #670000;
+        font-size: 0.9rem;
+    }
+
+    .search-result-info {
+        flex: 1;
+    }
+
+    .search-result-name {
+        font-weight: 500;
+        margin-bottom: 0.1rem;
+    }
+
+    .search-result-meta {
+        font-size: 0.8rem;
+        color: #888;
+    }
+
+    .search-no-results {
+        text-align: center;
+        padding: 2rem;
+        color: #888;
+    }
+
+    .search-no-results i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #ddd;
+    }
+
+    @media (max-width: 768px) {
+        .search-modal {
+            padding-top: 0;
+        }
+
+        .search-modal-content {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            border-radius: 0;
+        }
+    }
+    </style>
+
+    <script>
+    // Global Search Functions
+    let searchDebounceTimer = null;
+    let selectedResultIndex = -1;
+
+    function toggleGlobalSearch() {
+        const modal = document.getElementById('globalSearchModal');
+        if (modal.style.display === 'none') {
+            openGlobalSearch();
+        } else {
+            closeGlobalSearch();
+        }
+    }
+
+    function openGlobalSearch() {
+        const modal = document.getElementById('globalSearchModal');
+        const input = document.getElementById('globalSearchInput');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => input.focus(), 100);
+    }
+
+    function closeGlobalSearch() {
+        const modal = document.getElementById('globalSearchModal');
+        const input = document.getElementById('globalSearchInput');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        input.value = '';
+        resetSearchResults();
+    }
+
+    function resetSearchResults() {
+        document.getElementById('searchResults').innerHTML = `
+            <div class="search-hint">
+                <p>Start typing to search...</p>
+                <div class="search-shortcuts">
+                    <span><kbd>Enter</kbd> to select</span>
+                    <span><kbd>Esc</kbd> to close</span>
+                </div>
+            </div>
+        `;
+        selectedResultIndex = -1;
+    }
+
+    async function performSearch(query) {
+        if (!query || query.length < 1) {
+            resetSearchResults();
+            return;
+        }
+
+        const resultsContainer = document.getElementById('searchResults');
+        resultsContainer.innerHTML = '<div class="search-hint"><p>Searching...</p></div>';
+
+        try {
+            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            if (data.total === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="search-no-results">
+                        <i class="fa fa-search"></i>
+                        <p>No results found for "${escapeHtml(query)}"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            // Players
+            if (data.results.players && data.results.players.length > 0) {
+                html += '<div class="search-category">';
+                html += '<div class="search-category-title">Players</div>';
+                data.results.players.forEach(item => {
+                    html += `
+                        <a href="${item.url}" class="search-result-item" onclick="closeGlobalSearch()">
+                            <i class="fa ${item.icon}"></i>
+                            <div class="search-result-info">
+                                <div class="search-result-name">${escapeHtml(item.name)}</div>
+                                <div class="search-result-meta">${escapeHtml(item.team || '')}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Teams
+            if (data.results.teams && data.results.teams.length > 0) {
+                html += '<div class="search-category">';
+                html += '<div class="search-category-title">Teams</div>';
+                data.results.teams.forEach(item => {
+                    html += `
+                        <a href="${item.url}" class="search-result-item" onclick="closeGlobalSearch()">
+                            <i class="fa ${item.icon}"></i>
+                            <div class="search-result-info">
+                                <div class="search-result-name">${escapeHtml(item.name)}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Quick Actions
+            if (data.results.actions && data.results.actions.length > 0) {
+                html += '<div class="search-category">';
+                html += '<div class="search-category-title">Quick Actions</div>';
+                data.results.actions.forEach(item => {
+                    html += `
+                        <a href="${item.url}" class="search-result-item" onclick="closeGlobalSearch()">
+                            <i class="fa ${item.icon}"></i>
+                            <div class="search-result-info">
+                                <div class="search-result-name">${escapeHtml(item.name)}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            resultsContainer.innerHTML = html;
+            selectedResultIndex = -1;
+        } catch (error) {
+            console.error('Search error:', error);
+            resultsContainer.innerHTML = `
+                <div class="search-no-results">
+                    <i class="fa fa-exclamation-circle"></i>
+                    <p>Error performing search. Please try again.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Event listeners for search
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('globalSearchInput');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    performSearch(this.value.trim());
+                }, 200);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                const results = document.querySelectorAll('.search-result-item');
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedResultIndex = Math.min(selectedResultIndex + 1, results.length - 1);
+                    updateSelectedResult(results);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+                    updateSelectedResult(results);
+                } else if (e.key === 'Enter' && selectedResultIndex >= 0 && results[selectedResultIndex]) {
+                    e.preventDefault();
+                    results[selectedResultIndex].click();
+                } else if (e.key === 'Escape') {
+                    closeGlobalSearch();
+                }
+            });
+        }
+
+        // Keyboard shortcut to open search (Ctrl+K or Cmd+K)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                openGlobalSearch();
+            }
+        });
+    });
+
+    function updateSelectedResult(results) {
+        results.forEach((item, index) => {
+            item.classList.toggle('selected', index === selectedResultIndex);
+        });
+
+        if (selectedResultIndex >= 0 && results[selectedResultIndex]) {
+            results[selectedResultIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
     </script>
 </body>
 </html>

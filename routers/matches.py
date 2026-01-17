@@ -1,9 +1,10 @@
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response
 import pandas as pd
 from fastapi import APIRouter
 import ast
+from datetime import datetime
 
 router = APIRouter()
 
@@ -73,6 +74,89 @@ def get_upcoming_matches():
         "Min": data['MD'].min(),
         "data": match_dict
     }
+
+
+@router.get("/feed/matches.xml")
+async def rss_feed():
+    """Generate RSS feed for latest match results"""
+    try:
+        with open("data/Match_Results.csv") as file:
+            data = pd.read_csv(file)
+
+        # Get latest season's matches, sorted by Match ID (most recent first)
+        latest_season = data['Season'].max()
+        matches = data[data['Season'] == latest_season].sort_values('Match ID', ascending=False).head(20)
+
+        # Build RSS XML
+        now = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+
+        rss_items = []
+        for _, match in matches.iterrows():
+            team1 = match['Team 1']
+            team2 = match['Team 2']
+            score1 = int(match['Score Team 1'])
+            score2 = int(match['Score Team 2'])
+            match_id = int(match['Match ID'])
+            group = match['Group']
+
+            # Determine result
+            if score1 > score2:
+                result = f"{team1} defeats {team2}"
+            elif score2 > score1:
+                result = f"{team2} defeats {team1}"
+            else:
+                result = f"{team1} draws with {team2}"
+
+            title = f"{team1} {score1} - {score2} {team2}"
+            description = f"{result} in {'Group ' + group if len(group) == 1 else group} action. Final score: {score1}-{score2}."
+            link = f"https://haverfordifl.com/teams/{team1}/{team1}-{team2}-{match_id}"
+
+            rss_items.append(f"""
+        <item>
+            <title>{escape_xml(title)}</title>
+            <link>{link}</link>
+            <description>{escape_xml(description)}</description>
+            <guid isPermaLink="true">{link}</guid>
+        </item>""")
+
+        rss_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Haverford IFL Match Results</title>
+        <link>https://haverfordifl.com/matches</link>
+        <description>Latest match results from the Haverford Intramural Futsal League</description>
+        <language>en-us</language>
+        <lastBuildDate>{now}</lastBuildDate>
+        <atom:link href="https://haverfordifl.com/feed/matches.xml" rel="self" type="application/rss+xml"/>
+        {"".join(rss_items)}
+    </channel>
+</rss>"""
+
+        return Response(
+            content=rss_content,
+            media_type="application/rss+xml",
+            headers={"Content-Type": "application/rss+xml; charset=utf-8"}
+        )
+    except Exception as e:
+        print(f"Error generating RSS feed: {e}")
+        return Response(
+            content="Error generating RSS feed",
+            media_type="text/plain",
+            status_code=500
+        )
+
+
+def escape_xml(text):
+    """Escape special XML characters"""
+    if not isinstance(text, str):
+        text = str(text)
+    return (text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&apos;"))
+
 
 @router.get("/api/match-preview")
 async def get_match_preview(team1: str, team2: str, matchday: int = None, time: str = None):
