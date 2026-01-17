@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search
 from auth_utils import get_current_user
 import json
 import os
@@ -166,6 +166,7 @@ app.include_router(settings.router)
 app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 app.include_router(admin.router)
 app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
+app.include_router(search.router)
 
 def get_cached_data():
     """Get cached data from app state."""
