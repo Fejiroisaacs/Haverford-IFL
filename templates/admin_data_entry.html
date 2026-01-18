@@ -1,0 +1,1569 @@
+{% extends "base.html" %}
+
+{% block title %}Match Data Entry - Admin | Haverford IFL{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="data-entry-container">
+    <div class="data-entry-header">
+        <a href="/admin" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Admin
+        </a>
+        <h1><i class="fas fa-futbol"></i> Match Data Entry</h1>
+        <p class="subtitle">Enter match results and player statistics</p>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form id="matchEntryForm" class="match-entry-form">
+        <!-- Match Details Section -->
+        <div class="form-section">
+            <div class="form-row" style="margin-top: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="data_collector"><i class="fas fa-user-edit"></i> Data Collector Name</label>
+                    <input type="text" id="data_collector" name="data_collector" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="referee"><i class="fas fa-flag"></i> Head Referee</label>
+                    <input type="text" id="referee" name="referee" placeholder="Enter referee name (optional)">
+                </div>
+            </div>
+            <h2><i class="fas fa-info-circle"></i> Match Details</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="season">Season</label>
+                    <input type="number" id="season" name="season" value="{{ current_season }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="matchday">Matchday</label>
+                    <input type="number" id="matchday" name="matchday" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="group">Group</label>
+                    <select id="group" name="group" required>
+                        <option value="">Select Group</option>
+                        <option value="A">Group A</option>
+                        <option value="B">Group B</option>
+                        <option value="Knockout">Knockout</option>
+                        <option value="Final">Final</option>
+                    </select>
+                </div>
+            </div>
+            <div class="match-id-display">
+                <span>Match ID: <strong>#{{ next_match_id }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Teams Section -->
+        <div class="teams-section">
+            <!-- Team 1 -->
+            <div class="team-card team-1">
+                <div class="team-header">
+                    <h3>Team 1 (Home)</h3>
+                    <div class="score-input">
+                        <label>Score</label>
+                        <input type="number" id="score1" name="score1" min="0" value="0" required class="score-field">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="team1">Select Team</label>
+                    <select id="team1" name="team1" required onchange="loadTeamPlayers(1)">
+                        <option value="">Choose a team...</option>
+                        {% for team in teams %}
+                        <option value="{{ team }}">{{ team }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="players-section" id="team1Players">
+                    <p class="placeholder-text">Select a team to add players</p>
+                </div>
+            </div>
+
+            <!-- VS Divider -->
+            <div class="vs-divider">
+                <span>VS</span>
+            </div>
+
+            <!-- Team 2 -->
+            <div class="team-card team-2">
+                <div class="team-header">
+                    <h3>Team 2 (Away)</h3>
+                    <div class="score-input">
+                        <label>Score</label>
+                        <input type="number" id="score2" name="score2" min="0" value="0" required class="score-field">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="team2">Select Team</label>
+                    <select id="team2" name="team2" required onchange="loadTeamPlayers(2)">
+                        <option value="">Choose a team...</option>
+                        {% for team in teams %}
+                        <option value="{{ team }}">{{ team }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="players-section" id="team2Players">
+                    <p class="placeholder-text">Select a team to add players</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Penalty Shootout Section -->
+        <div class="form-section penalty-section">
+            <div class="penalty-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="penaltyToggle" onchange="togglePenaltySection()">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label"><i class="fas fa-futbol"></i> Game went to Penalties</span>
+            </div>
+            <div id="penaltyInputs" class="penalty-inputs" style="display: none;">
+                <div class="penalty-scores">
+                    <div class="penalty-score-group">
+                        <label id="penaltyTeam1Label">Team 1</label>
+                        <input type="number" id="penalty1" name="penalty1" min="0" value="0" class="penalty-field">
+                    </div>
+                    <span class="penalty-divider">-</span>
+                    <div class="penalty-score-group">
+                        <label id="penaltyTeam2Label">Team 2</label>
+                        <input type="number" id="penalty2" name="penalty2" min="0" value="0" class="penalty-field">
+                    </div>
+                </div>
+                <p class="penalty-note"><i class="fas fa-info-circle"></i> Enter the penalty shootout score (not included in regular score)</p>
+            </div>
+        </div>
+
+        <!-- POTM Selection -->
+        <div class="form-section potm-section">
+            <h2><i class="fas fa-star"></i> Player of the Match</h2>
+            <div class="form-group">
+                <select id="potm" name="potm">
+                    <option value="">Select POTM (optional)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Match
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+.data-entry-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.data-entry-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #a70000;
+}
+
+.data-entry-header h1 {
+    color: #670000;
+    margin: 0.5rem 0;
+    font-size: 2rem;
+}
+
+.data-entry-header .subtitle {
+    color: #666;
+    margin: 0;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.match-entry-form {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.form-section {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section h2 {
+    color: #333;
+    font-size: 1.25rem;
+    margin: 0 0 1.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section h2 i {
+    color: #670000;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #670000;
+    box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.1);
+}
+
+.match-id-display {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+    text-align: center;
+    color: #666;
+}
+
+.match-id-display strong {
+    color: #670000;
+}
+
+/* Teams Section */
+.teams-section {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background: #fafafa;
+}
+
+.team-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.team-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.team-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.score-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.score-input label {
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.score-field {
+    width: 70px;
+    text-align: center;
+    font-size: 1.5rem !important;
+    font-weight: bold;
+    padding: 0.5rem !important;
+}
+
+.vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vs-divider span {
+    background: #670000;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.players-section {
+    margin-top: 1rem;
+}
+
+.placeholder-text {
+    color: #999;
+    text-align: center;
+    padding: 2rem;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    margin: 0;
+}
+
+/* Player Entry Card */
+.player-entry {
+    display: grid;
+    grid-template-columns: 1fr repeat(5, 50px);
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.player-entry.playing {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+}
+
+.player-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.player-name-cell input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.player-name-cell span {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.stat-input {
+    width: 100%;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.stat-input:focus {
+    outline: none;
+    border-color: #670000;
+}
+
+.stat-header {
+    display: grid;
+    grid-template-columns: 1fr repeat(5, 50px);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 0.5rem;
+}
+
+.stat-header span {
+    text-align: center;
+}
+
+.stat-header span:first-child {
+    text-align: left;
+}
+
+.add-player-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex: 1;
+    padding: 0.75rem;
+    background: transparent;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.add-player-btn:hover {
+    border-color: #670000;
+    color: #670000;
+    background: rgba(103, 0, 0, 0.05);
+}
+
+/* POTM Section */
+.potm-section {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+}
+
+.potm-section h2 i {
+    color: #f4b400;
+}
+
+.potm-section select {
+    max-width: 400px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background: #f5f5f5;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: white;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+/* Loading State */
+.loading-players {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: #666;
+}
+
+.loading-players i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Penalty Section */
+.penalty-section {
+    background: #f8f9fa;
+}
+
+.penalty-toggle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #670000;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: #444;
+}
+
+.penalty-inputs {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed #ddd;
+}
+
+.penalty-scores {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.penalty-score-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.penalty-score-group label {
+    font-weight: 600;
+    color: #670000;
+}
+
+.penalty-field {
+    width: 80px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 0.75rem;
+    border: 2px solid #670000;
+    border-radius: 8px;
+}
+
+.penalty-divider {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.penalty-note {
+    text-align: center;
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.penalty-note i {
+    color: #670000;
+}
+
+/* Player Action Buttons (Add Player + Add External Sub) */
+.player-action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.add-external-btn-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex: 1;
+    padding: 0.75rem;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.add-external-btn-inline:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+}
+
+/* External Sub Styling */
+.external-sub {
+    background: #e3f2fd !important;
+    border: 1px solid #90caf9 !important;
+}
+
+.external-badge {
+    display: inline-block;
+    background: #0d6efd;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+    text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .teams-section {
+        grid-template-columns: 1fr;
+    }
+
+    .vs-divider {
+        padding: 0.5rem 0;
+    }
+
+    .player-entry {
+        grid-template-columns: 1fr repeat(3, 45px);
+    }
+
+    .stat-header {
+        grid-template-columns: 1fr repeat(3, 45px);
+    }
+
+    .stat-header span:nth-child(5),
+    .stat-header span:nth-child(6),
+    .player-entry .stat-input:nth-child(5),
+    .player-entry .stat-input:nth-child(6) {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .data-entry-container {
+        padding: 0 0.5rem;
+    }
+
+    .form-section,
+    .form-actions {
+        padding: 1rem;
+    }
+
+    .teams-section {
+        padding: 1rem;
+    }
+
+    .team-card {
+        padding: 1rem;
+    }
+}
+
+/* Pending Banner Styles */
+.pending-banner {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
+.pending-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pending-content i {
+    color: #856404;
+    font-size: 1.25rem;
+}
+
+.pending-content span {
+    color: #856404;
+    flex: 1;
+}
+
+.btn-retry-pending,
+.btn-clear-pending {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-retry-pending {
+    background: #28a745;
+    color: white;
+}
+
+.btn-retry-pending:hover {
+    background: #218838;
+}
+
+.btn-clear-pending {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-clear-pending:hover {
+    background: #5a6268;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    max-width: 350px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.notification-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.notification-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.notification i {
+    font-size: 1.1rem;
+}
+
+/* Auto-save indicator */
+.auto-save-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+}
+
+.auto-save-indicator.visible {
+    opacity: 1;
+}
+
+</style>
+
+<script>
+let playersCache = {};
+let allPlayersForPOTM = [];
+const DRAFT_KEY = 'match_entry_draft';
+const PENDING_KEY = 'match_entry_pending';
+let autoSaveInterval = null;
+
+// ============ Local Storage & Draft Management ============
+
+function saveDraft() {
+    try {
+        const draft = {
+            season: document.getElementById('season').value,
+            matchday: document.getElementById('matchday').value,
+            group: document.getElementById('group').value,
+            data_collector: document.getElementById('data_collector').value,
+            referee: document.getElementById('referee').value,
+            team1: document.getElementById('team1').value,
+            team2: document.getElementById('team2').value,
+            score1: document.getElementById('score1').value,
+            score2: document.getElementById('score2').value,
+            potm: document.getElementById('potm').value,
+            has_penalties: document.getElementById('penaltyToggle').checked,
+            penalty1: document.getElementById('penalty1').value,
+            penalty2: document.getElementById('penalty2').value,
+            saved_at: new Date().toISOString()
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        console.log('Draft auto-saved');
+    } catch (e) {
+        console.warn('Could not save draft:', e);
+    }
+}
+
+function loadDraft() {
+    try {
+        const draft = JSON.parse(localStorage.getItem(DRAFT_KEY));
+        if (!draft) return false;
+
+        // Check if draft is less than 24 hours old
+        const savedAt = new Date(draft.saved_at);
+        const hoursSinceSave = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+        if (hoursSinceSave > 24) {
+            localStorage.removeItem(DRAFT_KEY);
+            return false;
+        }
+
+        return draft;
+    } catch (e) {
+        return false;
+    }
+}
+
+function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+}
+
+function restoreDraft(draft) {
+    if (draft.season) document.getElementById('season').value = draft.season;
+    if (draft.matchday) document.getElementById('matchday').value = draft.matchday;
+    if (draft.group) document.getElementById('group').value = draft.group;
+    if (draft.data_collector) document.getElementById('data_collector').value = draft.data_collector;
+    if (draft.referee) document.getElementById('referee').value = draft.referee;
+    if (draft.team1) {
+        document.getElementById('team1').value = draft.team1;
+        loadTeamPlayers(1);
+    }
+    if (draft.team2) {
+        document.getElementById('team2').value = draft.team2;
+        loadTeamPlayers(2);
+    }
+    if (draft.score1) document.getElementById('score1').value = draft.score1;
+    if (draft.score2) document.getElementById('score2').value = draft.score2;
+
+    // Restore penalty data
+    if (draft.has_penalties) {
+        document.getElementById('penaltyToggle').checked = true;
+        togglePenaltySection();
+        if (draft.penalty1) document.getElementById('penalty1').value = draft.penalty1;
+        if (draft.penalty2) document.getElementById('penalty2').value = draft.penalty2;
+    }
+}
+
+function startAutoSave() {
+    // Auto-save every 30 seconds
+    autoSaveInterval = setInterval(saveDraft, 30000);
+    // Also save on any input change (debounced)
+    document.getElementById('matchEntryForm').addEventListener('input', debounce(saveDraft, 5000));
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ============ Pending Submissions (Failure Backup) ============
+
+function savePendingSubmission(matchData) {
+    try {
+        const pending = getPendingSubmissions();
+        const submission = {
+            id: Date.now(),
+            data: matchData,
+            created_at: new Date().toISOString(),
+            attempts: 0
+        };
+        pending.push(submission);
+        localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+        return submission.id;
+    } catch (e) {
+        console.error('Could not save pending submission:', e);
+        return null;
+    }
+}
+
+function getPendingSubmissions() {
+    try {
+        return JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function removePendingSubmission(id) {
+    try {
+        const pending = getPendingSubmissions().filter(p => p.id !== id);
+        localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+    } catch (e) {
+        console.warn('Could not remove pending submission:', e);
+    }
+}
+
+function updatePendingAttempts(id) {
+    try {
+        const pending = getPendingSubmissions();
+        const submission = pending.find(p => p.id === id);
+        if (submission) {
+            submission.attempts++;
+            submission.last_attempt = new Date().toISOString();
+            localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+        }
+    } catch (e) {
+        console.warn('Could not update pending submission:', e);
+    }
+}
+
+async function retryPendingSubmission(id) {
+    const pending = getPendingSubmissions();
+    const submission = pending.find(p => p.id === id);
+    if (!submission) return false;
+
+    updatePendingAttempts(id);
+
+    try {
+        const formData = new FormData();
+        formData.append('match_data', JSON.stringify(submission.data));
+
+        const response = await fetch('/admin/submit-match', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok || response.redirected) {
+            removePendingSubmission(id);
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error('Retry failed:', e);
+        return false;
+    }
+}
+
+async function retryAllPending() {
+    const pending = getPendingSubmissions();
+    if (pending.length === 0) return;
+
+    let succeeded = 0;
+    let failed = 0;
+
+    for (const submission of pending) {
+        const success = await retryPendingSubmission(submission.id);
+        if (success) succeeded++;
+        else failed++;
+    }
+
+    if (succeeded > 0) {
+        showNotification(`Successfully submitted ${succeeded} pending match(es)`, 'success');
+    }
+    if (failed > 0) {
+        showNotification(`${failed} submission(s) still pending`, 'warning');
+    }
+
+    updatePendingBanner();
+}
+
+function showPendingBanner() {
+    const pending = getPendingSubmissions();
+    if (pending.length === 0) {
+        const existingBanner = document.getElementById('pendingBanner');
+        if (existingBanner) existingBanner.remove();
+        return;
+    }
+
+    let banner = document.getElementById('pendingBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'pendingBanner';
+        banner.className = 'pending-banner';
+        document.querySelector('.data-entry-header').after(banner);
+    }
+
+    banner.innerHTML = `
+        <div class="pending-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>${pending.length}</strong> pending submission(s) failed to save earlier.</span>
+            <button onclick="retryAllPending()" class="btn-retry-pending">
+                <i class="fas fa-sync"></i> Retry Now
+            </button>
+            <button onclick="clearAllPending()" class="btn-clear-pending">
+                <i class="fas fa-trash"></i> Discard
+            </button>
+        </div>
+    `;
+}
+
+function updatePendingBanner() {
+    showPendingBanner();
+}
+
+function clearAllPending() {
+    if (confirm('Are you sure you want to discard all pending submissions? This data will be lost.')) {
+        localStorage.removeItem(PENDING_KEY);
+        updatePendingBanner();
+        showNotification('Pending submissions cleared', 'info');
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 10);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// ============ Initialization ============
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for pending submissions
+    showPendingBanner();
+
+    // Check for saved draft
+    const draft = loadDraft();
+    if (draft) {
+        const savedTime = new Date(draft.saved_at).toLocaleString();
+        if (confirm(`Found a saved draft from ${savedTime}. Would you like to restore it?`)) {
+            restoreDraft(draft);
+        } else {
+            clearDraft();
+        }
+    }
+
+    // Start auto-save
+    startAutoSave();
+});
+
+async function loadTeamPlayers(teamNumber) {
+    const teamSelect = document.getElementById(`team${teamNumber}`);
+    const playersContainer = document.getElementById(`team${teamNumber}Players`);
+    const teamName = teamSelect.value;
+    const season = document.getElementById('season').value;
+
+    if (!teamName) {
+        playersContainer.innerHTML = '<p class="placeholder-text">Select a team to add players</p>';
+        updatePOTMOptions();
+        return;
+    }
+
+    // Show loading state
+    playersContainer.innerHTML = '<div class="loading-players"><i class="fas fa-spinner"></i> Loading players...</div>';
+
+    try {
+        // Check cache first
+        const cacheKey = `${teamName}_${season}`;
+        let players;
+
+        if (playersCache[cacheKey]) {
+            players = playersCache[cacheKey];
+        } else {
+            const response = await fetch(`/api/admin/players/${encodeURIComponent(teamName)}?season=${season}`);
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            players = data.players;
+            playersCache[cacheKey] = players;
+        }
+
+        renderPlayerEntries(playersContainer, players, teamName, teamNumber);
+        updatePOTMOptions();
+
+    } catch (error) {
+        console.error('Error loading players:', error);
+        playersContainer.innerHTML = `
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Failed to load players. Please try again.</span>
+            </div>
+        `;
+    }
+}
+
+function renderPlayerEntries(container, players, teamName, teamNumber) {
+    let html = `
+        <div class="stat-header">
+            <span>Player</span>
+            <span title="Goals">G</span>
+            <span title="Assists">A</span>
+            <span title="Saves">S</span>
+            <span title="Yellow Cards">YC</span>
+            <span title="Red Cards">RC</span>
+        </div>
+    `;
+
+    players.forEach((player, index) => {
+        html += `
+            <div class="player-entry" data-player="${player}" data-team="${teamName}">
+                <div class="player-name-cell">
+                    <input type="checkbox"
+                           id="player_${teamNumber}_${index}"
+                           onchange="togglePlayerPlaying(this)"
+                           checked>
+                    <span>${player}</span>
+                </div>
+                <input type="number" class="stat-input goals" min="0" value="0" title="Goals">
+                <input type="number" class="stat-input assists" min="0" value="0" title="Assists">
+                <input type="number" class="stat-input saves" min="0" value="0" title="Saves">
+                <input type="number" class="stat-input yellow" min="0" max="2" value="0" title="Yellow Cards">
+                <input type="number" class="stat-input red" min="0" max="1" value="0" title="Red Cards">
+            </div>
+        `;
+    });
+
+    // Add custom player and external sub buttons
+    html += `
+        <div class="player-action-buttons">
+            <button type="button" class="add-player-btn" onclick="addCustomPlayer(${teamNumber}, '${teamName}')">
+                <i class="fas fa-plus"></i> Add Player
+            </button>
+            <button type="button" class="add-external-btn-inline" onclick="addExternalSub(${teamNumber}, '${teamName}')">
+                <i class="fas fa-user-plus"></i> Add External Sub
+            </button>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+function togglePlayerPlaying(checkbox) {
+    const entry = checkbox.closest('.player-entry');
+    if (checkbox.checked) {
+        entry.classList.add('playing');
+    } else {
+        entry.classList.remove('playing');
+    }
+    updatePOTMOptions();
+}
+
+function addCustomPlayer(teamNumber, teamName) {
+    const playerName = prompt('Enter player name:');
+    if (!playerName || !playerName.trim()) return;
+
+    const container = document.getElementById(`team${teamNumber}Players`);
+    const buttonsDiv = container.querySelector('.player-action-buttons');
+    const index = container.querySelectorAll('.player-entry').length;
+
+    const playerEntry = document.createElement('div');
+    playerEntry.className = 'player-entry playing';
+    playerEntry.dataset.player = playerName.trim();
+    playerEntry.dataset.team = teamName;
+    playerEntry.dataset.manual = 'true';
+    playerEntry.innerHTML = `
+        <div class="player-name-cell">
+            <input type="checkbox"
+                   id="player_${teamNumber}_${index}"
+                   onchange="togglePlayerPlaying(this)"
+                   checked>
+            <span>${playerName.trim()} <i class="fas fa-user-plus" title="Manually added"></i></span>
+        </div>
+        <input type="number" class="stat-input goals" min="0" value="0" title="Goals">
+        <input type="number" class="stat-input assists" min="0" value="0" title="Assists">
+        <input type="number" class="stat-input saves" min="0" value="0" title="Saves">
+        <input type="number" class="stat-input yellow" min="0" max="2" value="0" title="Yellow Cards">
+        <input type="number" class="stat-input red" min="0" max="1" value="0" title="Red Cards">
+    `;
+
+    container.insertBefore(playerEntry, buttonsDiv);
+    updatePOTMOptions();
+}
+
+// ============ Penalty Shootout Functions ============
+
+function togglePenaltySection() {
+    const toggle = document.getElementById('penaltyToggle');
+    const inputs = document.getElementById('penaltyInputs');
+    inputs.style.display = toggle.checked ? 'block' : 'none';
+
+    // Update team labels
+    updatePenaltyLabels();
+}
+
+function updatePenaltyLabels() {
+    const team1 = document.getElementById('team1').value || 'Team 1';
+    const team2 = document.getElementById('team2').value || 'Team 2';
+    document.getElementById('penaltyTeam1Label').textContent = team1;
+    document.getElementById('penaltyTeam2Label').textContent = team2;
+}
+
+// ============ External Subs Functions ============
+
+function addExternalSub(teamNumber, teamName) {
+    const playerName = prompt('Enter external substitute name:');
+    if (!playerName || !playerName.trim()) return;
+
+    const container = document.getElementById(`team${teamNumber}Players`);
+    const buttonsDiv = container.querySelector('.player-action-buttons');
+    const index = container.querySelectorAll('.player-entry').length;
+
+    const playerEntry = document.createElement('div');
+    playerEntry.className = 'player-entry playing external-sub';
+    playerEntry.dataset.player = playerName.trim();
+    playerEntry.dataset.team = teamName;
+    playerEntry.dataset.external = 'true';
+    playerEntry.innerHTML = `
+        <div class="player-name-cell">
+            <input type="checkbox"
+                   id="external_${teamNumber}_${index}"
+                   onchange="togglePlayerPlaying(this)"
+                   checked>
+            <span>${playerName.trim()} <span class="external-badge">EXT</span></span>
+        </div>
+        <input type="number" class="stat-input goals" min="0" value="0" title="Goals">
+        <input type="number" class="stat-input assists" min="0" value="0" title="Assists">
+        <input type="number" class="stat-input saves" min="0" value="0" title="Saves">
+        <input type="number" class="stat-input yellow" min="0" max="2" value="0" title="Yellow Cards">
+        <input type="number" class="stat-input red" min="0" max="1" value="0" title="Red Cards">
+    `;
+
+    container.insertBefore(playerEntry, buttonsDiv);
+    updatePOTMOptions();
+}
+
+function updatePOTMOptions() {
+    const potmSelect = document.getElementById('potm');
+    const currentValue = potmSelect.value;
+
+    // Get all active players from both teams (including external subs)
+    allPlayersForPOTM = [];
+
+    document.querySelectorAll('.player-entry').forEach(entry => {
+        const checkbox = entry.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            const isExternal = entry.dataset.external === 'true';
+            allPlayersForPOTM.push({
+                name: entry.dataset.player,
+                team: entry.dataset.team + (isExternal ? ' (Ext)' : '')
+            });
+        }
+    });
+
+    // Rebuild options
+    let html = '<option value="">Select POTM (optional)</option>';
+    allPlayersForPOTM.forEach(player => {
+        const selected = player.name === currentValue ? 'selected' : '';
+        html += `<option value="${player.name}" ${selected}>${player.name} (${player.team})</option>`;
+    });
+
+    potmSelect.innerHTML = html;
+
+    // Also update penalty labels when teams change
+    updatePenaltyLabels();
+}
+
+function collectMatchData() {
+    const penaltyToggle = document.getElementById('penaltyToggle');
+    const hasPenalties = penaltyToggle.checked;
+
+    const data = {
+        team1: document.getElementById('team1').value,
+        team2: document.getElementById('team2').value,
+        score1: document.getElementById('score1').value,
+        score2: document.getElementById('score2').value,
+        matchday: document.getElementById('matchday').value,
+        group: document.getElementById('group').value,
+        season: document.getElementById('season').value,
+        potm: document.getElementById('potm').value,
+        data_collector: document.getElementById('data_collector').value,
+        referee: document.getElementById('referee').value,
+        has_penalties: hasPenalties,
+        penalty1: hasPenalties ? parseInt(document.getElementById('penalty1').value) || 0 : null,
+        penalty2: hasPenalties ? parseInt(document.getElementById('penalty2').value) || 0 : null,
+        player_stats: [],
+        external_subs: []
+    };
+
+    // Collect player stats from team rosters (including external subs)
+    document.querySelectorAll('.player-entry').forEach(entry => {
+        const checkbox = entry.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            const goals = parseInt(entry.querySelector('.goals').value) || 0;
+            const assists = parseInt(entry.querySelector('.assists').value) || 0;
+            const saves = parseInt(entry.querySelector('.saves').value) || 0;
+            const yellow = parseInt(entry.querySelector('.yellow').value) || 0;
+            const red = parseInt(entry.querySelector('.red').value) || 0;
+            const isExternal = entry.dataset.external === 'true';
+
+            // Only add players with stats or POTM
+            if (goals > 0 || assists > 0 || saves > 0 || yellow > 0 || red > 0 || entry.dataset.player === data.potm) {
+                const playerData = {
+                    name: entry.dataset.player,
+                    team: entry.dataset.team,
+                    goals: goals,
+                    assists: assists,
+                    saves: saves,
+                    yellow: yellow,
+                    red: red,
+                    potm: entry.dataset.player === data.potm,
+                    is_manual: entry.dataset.manual === 'true',
+                    is_external: isExternal
+                };
+
+                // Add to appropriate array
+                if (isExternal) {
+                    data.external_subs.push(playerData);
+                } else {
+                    data.player_stats.push(playerData);
+                }
+            }
+        }
+    });
+
+    return data;
+}
+
+function validateForm() {
+    const data = collectMatchData();
+
+    if (!data.data_collector || !data.data_collector.trim()) {
+        alert('Please enter your name as the data collector');
+        return false;
+    }
+
+    if (!data.team1 || !data.team2) {
+        alert('Please select both teams');
+        return false;
+    }
+
+    if (data.team1 === data.team2) {
+        alert('Please select two different teams');
+        return false;
+    }
+
+    if (!data.matchday || data.matchday < 1) {
+        alert('Please enter a valid matchday');
+        return false;
+    }
+
+    if (!data.group) {
+        alert('Please select a group');
+        return false;
+    }
+
+    // Validate goal counts match score
+    let team1Goals = 0;
+    let team2Goals = 0;
+
+    data.player_stats.forEach(stat => {
+        if (stat.team === data.team1) {
+            team1Goals += stat.goals;
+        } else if (stat.team === data.team2) {
+            team2Goals += stat.goals;
+        }
+    });
+
+    if (team1Goals !== parseInt(data.score1)) {
+        if (!confirm(`Team 1 player goals (${team1Goals}) don't match score (${data.score1}). Continue anyway?`)) {
+            return false;
+        }
+    }
+
+    if (team2Goals !== parseInt(data.score2)) {
+        if (!confirm(`Team 2 player goals (${team2Goals}) don't match score (${data.score2}). Continue anyway?`)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function resetForm() {
+    if (!confirm('Are you sure you want to reset the form?')) return;
+
+    document.getElementById('matchEntryForm').reset();
+    document.getElementById('team1Players').innerHTML = '<p class="placeholder-text">Select a team to add players</p>';
+    document.getElementById('team2Players').innerHTML = '<p class="placeholder-text">Select a team to add players</p>';
+    document.getElementById('potm').innerHTML = '<option value="">Select POTM (optional)</option>';
+}
+
+// Form submission
+document.getElementById('matchEntryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    const data = collectMatchData();
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        const formData = new FormData();
+        formData.append('match_data', JSON.stringify(data));
+
+        const response = await fetch('/admin/submit-match', {
+            method: 'POST',
+            body: formData
+        });
+
+        // The endpoint redirects, so we follow it
+        if (response.redirected) {
+            // Success! Clear the draft
+            clearDraft();
+            window.location.href = response.url;
+        } else if (response.ok) {
+            clearDraft();
+            window.location.reload();
+        } else {
+            throw new Error('Server returned error status');
+        }
+    } catch (error) {
+        console.error('Error submitting match:', error);
+
+        // Save to localStorage as pending submission
+        const pendingId = savePendingSubmission(data);
+
+        if (pendingId) {
+            showNotification('Submission failed - saved locally for retry', 'warning');
+            updatePendingBanner();
+        } else {
+            alert('Failed to save match. Data could not be backed up. Please copy your data before leaving.');
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+// Initialize: load teams for season on season change
+document.getElementById('season').addEventListener('change', function() {
+    playersCache = {}; // Clear cache when season changes
+    const team1 = document.getElementById('team1').value;
+    const team2 = document.getElementById('team2').value;
+
+    if (team1) loadTeamPlayers(1);
+    if (team2) loadTeamPlayers(2);
+});
+</script>
+{% endblock %}

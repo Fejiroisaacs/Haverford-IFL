@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
 .admin-panel-container {
     max-width: 600px;
@@ -125,43 +126,39 @@
     background: #f8f9fa;
     border-radius: 8px;
 }
-/* Dark mode support */
-[data-theme="dark"] .admin-panel-container {
-    background: var(--color-gray-800, #313131);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+/* Quick Actions Section */
+.quick-actions-section {
+    margin-top: 24px;
 }
-[data-theme="dark"] .admin-panel-container h2,
-[data-theme="dark"] .admin-panel-container h3 {
-    color: var(--color-gray-100, #f3f3f3);
+.quick-actions-section h3 {
+    color: #2c3e50;
+    margin-bottom: 16px;
 }
-[data-theme="dark"] .admin-panel-container form {
-    background: var(--color-gray-700, #414141);
+.quick-action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
 }
-[data-theme="dark"] .admin-panel-container label {
-    color: var(--color-gray-200, #e9ecef);
+.btn-data-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(103, 0, 0, 0.2);
 }
-[data-theme="dark"] .admin-panel-container input {
-    background: var(--color-gray-800, #313131);
-    border-color: var(--color-gray-600, #7F8C8D);
-    color: var(--color-gray-100, #f3f3f3);
+.btn-data-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+    color: white;
 }
-[data-theme="dark"] .verification-section {
-    border-top-color: var(--color-gray-600, #7F8C8D);
-}
-[data-theme="dark"] .verification-card {
-    background: var(--color-gray-700, #414141);
-    border-color: var(--color-gray-600, #7F8C8D);
-}
-[data-theme="dark"] .verification-card .player-name {
-    color: #ff6b6b;
-}
-[data-theme="dark"] .verification-card .user-info {
-    color: var(--color-gray-300, #E1E8ED);
-}
-[data-theme="dark"] .no-requests {
-    background: var(--color-gray-700, #414141);
-    color: var(--color-gray-400, #ddd);
-}
+
 </style>
 <div class="admin-panel-container">
     <h2>Admin Panel</h2>
@@ -184,6 +181,19 @@
         </div>
         <button type="submit" class="btn btn-success">Update All Users' Teams for This Week</button>
     </form>
+
+    <hr>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+        <h3>Quick Actions</h3>
+        <div class="quick-action-buttons">
+            <a href="/admin/data-entry" class="btn btn-data-entry">
+                <i class="fas fa-futbol"></i>
+                Enter Match Result
+            </a>
+        </div>
+    </div>
 
     <!-- Player Verification Requests Section -->
     <div class="verification-section">

@@ -262,3 +262,270 @@ async def deny_player_verification(
 
     except Exception as e:
         return RedirectResponse(url=f"/admin?error=Error+denying:+{str(e)}", status_code=303)
+
+
+# ===========================
+# MATCH DATA ENTRY
+# ===========================
+
+import pandas as pd
+import json
+from starlette.responses import JSONResponse
+
+def get_teams_for_season(season=None):
+    """Get list of teams for a given season"""
+    try:
+        standings = pd.read_csv('data/season_standings.csv', encoding='utf-8-sig')
+        if season:
+            standings = standings[standings['Season'] == int(season)]
+        teams = standings['Team'].unique().tolist()
+        return sorted(teams)
+    except Exception as e:
+        print(f"Error loading teams: {e}")
+        return []
+
+def get_players_for_team(team_name, season=None):
+    """Get list of players for a given team"""
+    try:
+        stats = pd.read_csv('data/season_player_stats.csv', encoding='utf-8-sig')
+        if season:
+            stats = stats[stats['Season'] == str(season)]
+        else:
+            stats = stats[stats['Season'] != 'Total']
+        team_players = stats[stats['Team'] == team_name]['Name'].unique().tolist()
+        return sorted(team_players)
+    except Exception as e:
+        print(f"Error loading players: {e}")
+        return []
+
+
+@router.get("/admin/data-entry")
+async def data_entry_page(request: Request, success: str = None, error: str = None, user: dict = Depends(get_current_user)):
+    """Match data entry form page"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    # Get current season
+    try:
+        standings = pd.read_csv('data/season_standings.csv', encoding='utf-8-sig')
+        current_season = int(standings['Season'].max())
+    except Exception:
+        current_season = 6
+
+    teams = get_teams_for_season(current_season)
+
+    # Get next match ID
+    try:
+        results = pd.read_csv('data/Match_Results.csv', encoding='utf-8-sig')
+        next_match_id = int(results['Match ID'].max()) + 1
+    except Exception:
+        next_match_id = 1
+
+    return templates.TemplateResponse("admin_data_entry.html", {
+        "request": request,
+        "teams": teams,
+        "current_season": current_season,
+        "next_match_id": next_match_id,
+        "success": success,
+        "error": error
+    })
+
+
+@router.get("/api/admin/players/{team}")
+async def get_team_players(team: str, season: int = None, user: dict = Depends(get_current_user)):
+    """API endpoint to get players for a team"""
+    if not is_admin(user):
+        return JSONResponse(content={"error": "Forbidden"}, status_code=403)
+
+    players = get_players_for_team(team, season)
+    return JSONResponse(content={"players": players})
+
+
+def get_next_match_id():
+    """Get the next match ID by checking both CSV and Firebase"""
+    csv_max_id = 0
+    firebase_max_id = 0
+
+    # Get max from CSV
+    try:
+        results_path = 'data/Match_Results.csv'
+        results_df = pd.read_csv(results_path, encoding='utf-8-sig')
+        csv_max_id = int(results_df['Match ID'].max())
+    except Exception as e:
+        print(f"Could not read CSV for match ID: {e}")
+
+    # Get max from Firebase
+    try:
+        game_day_ref = db.reference('game_day_stats')
+        all_matchdays = game_day_ref.get() or {}
+        for matchday_key, matches in all_matchdays.items():
+            if isinstance(matches, dict):
+                for match_id_str in matches.keys():
+                    try:
+                        match_id = int(match_id_str)
+                        firebase_max_id = max(firebase_max_id, match_id)
+                    except ValueError:
+                        continue
+    except Exception as e:
+        print(f"Could not read Firebase for match ID: {e}")
+
+    return max(csv_max_id, firebase_max_id) + 1
+
+
+@router.post("/admin/submit-match")
+async def submit_match_result(request: Request, user: dict = Depends(get_current_user)):
+    """Submit a new match result to Firebase game_day_stats"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        form_data = await request.form()
+        data = dict(form_data)
+
+        # Parse the JSON data
+        match_data = json.loads(data.get('match_data', '{}'))
+
+        # Validate required fields
+        required = ['team1', 'team2', 'score1', 'score2', 'matchday', 'group', 'season']
+        for field in required:
+            if field not in match_data:
+                return RedirectResponse(url=f"/admin/data-entry?error=Missing+field:+{field}", status_code=303)
+
+        # Get next match ID (checks both CSV and Firebase)
+        next_id = get_next_match_id()
+        matchday = int(match_data['matchday'])
+        season = int(match_data['season'])
+
+        # Build the match data for Firebase
+        # Schema: game_day_stats / MD{matchday}_S{season} / {match_id} / data
+        firebase_match_data = {
+            'match_id': next_id,
+            'team1': match_data['team1'],
+            'score1': int(match_data['score1']),
+            'team2': match_data['team2'],
+            'score2': int(match_data['score2']),
+            'matchday': matchday,
+            'group': match_data['group'],
+            'season': season,
+            'potm': match_data.get('potm', ''),
+            'referee': match_data.get('referee', ''),
+            'data_collector': match_data.get('data_collector', ''),
+            'submitted_by': user.get('email', 'unknown'),
+            'submitted_at': datetime.now().isoformat(),
+            'player_stats': [],
+            'external_subs': []
+        }
+
+        # Handle penalty shootout data
+        if match_data.get('has_penalties'):
+            firebase_match_data['has_penalties'] = True
+            firebase_match_data['penalty1'] = int(match_data.get('penalty1', 0))
+            firebase_match_data['penalty2'] = int(match_data.get('penalty2', 0))
+
+        # Process player stats from team rosters
+        player_stats = match_data.get('player_stats', [])
+        for player_stat in player_stats:
+            stat_entry = {
+                'player': player_stat.get('name', ''),
+                'team': player_stat.get('team', ''),
+                'goals': int(player_stat.get('goals', 0)),
+                'assists': int(player_stat.get('assists', 0)),
+                'saves': int(player_stat.get('saves', 0)),
+                'yellow_cards': int(player_stat.get('yellow', 0)),
+                'red_cards': int(player_stat.get('red', 0)),
+                'is_potm': player_stat.get('potm', False),
+                'is_manual': player_stat.get('is_manual', False)
+            }
+            firebase_match_data['player_stats'].append(stat_entry)
+
+        # Process external subs
+        external_subs = match_data.get('external_subs', [])
+        for ext_sub in external_subs:
+            sub_entry = {
+                'player': ext_sub.get('name', ''),
+                'team': ext_sub.get('team', ''),
+                'goals': int(ext_sub.get('goals', 0)),
+                'assists': int(ext_sub.get('assists', 0)),
+                'saves': int(ext_sub.get('saves', 0)),
+                'yellow_cards': int(ext_sub.get('yellow', 0)),
+                'red_cards': int(ext_sub.get('red', 0)),
+                'is_potm': ext_sub.get('potm', False),
+                'is_external': True
+            }
+            firebase_match_data['external_subs'].append(sub_entry)
+
+        # Save to Firebase game_day_stats
+        # Schema: game_day_stats / MD{matchday}_S{season} / {match_id}
+        matchday_key = f"MD{matchday}_S{season}"
+        game_day_ref = db.reference(f'game_day_stats/{matchday_key}/{next_id}')
+        game_day_ref.set(firebase_match_data)
+
+        # Also save to local CSV for backwards compatibility (dev environment)
+        try:
+            results_path = 'data/Match_Results.csv'
+            results_df = pd.read_csv(results_path, encoding='utf-8-sig')
+
+            new_match = {
+                'Match ID': next_id,
+                'Team 1': match_data['team1'],
+                'Score Team 1': int(match_data['score1']),
+                'Team 2': match_data['team2'],
+                'Score Team 2': int(match_data['score2']),
+                'MD': matchday,
+                'Group': match_data['group'],
+                'Season': season
+            }
+            results_df = pd.concat([results_df, pd.DataFrame([new_match])], ignore_index=True)
+            results_df.to_csv(results_path, index=False, encoding='utf-8-sig')
+
+            # Also save player stats to CSV (both roster players and external subs)
+            all_player_stats = player_stats + external_subs
+            if all_player_stats:
+                stats_path = 'data/player_match_stats.csv'
+                try:
+                    stats_df = pd.read_csv(stats_path, encoding='utf-8-sig')
+                except FileNotFoundError:
+                    stats_df = pd.DataFrame(columns=['Match ID', 'Player', 'Team', 'Goals', 'Assists', 'Saves', 'Yellow', 'Red', 'POTM', 'External'])
+
+                for player_stat in all_player_stats:
+                    stat_entry = {
+                        'Match ID': next_id,
+                        'Player': player_stat.get('name', ''),
+                        'Team': player_stat.get('team', ''),
+                        'Goals': int(player_stat.get('goals', 0)),
+                        'Assists': int(player_stat.get('assists', 0)),
+                        'Saves': int(player_stat.get('saves', 0)),
+                        'Yellow': int(player_stat.get('yellow', 0)),
+                        'Red': int(player_stat.get('red', 0)),
+                        'POTM': 1 if player_stat.get('potm', False) else 0,
+                        'External': 1 if player_stat.get('is_external', False) else 0
+                    }
+                    stats_df = pd.concat([stats_df, pd.DataFrame([stat_entry])], ignore_index=True)
+                stats_df.to_csv(stats_path, index=False, encoding='utf-8-sig')
+        except Exception as csv_error:
+            # CSV save failed but Firebase succeeded - log but don't fail
+            print(f"CSV save failed (Firebase succeeded): {csv_error}")
+
+        # Log the action to audit trail
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'user': user.get('email', 'unknown'),
+            'data_collector': match_data.get('data_collector', ''),
+            'action': 'match_entry',
+            'match_id': next_id,
+            'matchday_key': matchday_key,
+            'summary': f"{match_data['team1']} {match_data['score1']}-{match_data['score2']} {match_data['team2']}"
+        }
+        try:
+            audit_ref = db.reference('AdminAuditLog')
+            audit_ref.push(log_entry)
+        except Exception as e:
+            print(f"Failed to log audit entry: {e}")
+
+        success_msg = f"Match+{next_id}+saved:+{match_data['team1']}+{match_data['score1']}-{match_data['score2']}+{match_data['team2']}"
+        return RedirectResponse(url=f"/admin/data-entry?success={success_msg}", status_code=303)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return RedirectResponse(url=f"/admin/data-entry?error=Error+saving+match:+{str(e)}", status_code=303)
