@@ -274,7 +274,7 @@
                 </thead>
                 <tbody>
                     {% for season in season_comparison %}
-                    <tr>
+                    <tr onclick="window.location.href='/matches/{{season.season}}'" style="cursor:pointer">
                         <td><strong>Season {{season.season}}</strong></td>
                         <td>{{season.champion}}</td>
                         <td>{{season.matches}}</td>

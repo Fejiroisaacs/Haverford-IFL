@@ -188,13 +188,13 @@ def get_rating_distribution():
         team_ratings_df = data_cache.get('team_ratings', load_team_ratings)
 
         # Define buckets
-        buckets = [0, 60, 70, 80, 85, 90, 95, 100]
-        labels = ['50-60', '60-70', '70-80', '80-85', '85-90', '90-95', '95+']
+        player_buckets = [_ for _ in range(50, 101, 5)]
+        player_labels = [f'{i}-{i+5}' for i in player_buckets[:-1]]
 
         # Player rating distribution
         player_ratings_df['OVR Rating'] = pd.to_numeric(player_ratings_df['OVR Rating'], errors='coerce')
         player_ratings_df = player_ratings_df.dropna(subset=['OVR Rating'])
-        player_dist = pd.cut(player_ratings_df['OVR Rating'], bins=buckets, labels=labels, right=False)
+        player_dist = pd.cut(player_ratings_df['OVR Rating'], bins=player_buckets, labels=player_labels, right=False)
         player_counts = player_dist.value_counts().sort_index()
 
         # Team rating distribution
@@ -305,7 +305,12 @@ def get_season_comparison_data(seasons):
 
             # Get champion (team with most points)
             if not season_standings.empty:
-                champion = season_standings.nlargest(1, 'PTS').iloc[0]['Team']
+                champ_games = season_matches[season_matches["Group"] == "Playoff"]
+                champion_game = champ_games.nlargest(1, 'Match ID').iloc[0]#['Team']
+                if champion_game["Win Team 1"]:
+                    champion = champion_game["Team 1"]
+                else:
+                    champion = champion_game["Team 2"]   
             else:
                 champion = 'N/A'
 
