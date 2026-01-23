@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+{% block title %}Mini-Leagues | Fantasy{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="leagues-container">
+    <div class="leagues-header">
+        <h1><i class="fas fa-trophy"></i> Mini-Leagues</h1>
+        <p class="subtitle">Compete with friends in private leagues</p>
+        <a href="/fantasy" class="back-link"><i class="fas fa-arrow-left"></i> Back to Fantasy</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Action Cards -->
+    <div class="action-cards">
+        <!-- Create League Card -->
+        <div class="action-card">
+            <h3><i class="fas fa-plus-circle"></i> Create a League</h3>
+            <p>Start your own league and invite friends</p>
+            <button onclick="showCreateModal()" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create League
+            </button>
+        </div>
+
+        <!-- Join League Card -->
+        <div class="action-card">
+            <h3><i class="fas fa-sign-in-alt"></i> Join a League</h3>
+            <p>Enter a league code to join</p>
+            <form action="/fantasy/league/join" method="POST" class="join-form">
+                <input type="text" name="league_code" placeholder="Enter code (e.g., ABC123)"
+                       pattern="[A-Za-z0-9]{6}" maxlength="6" required>
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-check"></i> Join
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- My Leagues Section -->
+    <section class="leagues-section">
+        <h2><i class="fas fa-users"></i> My Leagues</h2>
+        {% if user_leagues %}
+        <div class="leagues-grid">
+            {% for league in user_leagues %}
+            <a href="/fantasy/league/{{ league.league_id }}" class="league-card">
+                <div class="league-card-header">
+                    <h3>{{ league.name }}</h3>
+                    {% if league.creator_id == user.user_id %}
+                    <span class="owner-badge">Owner</span>
+                    {% endif %}
+                </div>
+                <div class="league-card-stats">
+                    <div class="stat">
+                        <i class="fas fa-user-friends"></i>
+                        <span>{{ league.members|length }}/{{ league.max_members }} members</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-key"></i>
+                        <span class="league-code">{{ league.league_code }}</span>
+                    </div>
+                </div>
+                {% if league.description %}
+                <p class="league-description">{{ league.description[:100] }}{% if league.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+                <div class="league-card-footer">
+                    <span class="view-link">View League <i class="fas fa-chevron-right"></i></span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-trophy"></i>
+            <p>You haven't joined any leagues yet</p>
+            <p class="hint">Create a new league or join one with an invite code</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Public Leagues Section -->
+    {% if public_leagues %}
+    <section class="leagues-section">
+        <h2><i class="fas fa-globe"></i> Public Leagues</h2>
+        <div class="leagues-grid">
+            {% for league in public_leagues %}
+            <div class="league-card public-league">
+                <div class="league-card-header">
+                    <h3>{{ league.name }}</h3>
+                    <span class="public-badge">Public</span>
+                </div>
+                <div class="league-card-stats">
+                    <div class="stat">
+                        <i class="fas fa-user-friends"></i>
+                        <span>{{ league.members|length }}/{{ league.max_members }} members</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-user"></i>
+                        <span>by {{ league.creator_name }}</span>
+                    </div>
+                </div>
+                {% if league.description %}
+                <p class="league-description">{{ league.description[:100] }}{% if league.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+                <div class="league-card-footer">
+                    <form action="/fantasy/league/join" method="POST" style="margin: 0;">
+                        <input type="hidden" name="league_id" value="{{ league.league_id }}">
+                        <button type="submit" class="btn btn-join">
+                            <i class="fas fa-plus"></i> Join League
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<!-- Create League Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Create New League</h2>
+            <button onclick="hideCreateModal()" class="close-btn">&times;</button>
+        </div>
+        <form action="/fantasy/league/create" method="POST" class="create-form">
+            <div class="form-group">
+                <label for="league_name">League Name *</label>
+                <input type="text" id="league_name" name="league_name"
+                       minlength="3" maxlength="50" required
+                       placeholder="e.g., The Haverford Legends">
+            </div>
+            <div class="form-group">
+                <label for="description">Description (optional)</label>
+                <textarea id="description" name="description" maxlength="200"
+                          placeholder="A brief description of your league"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="max_members">Max Members</label>
+                    <select id="max_members" name="max_members">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20" selected>20</option>
+                        <option value="30">30</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_public" value="true">
+                        <span>Make Public</span>
+                    </label>
+                    <p class="hint">Public leagues can be found and joined by anyone</p>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="hideCreateModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create League
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.leagues-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.leagues-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.leagues-header h1 {
+    color: #670000;
+    margin-bottom: 0.5rem;
+}
+
+.leagues-header h1 i {
+    color: #f4b400;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Alerts */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Action Cards */
+.action-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.action-card h3 {
+    color: #670000;
+    margin-bottom: 0.5rem;
+}
+
+.action-card h3 i {
+    margin-right: 0.5rem;
+}
+
+.action-card p {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.join-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.join-form input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+.join-form input:focus {
+    outline: none;
+    border-color: #670000;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+.btn-join {
+    background: #28a745;
+    color: white;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-join:hover {
+    background: #218838;
+}
+
+/* Leagues Section */
+.leagues-section {
+    margin-bottom: 2rem;
+}
+
+.leagues-section h2 {
+    color: #333;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #670000;
+}
+
+.leagues-section h2 i {
+    color: #670000;
+    margin-right: 0.5rem;
+}
+
+.leagues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.league-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.league-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    border-color: #670000;
+}
+
+.league-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.league-card-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.owner-badge {
+    background: linear-gradient(135deg, #f4b400 0%, #ff9800 100%);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.public-badge {
+    background: #0d6efd;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.league-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.league-card-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.league-card-stats .stat i {
+    color: #670000;
+}
+
+.league-code {
+    font-family: monospace;
+    font-weight: 600;
+    background: #f0f0f0;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+}
+
+.league-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.league-card-footer {
+    border-top: 1px solid #eee;
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.view-link {
+    color: #670000;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f9f9f9;
+    border-radius: 12px;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state .hint {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #670000;
+    font-size: 1.25rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.create-form {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #670000;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: auto;
+}
+
+.hint {
+    color: #999;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .join-form {
+        flex-direction: column;
+    }
+
+    .leagues-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function showCreateModal() {
+    document.getElementById('createModal').classList.add('active');
+}
+
+function hideCreateModal() {
+    document.getElementById('createModal').classList.remove('active');
+}
+
+// Close modal on outside click
+document.getElementById('createModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideCreateModal();
+    }
+});
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideCreateModal();
+    }
+});
+</script>
+{% endblock %}

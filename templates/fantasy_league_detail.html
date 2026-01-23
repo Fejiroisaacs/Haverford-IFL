@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+{% block title %}{{ league.name }} | Mini-League{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="league-detail-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumbs">
+        <a href="/fantasy"><i class="fas fa-gamepad"></i> Fantasy</a>
+        <span>/</span>
+        <a href="/fantasy/leagues"><i class="fas fa-trophy"></i> Leagues</a>
+        <span>/</span>
+        <span class="current">{{ league.name }}</span>
+    </nav>
+
+    {% if success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- League Header -->
+    <div class="league-header">
+        <div class="league-title">
+            <h1>{{ league.name }}</h1>
+            {% if league.is_public %}
+            <span class="public-badge"><i class="fas fa-globe"></i> Public</span>
+            {% else %}
+            <span class="private-badge"><i class="fas fa-lock"></i> Private</span>
+            {% endif %}
+        </div>
+
+        {% if league.description %}
+        <p class="league-description">{{ league.description }}</p>
+        {% endif %}
+
+        <div class="league-meta">
+            <div class="meta-item">
+                <i class="fas fa-user"></i>
+                <span>Created by <strong>{{ league.creator_name }}</strong></span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-user-friends"></i>
+                <span><strong>{{ member_count }}</strong> / {{ league.max_members }} members</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-calendar"></i>
+                <span>Created {{ league.created_at[:10] }}</span>
+            </div>
+        </div>
+
+        <!-- Invite Code Section -->
+        {% if is_member %}
+        <div class="invite-section">
+            <div class="invite-code">
+                <span class="label">Invite Code:</span>
+                <span class="code" id="leagueCode">{{ league.league_code }}</span>
+                <button onclick="copyCode()" class="copy-btn" title="Copy code">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            <p class="invite-hint">Share this code with friends to invite them to your league</p>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="league-actions">
+            {% if not is_member %}
+            <form action="/fantasy/league/join" method="POST" style="margin: 0;">
+                <input type="hidden" name="league_id" value="{{ league.league_id }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Join League
+                </button>
+            </form>
+            {% elif is_creator %}
+            <button onclick="showDeleteModal()" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete League
+            </button>
+            {% else %}
+            <form action="/fantasy/league/{{ league.league_id }}/leave" method="POST" style="margin: 0;"
+                  onsubmit="return confirm('Are you sure you want to leave this league?')">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Leave League
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div class="leaderboard-section">
+        <h2><i class="fas fa-medal"></i> Leaderboard</h2>
+
+        {% if leaderboard %}
+        <div class="leaderboard-table">
+            <div class="leaderboard-header">
+                <span class="col-rank">#</span>
+                <span class="col-name">Manager</span>
+                <span class="col-points">Total Pts</span>
+                <span class="col-week">Week Pts</span>
+            </div>
+
+            {% for entry in leaderboard %}
+            <div class="leaderboard-row {% if entry.user_id == user.user_id %}current-user{% endif %} {% if entry.position <= 3 %}top-three{% endif %}">
+                <span class="col-rank">
+                    {% if entry.position == 1 %}
+                    <i class="fas fa-trophy trophy-gold"></i>
+                    {% elif entry.position == 2 %}
+                    <i class="fas fa-trophy trophy-silver"></i>
+                    {% elif entry.position == 3 %}
+                    <i class="fas fa-trophy trophy-bronze"></i>
+                    {% else %}
+                    {{ entry.position }}
+                    {% endif %}
+                </span>
+                <span class="col-name">
+                    {{ entry.username }}
+                    {% if entry.user_id == user.user_id %}<span class="you-badge">You</span>{% endif %}
+                    {% if entry.user_id == league.creator_id %}<span class="owner-badge">Owner</span>{% endif %}
+                </span>
+                <span class="col-points">{{ entry.total_points }}</span>
+                <span class="col-week">{{ entry.week_points }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-leaderboard">
+            <i class="fas fa-chart-line"></i>
+            <p>No standings yet</p>
+            <p class="hint">Join the league and create a fantasy team to appear on the leaderboard</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- League Stats (optional future enhancement) -->
+    <div class="stats-section">
+        <h2><i class="fas fa-chart-bar"></i> League Stats</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ member_count }}</div>
+                <div class="stat-label">Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{% if leaderboard %}{{ leaderboard[0].total_points if leaderboard else 0 }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Top Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{% if leaderboard %}{{ (leaderboard|map(attribute='total_points')|list|sum / leaderboard|length)|round|int if leaderboard else 0 }}{% else %}0{% endif %}</div>
+                <div class="stat-label">Avg Score</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{% if is_creator %}
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle"></i> Delete League</h2>
+            <button onclick="hideDeleteModal()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <strong>{{ league.name }}</strong>?</p>
+            <p class="warning">This action cannot be undone. All league data will be permanently deleted.</p>
+        </div>
+        <div class="modal-actions">
+            <button onclick="hideDeleteModal()" class="btn btn-secondary">Cancel</button>
+            <form action="/fantasy/league/{{ league.league_id }}/delete" method="POST" style="margin: 0;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete League
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.league-detail-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumbs a {
+    color: #670000;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumbs span {
+    color: #999;
+}
+
+.breadcrumbs .current {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Alerts */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* League Header */
+.league-header {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.league-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.league-title h1 {
+    margin: 0;
+    color: #670000;
+}
+
+.public-badge, .private-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.public-badge {
+    background: #e3f2fd;
+    color: #0d6efd;
+}
+
+.private-badge {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.league-description {
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+
+.league-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #555;
+}
+
+.meta-item i {
+    color: #670000;
+}
+
+/* Invite Section */
+.invite-section {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+    border: 2px dashed #f4b400;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.invite-code {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.invite-code .label {
+    font-weight: 500;
+    color: #666;
+}
+
+.invite-code .code {
+    font-family: monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #670000;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 2px solid #670000;
+    letter-spacing: 0.2rem;
+}
+
+.copy-btn {
+    background: #670000;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: #8a0000;
+}
+
+.invite-hint {
+    margin-top: 0.75rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Action Buttons */
+.league-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+/* Leaderboard */
+.leaderboard-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.leaderboard-section h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.leaderboard-section h2 i {
+    color: #f4b400;
+    margin-right: 0.5rem;
+}
+
+.leaderboard-table {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.leaderboard-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 100px;
+    background: #670000;
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+}
+
+.leaderboard-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 100px;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.leaderboard-row:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-row:hover {
+    background: #fafafa;
+}
+
+.leaderboard-row.current-user {
+    background: #fff9e6;
+}
+
+.leaderboard-row.current-user:hover {
+    background: #fff5d6;
+}
+
+.leaderboard-row.top-three {
+    font-weight: 500;
+}
+
+.col-rank {
+    text-align: center;
+    font-weight: 600;
+}
+
+.col-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.col-points, .col-week {
+    text-align: center;
+    font-weight: 500;
+}
+
+.trophy-gold { color: #FFD700; }
+.trophy-silver { color: #C0C0C0; }
+.trophy-bronze { color: #CD7F32; }
+
+.you-badge {
+    background: #670000;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.owner-badge {
+    background: #f4b400;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.empty-leaderboard {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-leaderboard i {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.empty-leaderboard .hint {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Stats Section */
+.stats-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.stats-section h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.stats-section h2 i {
+    color: #670000;
+    margin-right: 0.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 100%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #dc3545;
+    font-size: 1.25rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body .warning {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .leaderboard-header,
+    .leaderboard-row {
+        grid-template-columns: 50px 1fr 70px 70px;
+        font-size: 0.9rem;
+    }
+
+    .invite-code {
+        flex-wrap: wrap;
+    }
+
+    .invite-code .code {
+        font-size: 1.2rem;
+    }
+
+    .league-meta {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+</style>
+
+<script>
+function copyCode() {
+    const code = document.getElementById('leagueCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 2000);
+    });
+}
+
+function showDeleteModal() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function hideDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+
+document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideDeleteModal();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideDeleteModal();
+    }
+});
+</script>
+{% endblock %}

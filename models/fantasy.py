@@ -3,6 +3,9 @@ from typing import List, Optional, Dict, ClassVar
 import pandas as pd
 import numpy as np
 from firebase_admin import db
+from datetime import datetime
+import secrets
+import string
 
 class FantasyPlayer(BaseModel):
     first_name: str
@@ -315,5 +318,163 @@ class FantasyService:
             
             if starting_positions.count('F') < 1:
                 return False, "Transfer would violate starting team forward rule"
-        
+
         return True, "Transfer is valid"
+
+
+# ============ Mini-League Models ============
+
+class MiniLeague(BaseModel):
+    """Represents a fantasy mini-league"""
+    league_id: str
+    name: str
+    creator_id: str
+    creator_name: str
+    created_at: str
+    league_code: str  # 6-character shareable code
+    members: Dict[str, str] = Field(default_factory=dict)  # {user_id: join_timestamp}
+    max_members: int = 20
+    is_public: bool = False
+    description: str = ""
+
+    @staticmethod
+    def generate_league_code() -> str:
+        """Generate a unique 6-character league code"""
+        return ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+
+    @staticmethod
+    def generate_league_id() -> str:
+        """Generate a unique league ID"""
+        return f"league_{secrets.token_hex(8)}"
+
+    def save_to_firebase(self):
+        """Save league to Firebase"""
+        league_data = {
+            'name': self.name,
+            'creator_id': self.creator_id,
+            'creator_name': self.creator_name,
+            'created_at': self.created_at,
+            'league_code': self.league_code,
+            'members': self.members,
+            'max_members': self.max_members,
+            'is_public': self.is_public,
+            'description': self.description
+        }
+        db.reference(f'Fantasy/MiniLeagues/{self.league_id}').set(league_data)
+
+    @classmethod
+    def load_from_firebase(cls, league_id: str) -> Optional['MiniLeague']:
+        """Load league from Firebase"""
+        league_ref = db.reference(f'Fantasy/MiniLeagues/{league_id}')
+        league_data = league_ref.get()
+
+        if not league_data:
+            return None
+
+        return cls(
+            league_id=league_id,
+            name=league_data.get('name', ''),
+            creator_id=league_data.get('creator_id', ''),
+            creator_name=league_data.get('creator_name', ''),
+            created_at=league_data.get('created_at', ''),
+            league_code=league_data.get('league_code', ''),
+            members=league_data.get('members', {}),
+            max_members=league_data.get('max_members', 20),
+            is_public=league_data.get('is_public', False),
+            description=league_data.get('description', '')
+        )
+
+    @staticmethod
+    def find_by_code(code: str) -> Optional['MiniLeague']:
+        """Find a league by its invite code"""
+        leagues_ref = db.reference('Fantasy/MiniLeagues')
+        all_leagues = leagues_ref.get() or {}
+
+        for league_id, league_data in all_leagues.items():
+            if league_data.get('league_code') == code.upper():
+                return MiniLeague.load_from_firebase(league_id)
+        return None
+
+    @staticmethod
+    def get_user_leagues(user_id: str) -> List['MiniLeague']:
+        """Get all leagues a user is a member of"""
+        leagues_ref = db.reference('Fantasy/MiniLeagues')
+        all_leagues = leagues_ref.get() or {}
+
+        user_leagues = []
+        for league_id, league_data in all_leagues.items():
+            members = league_data.get('members', {})
+            if user_id in members:
+                league = MiniLeague.load_from_firebase(league_id)
+                if league:
+                    user_leagues.append(league)
+
+        return user_leagues
+
+    @staticmethod
+    def get_public_leagues() -> List['MiniLeague']:
+        """Get all public leagues"""
+        leagues_ref = db.reference('Fantasy/MiniLeagues')
+        all_leagues = leagues_ref.get() or {}
+
+        public_leagues = []
+        for league_id, league_data in all_leagues.items():
+            if league_data.get('is_public', False):
+                league = MiniLeague.load_from_firebase(league_id)
+                if league:
+                    public_leagues.append(league)
+
+        return public_leagues
+
+    def add_member(self, user_id: str) -> tuple[bool, str]:
+        """Add a member to the league"""
+        if user_id in self.members:
+            return False, "You are already a member of this league"
+
+        if len(self.members) >= self.max_members:
+            return False, f"League is full (max {self.max_members} members)"
+
+        self.members[user_id] = datetime.now().isoformat()
+        self.save_to_firebase()
+        return True, "Successfully joined the league"
+
+    def remove_member(self, user_id: str) -> tuple[bool, str]:
+        """Remove a member from the league"""
+        if user_id not in self.members:
+            return False, "You are not a member of this league"
+
+        if user_id == self.creator_id:
+            return False, "League creator cannot leave. Delete the league instead."
+
+        del self.members[user_id]
+        self.save_to_firebase()
+        return True, "Successfully left the league"
+
+    def delete(self):
+        """Delete the league"""
+        db.reference(f'Fantasy/MiniLeagues/{self.league_id}').delete()
+
+    def get_leaderboard(self) -> List[Dict]:
+        """Get the league leaderboard"""
+        leaderboard = []
+
+        for user_id in self.members.keys():
+            user_ref = db.reference(f'Fantasy/Users/{user_id}')
+            user_data = user_ref.get()
+
+            if user_data:
+                leaderboard.append({
+                    'user_id': user_id,
+                    'username': user_data.get('username', 'Unknown'),
+                    'total_points': user_data.get('total_points', 0),
+                    'week_points': user_data.get('week_points', 0)
+                })
+
+        # Sort by total points descending
+        leaderboard.sort(key=lambda x: x['total_points'], reverse=True)
+
+        # Add positions
+        for i, entry in enumerate(leaderboard):
+            entry['position'] = i + 1
+
+        return leaderboard

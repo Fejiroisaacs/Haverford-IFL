@@ -2,7 +2,7 @@ from fastapi import Request, Form, APIRouter, Depends, Cookie, HTTPException
 from firebase_admin import auth, db
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
-from models.fantasy import FantasyUser, FantasyService
+from models.fantasy import FantasyUser, FantasyService, MiniLeague
 from datetime import datetime
 import urllib.parse
 from functools import lru_cache
@@ -381,3 +381,223 @@ async def fantasy_leaderboard(request: Request, user: dict = Depends(get_current
 async def get_players_api(user: dict = Depends(get_current_user)):
     """API endpoint to get all players data"""
     return {"players": fantasy_service.get_all_players()}
+
+
+# ============ Mini-League Routes ============
+
+@router.get("/fantasy/leagues", response_class=HTMLResponse)
+async def leagues_home(request: Request, user: dict = Depends(get_current_user), error: str = None, success: str = None):
+    """Mini-leagues home page - shows user's leagues and options to create/join"""
+    user_leagues = MiniLeague.get_user_leagues(user['user_id'])
+    public_leagues = MiniLeague.get_public_leagues()
+
+    # Filter out leagues user is already a member of from public leagues
+    public_leagues = [l for l in public_leagues if user['user_id'] not in l.members]
+
+    context = {
+        "request": request,
+        "user": user,
+        "user_leagues": user_leagues,
+        "public_leagues": public_leagues[:10],  # Limit public leagues shown
+        "error": urllib.parse.unquote(error) if error else None,
+        "success": urllib.parse.unquote(success) if success else None
+    }
+
+    return templates.TemplateResponse("fantasy_leagues.html", context)
+
+
+@router.post("/fantasy/league/create")
+async def create_league(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    league_name: str = Form(...),
+    description: str = Form(""),
+    max_members: int = Form(20),
+    is_public: bool = Form(False)
+):
+    """Create a new mini-league"""
+    try:
+        # Validate league name
+        league_name = league_name.strip()
+        if not league_name or len(league_name) < 3:
+            raise ValueError("League name must be at least 3 characters")
+        if len(league_name) > 50:
+            raise ValueError("League name must be less than 50 characters")
+
+        # Generate unique IDs
+        league_id = MiniLeague.generate_league_id()
+        league_code = MiniLeague.generate_league_code()
+
+        # Create the league
+        league = MiniLeague(
+            league_id=league_id,
+            name=league_name,
+            creator_id=user['user_id'],
+            creator_name=user.get('name', 'Unknown'),
+            created_at=datetime.now().isoformat(),
+            league_code=league_code,
+            members={user['user_id']: datetime.now().isoformat()},  # Creator is first member
+            max_members=min(max(5, max_members), 50),  # Between 5 and 50
+            is_public=is_public,
+            description=description[:200] if description else ""
+        )
+
+        league.save_to_firebase()
+
+        log_user_action(user['user_id'], "League created", f"League: {league_name}, Code: {league_code}")
+
+        success_message = urllib.parse.quote(f"League '{league_name}' created! Share code: {league_code}")
+        return RedirectResponse(url=f"/fantasy/league/{league_id}?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error creating league: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/leagues?error={error_message}", status_code=303)
+
+
+@router.get("/fantasy/league/{league_id}", response_class=HTMLResponse)
+async def league_detail(
+    request: Request,
+    league_id: str,
+    user: dict = Depends(get_current_user),
+    error: str = None,
+    success: str = None
+):
+    """View a specific mini-league"""
+    league = MiniLeague.load_from_firebase(league_id)
+
+    if not league:
+        return RedirectResponse(url="/fantasy/leagues?error=League%20not%20found", status_code=303)
+
+    # Check if user is a member
+    is_member = user['user_id'] in league.members
+    is_creator = user['user_id'] == league.creator_id
+
+    # Get leaderboard
+    leaderboard = league.get_leaderboard()
+
+    context = {
+        "request": request,
+        "user": user,
+        "league": league,
+        "is_member": is_member,
+        "is_creator": is_creator,
+        "leaderboard": leaderboard,
+        "member_count": len(league.members),
+        "error": urllib.parse.unquote(error) if error else None,
+        "success": urllib.parse.unquote(success) if success else None
+    }
+
+    return templates.TemplateResponse("fantasy_league_detail.html", context)
+
+
+@router.post("/fantasy/league/join")
+async def join_league(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    league_code: str = Form(None),
+    league_id: str = Form(None)
+):
+    """Join a mini-league by code or ID"""
+    try:
+        league = None
+
+        if league_code:
+            league = MiniLeague.find_by_code(league_code.strip().upper())
+            if not league:
+                raise ValueError("Invalid league code")
+        elif league_id:
+            league = MiniLeague.load_from_firebase(league_id)
+            if not league:
+                raise ValueError("League not found")
+        else:
+            raise ValueError("Please provide a league code")
+
+        # Add user to league
+        success, message = league.add_member(user['user_id'])
+
+        if not success:
+            raise ValueError(message)
+
+        log_user_action(user['user_id'], "Joined league", f"League: {league.name}")
+
+        success_message = urllib.parse.quote(f"Successfully joined '{league.name}'!")
+        return RedirectResponse(url=f"/fantasy/league/{league.league_id}?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error joining league: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/leagues?error={error_message}", status_code=303)
+
+
+@router.post("/fantasy/league/{league_id}/leave")
+async def leave_league(
+    request: Request,
+    league_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Leave a mini-league"""
+    try:
+        league = MiniLeague.load_from_firebase(league_id)
+
+        if not league:
+            raise ValueError("League not found")
+
+        success, message = league.remove_member(user['user_id'])
+
+        if not success:
+            raise ValueError(message)
+
+        log_user_action(user['user_id'], "Left league", f"League: {league.name}")
+
+        success_message = urllib.parse.quote(f"Successfully left '{league.name}'")
+        return RedirectResponse(url=f"/fantasy/leagues?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error leaving league: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/league/{league_id}?error={error_message}", status_code=303)
+
+
+@router.post("/fantasy/league/{league_id}/delete")
+async def delete_league(
+    request: Request,
+    league_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Delete a mini-league (creator only)"""
+    try:
+        league = MiniLeague.load_from_firebase(league_id)
+
+        if not league:
+            raise ValueError("League not found")
+
+        if league.creator_id != user['user_id']:
+            raise ValueError("Only the league creator can delete the league")
+
+        league_name = league.name
+        league.delete()
+
+        log_user_action(user['user_id'], "Deleted league", f"League: {league_name}")
+
+        success_message = urllib.parse.quote(f"League '{league_name}' has been deleted")
+        return RedirectResponse(url=f"/fantasy/leagues?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error deleting league: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/league/{league_id}?error={error_message}", status_code=303)
+
+
+@router.get("/fantasy/league/{league_id}/leaderboard")
+async def league_leaderboard_api(
+    league_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """API endpoint for league leaderboard"""
+    league = MiniLeague.load_from_firebase(league_id)
+
+    if not league:
+        return {"error": "League not found"}
+
+    return {"leaderboard": league.get_leaderboard()}
