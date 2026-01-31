@@ -1386,3 +1386,121 @@
     font-size: 1.1rem;
   }
 }
+
+/* Your Follows Section Styles */
+.your-follows-section {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.follows-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.follows-category h3 {
+  color: #670000;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.follows-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.follow-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  border-radius: 10px;
+}
+
+.follow-card-link:focus {
+  outline: 3px solid #670000;
+  outline-offset: 2px;
+}
+
+.follow-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 2px solid #670000;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  min-width: 180px;
+}
+
+.follow-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(103, 0, 0, 0.2);
+  background: #670000;
+  color: white;
+}
+
+.follow-card .follow-icon {
+  font-size: 1.5rem;
+}
+
+.follow-card .follow-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.follow-team {
+  border-left: 4px solid #670000;
+}
+
+.follow-player {
+  border-left: 4px solid #a70000;
+}
+
+/* Responsive Design for Follows Section */
+@media (max-width: 768px) {
+  .your-follows-section {
+    padding: 0 1rem;
+    margin: 1.5rem auto;
+  }
+
+  .follows-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .follows-list {
+    gap: 0.75rem;
+  }
+
+  .follow-card {
+    padding: 0.8rem 1.2rem;
+    min-width: 150px;
+  }
+
+  .follow-card .follow-icon {
+    font-size: 1.3rem;
+  }
+
+  .follow-card .follow-name {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .follows-list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .follow-card {
+    min-width: auto;
+    justify-content: center;
+  }
+}

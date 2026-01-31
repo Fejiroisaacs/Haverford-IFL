@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search, follows
 from auth_utils import get_current_user
 import json
 import os
@@ -167,6 +167,7 @@ app.include_router(teams.router, dependencies=[Depends(lambda: db)])
 app.include_router(admin.router)
 app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
 app.include_router(search.router)
+app.include_router(follows.router, dependencies=[Depends(lambda: db), Depends(lambda: auth)])
 
 def get_cached_data():
     """Get cached data from app state."""
@@ -379,6 +380,11 @@ async def read_root(request: Request, user = Depends(get_current_user)):
     season_stats = get_season_stats()
     top_performers = get_season_top_performers()
 
+    # Get user's followed teams and players
+    user_follows = {'teams': [], 'players': []}
+    if user and 'user_id' in user:
+        user_follows = follows.get_user_follows(user['user_id'])
+
     return templates.TemplateResponse("index.html", {
         "request": request,
         "user": user,
@@ -387,7 +393,8 @@ async def read_root(request: Request, user = Depends(get_current_user)):
         "group_leaders": group_leaders,
         "latest_results": latest_results,
         "season_stats": season_stats,
-        "top_performers": top_performers
+        "top_performers": top_performers,
+        "user_follows": user_follows
     })
 
 @app.get("/gallery", response_class=HTMLResponse)

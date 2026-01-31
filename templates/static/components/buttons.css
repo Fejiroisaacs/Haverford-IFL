@@ -114,6 +114,59 @@
   transform: translateY(-2px);
 }
 
+/* Outline variants */
+.btn-outline-primary {
+  background: transparent;
+  border: 2px solid var(--color-maroon);
+  color: var(--color-maroon);
+  box-shadow: none;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background: var(--color-maroon);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  border: 2px solid var(--color-gray-600);
+  color: var(--color-gray-700);
+  box-shadow: none;
+}
+
+.btn-outline-secondary:hover:not(:disabled) {
+  background: var(--color-gray-700);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+.btn-outline-success {
+  background: transparent;
+  border: 2px solid #28a745;
+  color: #28a745;
+  box-shadow: none;
+}
+
+.btn-outline-success:hover:not(:disabled) {
+  background: #28a745;
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+.btn-outline-danger {
+  background: transparent;
+  border: 2px solid var(--color-error);
+  color: var(--color-error);
+  box-shadow: none;
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background: var(--color-error);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
 /* Ghost variant */
 .btn-ghost {
   background: transparent;

@@ -24,8 +24,94 @@
     </ol>
 </nav>
 
-<h1>{{team}} TEAM</h1>
-<h2>Rating: {{data["Rating"]}} / Rank: {{data["Rank"]}}</h2>
+<div class="team-title-section">
+    <h1>{{team}} TEAM</h1>
+    <h2>Rating: {{data["Rating"]}} / Rank: {{data["Rank"]}}</h2>
+</div>
+<button class="follow-btn" id="followBtn" onclick="toggleFollow()" aria-label="Follow team">
+    <i class="fas fa-heart"></i>
+    <span class="follow-text">Follow</span>
+    <span class="follower-count" id="followerCount">0</span>
+</button>
+
+<style>
+
+.team-title-section h1 {
+    margin-bottom: 0.25rem;
+}
+
+.team-title-section h2 {
+    margin-top: 0;
+}
+
+.follow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border: 2px solid #670000;
+    border-radius: 25px;
+    color: #670000;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.follow-btn:hover {
+    background: #fff5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 0, 0, 0.15);
+}
+
+.follow-btn.following {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    border-color: #670000;
+}
+
+.follow-btn.following:hover {
+    background: linear-gradient(135deg, #550000 0%, #8a0000 100%);
+}
+
+.follow-btn i {
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.follow-btn:hover i {
+    transform: scale(1.1);
+}
+
+.follow-btn.following i {
+    animation: heartPulse 0.3s ease;
+}
+
+@keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+.follower-count {
+    background: rgba(103, 0, 0, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.follow-btn.following .follower-count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 600px) {
+    .follow-btn {
+        align-self: stretch;
+        justify-content: center;
+    }
+}
+</style>
 
 <!-- Quick Stats Cards -->
 <br>
@@ -473,7 +559,80 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         showContent('results');
+        initFollowButton();
     });
+
+    // ============ Follow Functionality ============
+    const teamName = '{{ team }}';
+    let isFollowing = false;
+
+    async function initFollowButton() {
+        try {
+            const response = await fetch(`/api/follow/status/team/${encodeURIComponent(teamName)}`);
+            const data = await response.json();
+
+            isFollowing = data.following;
+            updateFollowButton(isFollowing, data.follower_count, data.logged_in);
+        } catch (error) {
+            console.error('Error checking follow status:', error);
+        }
+    }
+
+    function updateFollowButton(following, count, loggedIn) {
+        const btn = document.getElementById('followBtn');
+        const textSpan = btn.querySelector('.follow-text');
+        const countSpan = document.getElementById('followerCount');
+
+        if (following) {
+            btn.classList.add('following');
+            textSpan.textContent = 'Following';
+        } else {
+            btn.classList.remove('following');
+            textSpan.textContent = 'Follow';
+        }
+
+        countSpan.textContent = count;
+
+        if (!loggedIn) {
+            btn.title = 'Log in to follow this team';
+        } else {
+            btn.title = following ? 'Click to unfollow' : 'Click to follow';
+        }
+    }
+
+    async function toggleFollow() {
+        const btn = document.getElementById('followBtn');
+        btn.disabled = true;
+
+        try {
+            const endpoint = isFollowing ? 'unfollow' : 'follow';
+            const response = await fetch(`/api/${endpoint}/team/${encodeURIComponent(teamName)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                // Not logged in, redirect to login
+                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                isFollowing = data.following;
+                updateFollowButton(isFollowing, data.follower_count, true);
+            } else {
+                console.error('Follow operation failed:', data.error);
+            }
+        } catch (error) {
+            console.error('Error toggling follow:', error);
+        } finally {
+            btn.disabled = false;
+        }
+    }
 </script>
 
 <style>
