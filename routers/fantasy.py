@@ -2,7 +2,8 @@ from fastapi import Request, Form, APIRouter, Depends, Cookie, HTTPException
 from firebase_admin import auth, db
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
-from models.fantasy import FantasyUser, FantasyService, MiniLeague
+from models.fantasy import FantasyUser, FantasyService, MiniLeague, MatchPrediction, PredictionLeaderboard
+import pandas as pd
 from datetime import datetime
 import urllib.parse
 from functools import lru_cache
@@ -601,3 +602,261 @@ async def league_leaderboard_api(
         return {"error": "League not found"}
 
     return {"leaderboard": league.get_leaderboard()}
+
+
+# ============ Match Predictions Routes ============
+
+def get_upcoming_matches():
+    """Get upcoming matches that can be predicted"""
+    try:
+        matches_df = pd.read_csv('data\F25 Futsal Schedule.csv')
+        matches_df.columns = [col.strip() for col in matches_df.columns]
+
+        # Get matches that haven't been played yet (no score)
+        upcoming = matches_df.copy()
+
+        if upcoming.empty:
+            return []
+
+        matches = []
+        for _, row in upcoming.iterrows():
+            # Use numeric Match ID for unique identification
+            # This ensures same teams playing multiple times have different IDs
+            match_id = str(row.get('Match ID', row.get('Match Number', '')))
+
+            matches.append({
+                'match_id': match_id,
+                'home_team': row.get('Team 1', ''),
+                'away_team': row.get('Team 2', ''),
+                'date': row.get('Day', row.get('Date', '')),
+                'time': row.get('Time', ''),
+                'matchday': row.get('MD', row.get('Matchday', '')),
+                'group': row.get('Group', '')
+            })
+
+        return matches
+    except Exception as e:
+        print(f"Error loading upcoming matches: {e}")
+        return []
+
+
+def get_completed_matches_with_scores():
+    """Get completed matches for processing predictions"""
+    try:
+        matches_df = pd.read_csv('data/Match_Results.csv')
+        matches_df.columns = [col.strip() for col in matches_df.columns]
+
+        # Get matches with scores (using Score Team 1 and Score Team 2 columns)
+        completed = matches_df[
+            (matches_df['Score Team 1'].notna()) &
+            (matches_df['Score Team 2'].notna())
+        ].copy()
+
+        matches = []
+        for _, row in completed.iterrows():
+            try:
+                home_score = int(row.get('Score Team 1', 0))
+                away_score = int(row.get('Score Team 2', 0))
+            except:
+                continue
+
+            # Use numeric Match ID to match predictions
+            match_id = str(row.get('Match ID', ''))
+
+            matches.append({
+                'match_id': match_id,
+                'home_team': row.get('Team 1', ''),
+                'away_team': row.get('Team 2', ''),
+                'home_score': home_score,
+                'away_score': away_score,
+                'date': row.get('Date', '')
+            })
+
+        return matches
+    except Exception as e:
+        print(f"Error loading completed matches: {e}")
+        return []
+
+
+@router.get("/fantasy/predictions", response_class=HTMLResponse)
+async def predictions_home(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    error: str = None,
+    success: str = None
+):
+    """Match predictions home page"""
+    # Load fantasy user for admin check
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+
+    # Get upcoming matches
+    upcoming_matches = get_upcoming_matches()
+
+    # Get user's predictions
+    user_predictions = MatchPrediction.get_user_predictions(user['user_id'])
+
+    # Create a set of match IDs user has already predicted
+    predicted_match_ids = {p.match_id for p in user_predictions}
+
+    # Mark which matches user has already predicted
+    for match in upcoming_matches:
+        match['has_prediction'] = match['match_id'] in predicted_match_ids
+        if match['has_prediction']:
+            pred = next((p for p in user_predictions if p.match_id == match['match_id']), None)
+            if pred:
+                match['user_prediction'] = {
+                    'home_score': pred.predicted_home_score,
+                    'away_score': pred.predicted_away_score
+                }
+
+    # Get user stats
+    user_stats = PredictionLeaderboard.get_user_stats(user['user_id'])
+
+    # Get leaderboard
+    leaderboard = PredictionLeaderboard.get_leaderboard(10)
+
+    # Get recent predictions with results
+    recent_predictions = [p for p in user_predictions if p.is_processed][:10]
+
+    context = {
+        "request": request,
+        "user": user,
+        "fantasy_user": fantasy_user,
+        "upcoming_matches": upcoming_matches,
+        "user_predictions": user_predictions[:20],
+        "recent_predictions": recent_predictions,
+        "user_stats": user_stats,
+        "leaderboard": leaderboard,
+        "error": urllib.parse.unquote(error) if error else None,
+        "success": urllib.parse.unquote(success) if success else None
+    }
+
+    return templates.TemplateResponse("predictions.html", context)
+
+
+@router.post("/fantasy/predictions/submit")
+async def submit_prediction(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    match_id: str = Form(...),
+    home_team: str = Form(...),
+    away_team: str = Form(...),
+    home_score: int = Form(...),
+    away_score: int = Form(...)
+):
+    """Submit a match prediction"""
+    try:
+        # Validate scores
+        if home_score < 0 or away_score < 0:
+            raise ValueError("Scores cannot be negative")
+        if home_score > 20 or away_score > 20:
+            raise ValueError("Scores seem unrealistic")
+
+        # Check if user already predicted this match
+        existing = MatchPrediction.get_user_prediction_for_match(user['user_id'], match_id)
+        if existing:
+            # Update existing prediction
+            existing.predicted_home_score = home_score
+            existing.predicted_away_score = away_score
+            existing.predicted_at = datetime.now().isoformat()
+            existing.save_to_firebase()
+
+            log_user_action(user['user_id'], "Updated prediction",
+                           f"{home_team} {home_score}-{away_score} {away_team}")
+
+            success_message = urllib.parse.quote("Prediction updated!")
+        else:
+            # Create new prediction
+            prediction = MatchPrediction(
+                prediction_id=MatchPrediction.generate_prediction_id(),
+                user_id=user['user_id'],
+                username=user.get('name', 'Unknown'),
+                match_id=match_id,
+                home_team=home_team,
+                away_team=away_team,
+                predicted_home_score=home_score,
+                predicted_away_score=away_score,
+                predicted_at=datetime.now().isoformat()
+            )
+            prediction.save_to_firebase()
+
+            # Ensure user exists in leaderboard
+            PredictionLeaderboard.increment_prediction_count(user['user_id'], user.get('name', 'Unknown'))
+
+            log_user_action(user['user_id'], "Submitted prediction",
+                           f"{home_team} {home_score}-{away_score} {away_team}")
+
+            success_message = urllib.parse.quote("Prediction submitted!")
+
+        return RedirectResponse(url=f"/fantasy/predictions?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error submitting prediction: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/predictions?error={error_message}", status_code=303)
+
+
+@router.get("/fantasy/predictions/leaderboard", response_class=HTMLResponse)
+async def predictions_leaderboard(
+    request: Request,
+    user: dict = Depends(get_current_user)
+):
+    """Full predictions leaderboard page"""
+    leaderboard = PredictionLeaderboard.get_leaderboard(100)
+    user_stats = PredictionLeaderboard.get_user_stats(user['user_id'])
+
+    # Find user's position
+    user_position = next(
+        (entry['position'] for entry in leaderboard if entry['user_id'] == user['user_id']),
+        None
+    )
+
+    context = {
+        "request": request,
+        "user": user,
+        "leaderboard": leaderboard,
+        "user_stats": user_stats,
+        "user_position": user_position
+    }
+
+    return templates.TemplateResponse("predictions_leaderboard.html", context)
+
+
+@router.post("/fantasy/predictions/process")
+async def process_predictions(
+    request: Request,
+    user: dict = Depends(get_current_user)
+):
+    """Process predictions for completed matches (admin only)"""
+    try:
+        # Check if user is admin
+        fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+        if not fantasy_user.admin:
+            raise ValueError("Admin access required")
+
+        # Get completed matches
+        completed_matches = get_completed_matches_with_scores()
+
+        processed_count = 0
+        for match in completed_matches:
+            # Get all unprocessed predictions for this match
+            predictions = MatchPrediction.get_match_predictions(match['match_id'])
+
+            for pred in predictions:
+                if not pred.is_processed:
+                    pred.process_result(match['home_score'], match['away_score'])
+                    processed_count += 1
+
+        success_message = urllib.parse.quote(f"Processed {processed_count} predictions")
+        return RedirectResponse(url=f"/fantasy/predictions?success={success_message}", status_code=303)
+
+    except Exception as e:
+        print(f"Error processing predictions: {e}")
+        error_message = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/fantasy/predictions?error={error_message}", status_code=303)
+
+
+@router.get("/fantasy/predictions/api/matches")
+async def get_predictable_matches(user: dict = Depends(get_current_user)):
+    """API endpoint to get matches available for prediction"""
+    return {"matches": get_upcoming_matches()}

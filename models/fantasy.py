@@ -478,3 +478,227 @@ class MiniLeague(BaseModel):
             entry['position'] = i + 1
 
         return leaderboard
+
+
+# ============ Match Predictions Models ============
+
+class MatchPrediction(BaseModel):
+    """Represents a user's prediction for a match"""
+    prediction_id: str
+    user_id: str
+    username: str
+    match_id: str
+    home_team: str
+    away_team: str
+    predicted_home_score: int
+    predicted_away_score: int
+    predicted_at: str
+    points_earned: int = 0
+    is_processed: bool = False
+
+    @staticmethod
+    def generate_prediction_id() -> str:
+        """Generate a unique prediction ID"""
+        return f"pred_{secrets.token_hex(8)}"
+
+    def get_predicted_result(self) -> str:
+        """Get predicted result: 'home', 'draw', or 'away'"""
+        if self.predicted_home_score > self.predicted_away_score:
+            return 'home'
+        elif self.predicted_home_score < self.predicted_away_score:
+            return 'away'
+        return 'draw'
+
+    def save_to_firebase(self):
+        """Save prediction to Firebase"""
+        prediction_data = {
+            'user_id': self.user_id,
+            'username': self.username,
+            'match_id': self.match_id,
+            'home_team': self.home_team,
+            'away_team': self.away_team,
+            'predicted_home_score': self.predicted_home_score,
+            'predicted_away_score': self.predicted_away_score,
+            'predicted_at': self.predicted_at,
+            'points_earned': self.points_earned,
+            'is_processed': self.is_processed
+        }
+        db.reference(f'Predictions/{self.prediction_id}').set(prediction_data)
+
+    @classmethod
+    def load_from_firebase(cls, prediction_id: str) -> Optional['MatchPrediction']:
+        """Load prediction from Firebase"""
+        pred_ref = db.reference(f'Predictions/{prediction_id}')
+        pred_data = pred_ref.get()
+
+        if not pred_data:
+            return None
+
+        return cls(
+            prediction_id=prediction_id,
+            user_id=pred_data.get('user_id', ''),
+            username=pred_data.get('username', ''),
+            match_id=pred_data.get('match_id', ''),
+            home_team=pred_data.get('home_team', ''),
+            away_team=pred_data.get('away_team', ''),
+            predicted_home_score=pred_data.get('predicted_home_score', 0),
+            predicted_away_score=pred_data.get('predicted_away_score', 0),
+            predicted_at=pred_data.get('predicted_at', ''),
+            points_earned=pred_data.get('points_earned', 0),
+            is_processed=pred_data.get('is_processed', False)
+        )
+
+    @staticmethod
+    def get_user_prediction_for_match(user_id: str, match_id: str) -> Optional['MatchPrediction']:
+        """Get a user's prediction for a specific match"""
+        preds_ref = db.reference('Predictions')
+        all_preds = preds_ref.get() or {}
+
+        for pred_id, pred_data in all_preds.items():
+            if pred_data.get('user_id') == user_id and pred_data.get('match_id') == match_id:
+                return MatchPrediction.load_from_firebase(pred_id)
+        return None
+
+    @staticmethod
+    def get_user_predictions(user_id: str) -> List['MatchPrediction']:
+        """Get all predictions for a user"""
+        preds_ref = db.reference('Predictions')
+        all_preds = preds_ref.get() or {}
+
+        user_preds = []
+        for pred_id, pred_data in all_preds.items():
+            if pred_data.get('user_id') == user_id:
+                pred = MatchPrediction.load_from_firebase(pred_id)
+                if pred:
+                    user_preds.append(pred)
+
+        # Sort by predicted_at descending
+        user_preds.sort(key=lambda x: x.predicted_at, reverse=True)
+        return user_preds
+
+    @staticmethod
+    def get_match_predictions(match_id: str) -> List['MatchPrediction']:
+        """Get all predictions for a specific match"""
+        preds_ref = db.reference('Predictions')
+        all_preds = preds_ref.get() or {}
+
+        match_preds = []
+        for pred_id, pred_data in all_preds.items():
+            if pred_data.get('match_id') == match_id:
+                pred = MatchPrediction.load_from_firebase(pred_id)
+                if pred:
+                    match_preds.append(pred)
+
+        return match_preds
+
+    def calculate_points(self, actual_home_score: int, actual_away_score: int) -> int:
+        """Calculate points earned for this prediction"""
+        points = 0
+
+        # Determine actual result
+        if actual_home_score > actual_away_score:
+            actual_result = 'home'
+        elif actual_home_score < actual_away_score:
+            actual_result = 'away'
+        else:
+            actual_result = 'draw'
+
+        predicted_result = self.get_predicted_result()
+
+        # Points for correct result
+        if predicted_result == actual_result:
+            points += 3
+
+            # Bonus for exact score
+            if self.predicted_home_score == actual_home_score and self.predicted_away_score == actual_away_score:
+                points += 5
+
+        return points
+
+    def process_result(self, actual_home_score: int, actual_away_score: int):
+        """Process the match result and update points"""
+        if self.is_processed:
+            return
+
+        self.points_earned = self.calculate_points(actual_home_score, actual_away_score)
+        self.is_processed = True
+        self.save_to_firebase()
+
+        # Update user's prediction points
+        PredictionLeaderboard.add_points(self.user_id, self.username, self.points_earned)
+
+
+class PredictionLeaderboard:
+    """Manages the predictions leaderboard"""
+
+    @staticmethod
+    def get_user_stats(user_id: str) -> Dict:
+        """Get a user's prediction stats"""
+        stats_ref = db.reference(f'PredictionStats/{user_id}')
+        stats = stats_ref.get() or {}
+
+        return {
+            'user_id': user_id,
+            'username': stats.get('username', 'Unknown'),
+            'total_points': stats.get('total_points', 0),
+            'total_predictions': stats.get('total_predictions', 0),
+            'correct_results': stats.get('correct_results', 0),
+            'exact_scores': stats.get('exact_scores', 0)
+        }
+
+    @staticmethod
+    def add_points(user_id: str, username: str, points: int):
+        """Add points to a user's prediction total"""
+        stats_ref = db.reference(f'PredictionStats/{user_id}')
+        current_stats = stats_ref.get() or {}
+
+        new_stats = {
+            'username': username,
+            'total_points': current_stats.get('total_points', 0) + points,
+            'total_predictions': current_stats.get('total_predictions', 0) + 1,
+            'correct_results': current_stats.get('correct_results', 0) + (1 if points >= 3 else 0),
+            'exact_scores': current_stats.get('exact_scores', 0) + (1 if points >= 8 else 0)
+        }
+        stats_ref.set(new_stats)
+
+    @staticmethod
+    def increment_prediction_count(user_id: str, username: str):
+        """Increment the prediction count when a user makes a prediction"""
+        stats_ref = db.reference(f'PredictionStats/{user_id}')
+        current_stats = stats_ref.get() or {}
+
+        # Only update username and ensure user exists in stats
+        if not current_stats:
+            stats_ref.set({
+                'username': username,
+                'total_points': 0,
+                'total_predictions': 0,
+                'correct_results': 0,
+                'exact_scores': 0
+            })
+
+    @staticmethod
+    def get_leaderboard(limit: int = 50) -> List[Dict]:
+        """Get the predictions leaderboard"""
+        stats_ref = db.reference('PredictionStats')
+        all_stats = stats_ref.get() or {}
+
+        leaderboard = []
+        for user_id, stats in all_stats.items():
+            leaderboard.append({
+                'user_id': user_id,
+                'username': stats.get('username', 'Unknown'),
+                'total_points': stats.get('total_points', 0),
+                'total_predictions': stats.get('total_predictions', 0),
+                'correct_results': stats.get('correct_results', 0),
+                'exact_scores': stats.get('exact_scores', 0)
+            })
+
+        # Sort by total points descending
+        leaderboard.sort(key=lambda x: x['total_points'], reverse=True)
+
+        # Add positions
+        for i, entry in enumerate(leaderboard[:limit]):
+            entry['position'] = i + 1
+
+        return leaderboard[:limit]

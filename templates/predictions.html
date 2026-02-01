@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+{% block title %}Match Predictions | Fantasy{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.predictions-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.predictions-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.predictions-header h1 {
+    color: #670000;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.predictions-header .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Alert styles */
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Stats cards */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #fff;
+    border: 2px solid #670000;
+    border-radius: 10px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.stat-card .stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* Sections */
+.predictions-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.predictions-section h2 {
+    color: #670000;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Match cards for prediction */
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.match-card {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+}
+
+.match-card:hover {
+    border-color: #670000;
+}
+
+.match-card.predicted {
+    border-color: #28a745;
+    background: #f0fff0;
+}
+
+.match-info {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.match-info .matchday {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.match-teams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.team-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.vs-text {
+    padding: 0 1rem;
+    color: #999;
+    font-weight: 500;
+}
+
+.prediction-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.score-input {
+    width: 50px;
+    height: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.score-input:focus {
+    border-color: #670000;
+    outline: none;
+}
+
+.score-separator {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.submit-prediction {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #670000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submit-prediction:hover {
+    background: #8b0000;
+}
+
+.submit-prediction.update {
+    background: #28a745;
+}
+
+.submit-prediction.update:hover {
+    background: #218838;
+}
+
+.current-prediction {
+    text-align: center;
+    padding: 0.5rem;
+    background: #e7f5e7;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #155724;
+}
+
+/* Leaderboard */
+.leaderboard-mini {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.leaderboard-table th {
+    background: #670000;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+.leaderboard-table tr:hover {
+    background: #f5f5f5;
+}
+
+.leaderboard-table .position {
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.leaderboard-table .points {
+    font-weight: bold;
+    color: #670000;
+}
+
+.trophy-icon {
+    margin-right: 0.25rem;
+}
+
+.you-badge {
+    background: #670000;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+/* Recent predictions */
+.recent-predictions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.recent-prediction {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #ddd;
+}
+
+.recent-prediction.correct {
+    border-left-color: #28a745;
+    background: #f0fff0;
+}
+
+.recent-prediction.wrong {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.prediction-match {
+    font-weight: 500;
+}
+
+.prediction-score {
+    font-weight: bold;
+    color: #670000;
+}
+
+.prediction-points {
+    font-weight: bold;
+}
+
+.prediction-points.positive {
+    color: #28a745;
+}
+
+.prediction-points.zero {
+    color: #999;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 1rem;
+}
+
+/* Points system info */
+.points-info {
+    background: #f0f7ff;
+    border: 1px solid #b8daff;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.points-info h3 {
+    color: #004085;
+    margin-bottom: 0.75rem;
+}
+
+.points-info ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #004085;
+}
+
+.points-info li {
+    margin: 0.25rem 0;
+}
+
+/* Two column layout */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 900px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .predictions-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .matches-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .match-teams {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .team-name {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<div class="predictions-container">
+    <div class="predictions-header">
+        <h1><i class="fas fa-futbol"></i> Match Predictions</h1>
+        <p class="subtitle">Predict match scores and compete with other fans</p>
+        <a href="/fantasy" class="back-link"><i class="fas fa-arrow-left"></i> Back to Fantasy</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Points System Info -->
+    <div class="points-info">
+        <h3><i class="fas fa-info-circle"></i> Scoring System</h3>
+        <ul>
+            <li><strong>+3 points</strong> for predicting the correct result (win/draw/loss)</li>
+            <li><strong>+5 bonus points</strong> for predicting the exact score</li>
+        </ul>
+    </div>
+
+    <!-- User Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-value">{{ user_stats.total_points }}</div>
+            <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ user_stats.total_predictions }}</div>
+            <div class="stat-label">Predictions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ user_stats.correct_results }}</div>
+            <div class="stat-label">Correct Results</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ user_stats.exact_scores }}</div>
+            <div class="stat-label">Exact Scores</div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <!-- Main Content: Upcoming Matches -->
+        <div class="main-content">
+            <section class="predictions-section">
+                <h2><i class="fas fa-calendar-alt"></i> Upcoming Matches</h2>
+
+                {% if upcoming_matches %}
+                <div class="matches-grid">
+                    {% for match in upcoming_matches %}
+                    <div class="match-card {% if match.has_prediction %}predicted{% endif %}">
+                        <div class="match-info">
+                            <div class="matchday">
+                                {% if match.matchday %}Matchday {{ match.matchday }}{% endif %}
+                                {% if match.group %} - Group {{ match.group }}{% endif %}
+                            </div>
+                            <div class="match-date">{{ match.date }} {{ match.time }}</div>
+                        </div>
+
+                        <form action="/fantasy/predictions/submit" method="POST">
+                            <input type="hidden" name="match_id" value="{{ match.match_id }}">
+                            <input type="hidden" name="home_team" value="{{ match.home_team }}">
+                            <input type="hidden" name="away_team" value="{{ match.away_team }}">
+
+                            <div class="match-teams">
+                                <span class="team-name">{{ match.home_team }}</span>
+                                <span class="vs-text">vs</span>
+                                <span class="team-name">{{ match.away_team }}</span>
+                            </div>
+
+                            <div class="prediction-form">
+                                <input type="number" name="home_score" class="score-input"
+                                       min="0" max="20" required
+                                       value="{% if match.user_prediction %}{{ match.user_prediction.home_score }}{% endif %}"
+                                       placeholder="0">
+                                <span class="score-separator">-</span>
+                                <input type="number" name="away_score" class="score-input"
+                                       min="0" max="20" required
+                                       value="{% if match.user_prediction %}{{ match.user_prediction.away_score }}{% endif %}"
+                                       placeholder="0">
+                            </div>
+
+                            <button type="submit" class="submit-prediction {% if match.has_prediction %}update{% endif %}">
+                                {% if match.has_prediction %}
+                                <i class="fas fa-edit"></i> Update Prediction
+                                {% else %}
+                                <i class="fas fa-check"></i> Submit Prediction
+                                {% endif %}
+                            </button>
+
+                            {% if match.has_prediction %}
+                            <div class="current-prediction">
+                                <i class="fas fa-check-circle"></i>
+                                Your prediction: {{ match.user_prediction.home_score }} - {{ match.user_prediction.away_score }}
+                            </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No upcoming matches to predict</p>
+                    <p class="hint">Check back when new matches are scheduled</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Recent Predictions -->
+            {% if recent_predictions %}
+            <section class="predictions-section">
+                <h2><i class="fas fa-history"></i> Recent Results</h2>
+                <div class="recent-predictions">
+                    {% for pred in recent_predictions %}
+                    <div class="recent-prediction {% if pred.points_earned > 0 %}correct{% else %}wrong{% endif %}">
+                        <div class="prediction-match">
+                            {{ pred.home_team }} vs {{ pred.away_team }}
+                        </div>
+                        <div class="prediction-score">
+                            {{ pred.predicted_home_score }} - {{ pred.predicted_away_score }}
+                        </div>
+                        <div class="prediction-points {% if pred.points_earned > 0 %}positive{% else %}zero{% endif %}">
+                            {% if pred.points_earned > 0 %}+{% endif %}{{ pred.points_earned }} pts
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Leaderboard -->
+        <div class="sidebar">
+            <section class="predictions-section">
+                <h2><i class="fas fa-trophy"></i> Top Predictors</h2>
+                <div class="leaderboard-mini">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th class="position">#</th>
+                                <th>User</th>
+                                <th class="points">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in leaderboard %}
+                            <tr>
+                                <td class="position">
+                                    {% if entry.position == 1 %}
+                                    <span class="trophy-icon">🥇</span>
+                                    {% elif entry.position == 2 %}
+                                    <span class="trophy-icon">🥈</span>
+                                    {% elif entry.position == 3 %}
+                                    <span class="trophy-icon">🥉</span>
+                                    {% else %}
+                                    {{ entry.position }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ entry.username }}
+                                    {% if entry.user_id == user.user_id %}
+                                    <span class="you-badge">You</span>
+                                    {% endif %}
+                                </td>
+                                <td class="points">{{ entry.total_points }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% if not leaderboard %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: #999;">
+                                    No predictions yet
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="/fantasy/predictions/leaderboard" class="btn btn-outline" style="display: block; text-align: center; margin-top: 1rem; color: #670000; border: 2px solid #670000; padding: 0.75rem; border-radius: 5px; text-decoration: none;">
+                    View Full Leaderboard
+                </a>
+            </section>
+
+            {% if fantasy_user and fantasy_user.admin %}
+            <section class="predictions-section" style="background: linear-gradient(135deg, #670000, #8b0000); border: none;">
+                <h2 style="color: #fff; margin-bottom: 1rem;">
+                    <i class="fas fa-shield-alt"></i> Admin Controls
+                </h2>
+                <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin-bottom: 1rem;">
+                    Process predictions for completed matches to calculate points and update the leaderboard.
+                </p>
+                <form method="post" action="/fantasy/predictions/process">
+                    <button type="submit" class="btn" style="width: 100%; background: #fff; color: #670000; border: none; padding: 0.75rem 1rem; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fas fa-cogs"></i> Process Predictions
+                    </button>
+                </form>
+            </section>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

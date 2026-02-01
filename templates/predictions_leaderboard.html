@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Predictions Leaderboard | Fantasy{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.leaderboard-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.leaderboard-header h1 {
+    color: #670000;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.leaderboard-header .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* User's position card */
+.user-position-card {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.user-position-card .position-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.user-position-card .position-info p {
+    opacity: 0.9;
+    margin: 0;
+}
+
+.user-stats-grid {
+    display: flex;
+    gap: 2rem;
+}
+
+.user-stat {
+    text-align: center;
+}
+
+.user-stat .value {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.user-stat .label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Leaderboard table */
+.leaderboard-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.leaderboard-table th {
+    background: #670000;
+    color: white;
+    font-weight: 600;
+}
+
+.leaderboard-table th:first-child {
+    border-radius: 5px 0 0 0;
+}
+
+.leaderboard-table th:last-child {
+    border-radius: 0 5px 0 0;
+}
+
+.leaderboard-table tr:hover {
+    background: #f9f9f9;
+}
+
+.leaderboard-table tr.current-user {
+    background: #fff0f0;
+}
+
+.leaderboard-table .position {
+    width: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.leaderboard-table .points {
+    font-weight: bold;
+    color: #670000;
+}
+
+.leaderboard-table .username {
+    font-weight: 500;
+}
+
+.trophy-icon {
+    margin-right: 0.25rem;
+}
+
+.you-badge {
+    background: #670000;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.stat-cell {
+    color: #666;
+}
+
+/* Top 3 special styling */
+.top-3 {
+    font-size: 1.1rem;
+}
+
+.top-3 .position {
+    font-size: 1.3rem;
+}
+
+/* Accuracy percentage */
+.accuracy {
+    color: #28a745;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .leaderboard-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .user-position-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .user-stats-grid {
+        justify-content: center;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-cell {
+        display: none;
+    }
+}
+</style>
+
+<div class="leaderboard-container">
+    <div class="leaderboard-header">
+        <h1><i class="fas fa-trophy"></i> Predictions Leaderboard</h1>
+        <p class="subtitle">See who's best at predicting match outcomes</p>
+        <a href="/fantasy/predictions" class="back-link"><i class="fas fa-arrow-left"></i> Back to Predictions</a>
+    </div>
+
+    <!-- User's Position Card -->
+    <div class="user-position-card">
+        <div class="position-info">
+            <h3>
+                {% if user_position %}
+                You're #{{ user_position }}
+                {% else %}
+                Make predictions to join!
+                {% endif %}
+            </h3>
+            <p>{{ user_stats.username }}</p>
+        </div>
+        <div class="user-stats-grid">
+            <div class="user-stat">
+                <div class="value">{{ user_stats.total_points }}</div>
+                <div class="label">Points</div>
+            </div>
+            <div class="user-stat">
+                <div class="value">{{ user_stats.correct_results }}</div>
+                <div class="label">Correct</div>
+            </div>
+            <div class="user-stat">
+                <div class="value">{{ user_stats.exact_scores }}</div>
+                <div class="label">Exact</div>
+            </div>
+            <div class="user-stat">
+                <div class="value">
+                    {% if user_stats.total_predictions > 0 %}
+                    {{ ((user_stats.correct_results / user_stats.total_predictions) * 100)|round|int }}%
+                    {% else %}
+                    0%
+                    {% endif %}
+                </div>
+                <div class="label">Accuracy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Leaderboard -->
+    <div class="leaderboard-section">
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th class="position">#</th>
+                    <th>Predictor</th>
+                    <th class="stat-cell">Predictions</th>
+                    <th class="stat-cell">Correct</th>
+                    <th class="stat-cell">Exact</th>
+                    <th class="points">Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in leaderboard %}
+                <tr class="{% if entry.position <= 3 %}top-3{% endif %} {% if entry.user_id == user.user_id %}current-user{% endif %}">
+                    <td class="position">
+                        {% if entry.position == 1 %}
+                        <span class="trophy-icon">🥇</span>
+                        {% elif entry.position == 2 %}
+                        <span class="trophy-icon">🥈</span>
+                        {% elif entry.position == 3 %}
+                        <span class="trophy-icon">🥉</span>
+                        {% else %}
+                        {{ entry.position }}
+                        {% endif %}
+                    </td>
+                    <td class="username">
+                        {{ entry.username }}
+                        {% if entry.user_id == user.user_id %}
+                        <span class="you-badge">You</span>
+                        {% endif %}
+                    </td>
+                    <td class="stat-cell">{{ entry.total_predictions }}</td>
+                    <td class="stat-cell">{{ entry.correct_results }}</td>
+                    <td class="stat-cell">{{ entry.exact_scores }}</td>
+                    <td class="points">{{ entry.total_points }}</td>
+                </tr>
+                {% endfor %}
+                {% if not leaderboard %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                        <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                        No predictions yet. Be the first to make a prediction!
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
