@@ -69,24 +69,29 @@ class FirebaseLogger:
             if self.db_ref is None:
                 self.db_ref = firebase_db.reference('/analytics')
 
-            log_type = log_entry.pop('log_type', 'request')
+            log_type = log_entry.get('log_type', 'request')
 
             if log_type == 'counter':
-                # Aggregate counter (increment)
+                # Atomic counter increment using transaction
                 counter_path = log_entry.get('path')
                 increment = log_entry.get('increment', 1)
                 ref = self.db_ref.child(counter_path)
-                current = ref.get() or 0
-                ref.set(current + increment)
+
+                def increment_counter(current_value):
+                    return (current_value or 0) + increment
+
+                ref.transaction(increment_counter)
 
             elif log_type == 'detailed':
                 # Detailed log entry (sampled requests)
                 date_key = datetime.now().strftime('%Y-%m-%d')
-                self.db_ref.child(f'detailed_logs/{date_key}').push(log_entry)
+                entry = {k: v for k, v in log_entry.items() if k != 'log_type'}
+                self.db_ref.child(f'detailed_logs/{date_key}').push(entry)
 
             elif log_type == 'error':
                 # Error tracking
-                self.db_ref.child('errors').push(log_entry)
+                entry = {k: v for k, v in log_entry.items() if k != 'log_type'}
+                self.db_ref.child('errors').push(entry)
 
             # Periodic cleanup
             # self._cleanup_old_logs()
@@ -126,6 +131,20 @@ class FirebaseLogger:
 
 # Global logger instance
 firebase_logger = FirebaseLogger()
+
+def _sanitize_firebase_key(key: str) -> str:
+    """Sanitize a string for use as a Firebase Realtime Database key.
+    
+    Firebase keys cannot contain: . $ # [ ] /
+    """
+    if not key:
+        return 'unknown'
+    for char in ['.', '$', '#', '[', ']', '/']:
+        key = key.replace(char, '_')
+    # Collapse multiple underscores and strip leading/trailing
+    while '__' in key:
+        key = key.replace('__', '_')
+    return key.strip('_') or 'unknown'
 
 def log_request(request_data: Dict[str, Any]):
     """
@@ -185,7 +204,7 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
 
         # Route-specific counters
         if route.startswith('/players/') and len(route) > 9:
-            player_name = route.replace('/players/', '').split('?')[0]
+            player_name = _sanitize_firebase_key(route.replace('/players/', '').split('?')[0])
             log_queue.put({
                 'log_type': 'counter',
                 'path': f'player_views/{player_name}',
@@ -197,7 +216,7 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
             
             # Case 1: /teams/<team_name>
             if len(parts) == 1:
-                team_name = parts[0].split('?')[0]
+                team_name = _sanitize_firebase_key(parts[0].split('?')[0])
                 log_queue.put({
                     'log_type': 'counter',
                     'path': f'team_views/{team_name}',
@@ -206,8 +225,8 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
 
             # Case 2: /teams/<team_name>/<match_id>
             elif len(parts) == 2:
-                team_name = parts[0]
-                match_id = parts[1].split('?')[0]
+                team_name = _sanitize_firebase_key(parts[0])
+                match_id = _sanitize_firebase_key(parts[1].split('?')[0])
                 log_queue.put({
                     'log_type': 'counter',
                     'path': f'match_views/{team_name}/{match_id}',
@@ -245,9 +264,9 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
         elif route.startswith('/api/match-preview'):
             params = request_data.get('query_params', {})
 
-            team1 = params.get('team1', 'unknown')
-            team2 = params.get('team2', 'unknown')
-            matchday = params.get('matchday', 'unknown')
+            team1 = _sanitize_firebase_key(params.get('team1', 'unknown'))
+            team2 = _sanitize_firebase_key(params.get('team2', 'unknown'))
+            matchday = _sanitize_firebase_key(params.get('matchday', 'unknown'))
 
             log_queue.put({
                 'log_type': 'counter',
@@ -265,6 +284,7 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                     clean_route = 'home'
 
                 if "." not in clean_route: # route not invalid (sitemap.xml / robots.txt)
+                    clean_route = _sanitize_firebase_key(clean_route)
                     log_queue.put({
                         'log_type': 'counter',
                         'path': f'page_views/{clean_route}',
