@@ -61,29 +61,6 @@ def load_potm():
     return df[df['POTM'] == 1]
 
 
-def get_last_updated():
-    """Get the most recent modification time of the data files"""
-    data_files = [
-        'data/season_player_stats.csv',
-        'data/season_standings.csv',
-        'data/Match_Results.csv',
-        'data/player_ratings.csv',
-        'data/team_ratings.csv'
-    ]
-
-    latest_time = None
-    for file_path in data_files:
-        try:
-            if os.path.exists(file_path):
-                file_mtime = os.path.getmtime(file_path)
-                if latest_time is None or file_mtime > latest_time:
-                    latest_time = file_mtime
-        except Exception:
-            continue
-
-    if latest_time:
-        return datetime.fromtimestamp(latest_time).strftime('%B %d, %Y at %I:%M %p')
-    return None
 
 
 # ===== STATISTICS DASHBOARD FUNCTIONS =====
@@ -726,7 +703,6 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
             "rating_distribution": rating_dist,
             "season_comparison": season_comparison,
             "all_players": all_players,
-            "last_updated": get_last_updated()
         })
     except Exception as e:
         print(f"Error in statistics_page: {e}")
@@ -743,7 +719,6 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
             "rating_distribution": {'player_ratings': [], 'team_ratings': []},
             "season_comparison": [],
             "all_players": [],
-            "last_updated": get_last_updated()
         })
 
 @router.get("/hall-of-fame", response_class=HTMLResponse)
