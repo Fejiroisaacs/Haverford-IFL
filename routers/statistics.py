@@ -702,14 +702,6 @@ def get_all_seasons_summary():
 @router.get("/statistics", response_class=HTMLResponse)
 async def statistics_page(request: Request, season: int = 6, user = Depends(get_current_user)):
     """Statistics Dashboard page"""
-    # Check if statistics pages are enabled or admin logged in
-    if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
-        return templates.TemplateResponse("coming-soon.html", {
-            "request": request,
-            "user": user,
-            "page_name": "Statistics Dashboard",
-            "page_description": "comprehensive league statistics, player rankings, and team performance analytics"
-        })
 
     try:
         # Get all data
