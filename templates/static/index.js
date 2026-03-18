@@ -1,7 +1,7 @@
 // Index Page JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    const bannerVersion = '3';
+    const bannerVersion = '4';
     const dismissedVersion = localStorage.getItem('featureBannerDismissedVersion');
 
     if (dismissedVersion !== bannerVersion) {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Feature Announcement Banner Functions
 function dismissBanner() {
     const banner = document.getElementById('featureBanner');
-    const bannerVersion = '3';
+    const bannerVersion = '4';
     banner.style.animation = 'slideDown 0.5s ease-out reverse';
     setTimeout(() => {
         banner.style.display = 'none';
