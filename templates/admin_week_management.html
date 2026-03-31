@@ -1,0 +1,709 @@
+{% extends "base.html" %}
+{% block title %}Week Management | Admin{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.admin-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: #670000;
+    margin: 0;
+}
+
+.back-link {
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+.alert.dismissing {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-dismiss {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.5;
+    padding: 0 0.5rem;
+}
+
+.alert-dismiss:hover {
+    opacity: 1;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-spinner {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    color: #670000;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    margin-top: 1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.status-card {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.status-card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.status-item {
+    text-align: center;
+}
+
+.status-item .value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.status-item .label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.lock-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.lock-status.locked {
+    background: #dc3545;
+}
+
+.lock-status.unlocked {
+    background: #28a745;
+}
+
+.management-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.management-card h3 {
+    color: #670000;
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #670000;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.management-card p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    transform: translateY(-2px);
+}
+
+.quick-action-btn i {
+    font-size: 2rem;
+    color: #670000;
+    margin-bottom: 0.5rem;
+}
+
+.quick-action-btn span {
+    font-weight: 500;
+}
+
+.info-box {
+    background: #e7f3ff;
+    border: 1px solid #b8daff;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-box p {
+    margin: 0;
+    color: #004085;
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 0 0.5rem;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .admin-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .status-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .status-item .value {
+        font-size: 1.5rem;
+    }
+
+    .management-card {
+        padding: 1rem;
+    }
+
+    .management-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-row {
+        flex-direction: column;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .quick-action-btn {
+        padding: 1rem;
+    }
+
+    .quick-action-btn i {
+        font-size: 1.5rem;
+    }
+
+    .quick-action-btn span {
+        font-size: 0.85rem;
+    }
+
+    .alert {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-calendar-alt"></i> Week Management</h1>
+        <a href="/admin" class="back-link"><i class="fas fa-arrow-left"></i> Back to Admin</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success" id="success-alert">
+        <span><i class="fas fa-check-circle"></i> {{ success }}</span>
+        <button class="alert-dismiss" onclick="dismissAlert('success-alert')">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger" id="error-alert">
+        <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+        <button class="alert-dismiss" onclick="dismissAlert('error-alert')">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner"></i>
+            <p id="loading-message">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Current Status -->
+    <div class="status-card">
+        <h2>Current Status</h2>
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="value">{{ week_data.get('Season', '-') }}</div>
+                <div class="label">Season</div>
+            </div>
+            <div class="status-item">
+                <div class="value">{{ week_data.get('Week', '-') }}</div>
+                <div class="label">Matchweek</div>
+            </div>
+            <div class="status-item">
+                <div class="value">{{ total_users }}</div>
+                <div class="label">Total Users</div>
+            </div>
+            <div class="status-item">
+                <div class="value">{{ users_with_teams }}</div>
+                <div class="label">With Teams</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <span class="lock-status {% if team_locked %}locked{% else %}unlocked{% endif %}">
+                <i class="fas fa-{% if team_locked %}lock{% else %}lock-open{% endif %}"></i>
+                Team Editing {% if team_locked %}LOCKED{% else %}UNLOCKED{% endif %}
+            </span>
+        </div>
+        {% if week_data.get('Deadline') %}
+        <div style="text-align: center; margin-top: 0.5rem; opacity: 0.9;">
+            Deadline: {{ week_data.get('Deadline') or 'Not set' }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Set Current Week -->
+    <div class="management-card">
+        <h3><i class="fas fa-calendar-check"></i> Set Current Week</h3>
+        <p>Set the active season and matchweek. This affects which week's points are calculated.</p>
+
+        <form method="post" action="/admin/set-current-week">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="season">Season</label>
+                    <select name="season" id="season" required onchange="updateMatchweekOptions()">
+                        <option value="">Select Season</option>
+                        {% for s in season_matchweeks.keys() | sort %}
+                        <option value="{{ s }}" {% if week_data.get('Season') == s %}selected{% endif %}>Season {{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="matchweek">Matchweek</label>
+                    <select name="matchweek" id="matchweek" required>
+                        <option value="">Select Matchweek</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Deadline (optional)</label>
+                    <input type="text" name="deadline" id="deadline" placeholder="e.g., 2024-03-15 18:00"
+                           value="{{ week_data.get('Deadline', '') }}">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Set Week
+            </button>
+        </form>
+    </div>
+
+    <!-- Team Lock -->
+    <div class="management-card">
+        <h3><i class="fas fa-lock"></i> Team Lock</h3>
+        <p>Lock team editing to prevent changes during matchweek. Users won't be able to make transfers or substitutions while locked.</p>
+
+        <div class="info-box">
+            <p><i class="fas fa-info-circle"></i> Current Status: Team editing is <strong>{% if team_locked %}LOCKED{% else %}UNLOCKED{% endif %}</strong></p>
+        </div>
+
+        <form method="post" action="/admin/toggle-team-lock">
+            <button type="submit" class="btn {% if team_locked %}btn-success{% else %}btn-danger{% endif %}">
+                <i class="fas fa-{% if team_locked %}lock-open{% else %}lock{% endif %}"></i>
+                {% if team_locked %}Unlock Teams{% else %}Lock Teams{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Free Transfers Reset -->
+    <div class="management-card">
+        <h3><i class="fas fa-sync"></i> Reset Free Transfers</h3>
+        <p>Reset free transfers for all users. Typically done at the start of a new matchweek.</p>
+
+        <form method="post" action="/admin/reset-free-transfers"
+              onsubmit="return confirm('Reset free transfers for all users?');">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transfer_count">Transfers Per User</label>
+                    <input type="number" name="transfer_count" id="transfer_count" value="2" min="0" max="10">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-sync"></i> Reset All Transfers
+            </button>
+        </form>
+    </div>
+
+    <!-- Start New Season -->
+    <div class="management-card" style="border: 2px solid #dc3545;">
+        <h3 style="color: #dc3545; border-bottom-color: #dc3545;"><i class="fas fa-flag"></i> Start New Season</h3>
+        <p>Archive the current season and reset all user teams and balances. User history and total points are preserved. <strong>This cannot be undone.</strong></p>
+
+        <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+            <p style="color: #856404;"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This will wipe all current squads, reset balances to £100, and unlock team editing. Make sure all matchweek points have been processed first.</p>
+        </div>
+
+        <form method="post" action="/admin/fantasy/new-season"
+              onsubmit="return confirmNewSeason(event);">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="new_season">New Season Number</label>
+                    <input type="number" name="new_season" id="new_season"
+                           value="{{ (week_data.get('Season', 1) | int) + 1 }}"
+                           min="1" max="20" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-flag-checkered"></i> Start New Season
+            </button>
+        </form>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="management-card">
+        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+
+        <div class="quick-actions">
+            <a href="/admin/fantasy-users" class="quick-action-btn">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="/fantasy/admin/preview-points" class="quick-action-btn">
+                <i class="fas fa-calculator"></i>
+                <span>Preview Points</span>
+            </a>
+            <a href="/fantasy" class="quick-action-btn">
+                <i class="fas fa-futbol"></i>
+                <span>Fantasy Home</span>
+            </a>
+            <a href="/admin/data-entry" class="quick-action-btn">
+                <i class="fas fa-edit"></i>
+                <span>Match Data Entry</span>
+            </a>
+            <a href="/fantasy/explore" class="quick-action-btn">
+                <i class="fas fa-search"></i>
+                <span>Player Points Explorer</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Matchweeks data from server
+const seasonMatchweeks = {{ season_matchweeks | tojson | safe }};
+const currentWeek = {{ week_data.get('Week', 0) }};
+const currentSeason = {{ week_data.get('Season', 0) }};
+const currentSeason_val = currentSeason;
+
+function updateMatchweekOptions() {
+    const seasonSelect = document.getElementById('season');
+    const matchweekSelect = document.getElementById('matchweek');
+    const selectedSeason = parseInt(seasonSelect.value);
+
+    // Clear current options
+    matchweekSelect.innerHTML = '<option value="">Select Matchweek</option>';
+
+    if (selectedSeason && seasonMatchweeks[selectedSeason]) {
+        const matchweeks = seasonMatchweeks[selectedSeason];
+        matchweeks.forEach(mw => {
+            const option = document.createElement('option');
+            option.value = mw;
+            option.textContent = `MW ${mw}`;
+            // Pre-select if this is the current matchweek for the current season
+            if (selectedSeason === currentSeason && mw === currentWeek) {
+                option.selected = true;
+            }
+            matchweekSelect.appendChild(option);
+        });
+    }
+}
+
+// Alert dismissal
+function dismissAlert(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) {
+        alert.classList.add('dismissing');
+        setTimeout(() => alert.remove(), 300);
+    }
+}
+
+// Auto-dismiss success alerts after 5 seconds
+function autoDismissAlerts() {
+    const successAlert = document.getElementById('success-alert');
+    if (successAlert) {
+        setTimeout(() => dismissAlert('success-alert'), 5000);
+    }
+}
+
+// Loading overlay
+function showLoading(message = 'Processing...') {
+    document.getElementById('loading-message').textContent = message;
+    document.getElementById('loading-overlay').classList.add('active');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('active');
+}
+
+// Add loading states to forms
+function setupFormLoading() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const btn = form.querySelector('button[type="submit"]');
+            const action = btn ? btn.textContent.trim() : 'Processing';
+
+            // Show loading after a small delay (to allow confirm dialogs)
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    showLoading(action + '...');
+                }
+            }, 100);
+        });
+    });
+}
+
+function confirmNewSeason(e) {
+    const newSeason = document.getElementById('new_season').value;
+    const currentSeason = currentSeason_val;
+    const confirmed = confirm(
+        `⚠️ Start Season ${newSeason}?\n\n` +
+        `This will:\n` +
+        `• Archive Season ${currentSeason} data for all users\n` +
+        `• Wipe all current squads and reset balances to £100\n` +
+        `• Reset free transfers to 2\n` +
+        `• Unlock team editing\n\n` +
+        `User history and total points will be preserved.\n\n` +
+        `This CANNOT be undone. Are you sure?`
+    );
+    if (!confirmed) {
+        e.preventDefault();
+        return false;
+    }
+    showLoading('Starting new season...');
+    return true;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateMatchweekOptions();
+    autoDismissAlerts();
+    setupFormLoading();
+});
+</script>
+
+{% endblock %}

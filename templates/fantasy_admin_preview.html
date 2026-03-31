@@ -1,0 +1,362 @@
+{% extends "fantasy_base.html" %}
+{% block title %}Fantasy Points Preview | Admin{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.preview-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.preview-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.preview-header h1 {
+    color: #670000;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.preview-header .subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.selector-form {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.preview-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.preview-btn:hover {
+    background: #0056b3;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.summary-stat {
+    text-align: center;
+}
+
+.summary-stat .value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.summary-stat .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.preview-table-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.preview-table th,
+.preview-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.preview-table th {
+    background: #670000;
+    color: white;
+    font-weight: 600;
+}
+
+.preview-table th:first-child {
+    border-radius: 5px 0 0 0;
+}
+
+.preview-table th:last-child {
+    border-radius: 0 5px 0 0;
+}
+
+.preview-table tr:hover {
+    background: #f9f9f9;
+}
+
+.preview-table .points {
+    font-weight: bold;
+    color: #670000;
+}
+
+.player-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.player-badge {
+    background: #e9ecef;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.player-badge.captain {
+    background: #ffc107;
+    font-weight: 500;
+}
+
+.player-badge .pts {
+    color: #670000;
+    font-weight: 600;
+    margin-left: 0.25rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+}
+
+.no-results i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.warning-box p {
+    margin: 0;
+    color: #856404;
+}
+
+@media (max-width: 768px) {
+    .preview-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .selector-form {
+        flex-direction: column;
+    }
+
+    .preview-table th,
+    .preview-table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
+</style>
+
+<div class="preview-container">
+    <div class="preview-header">
+        <h1><i class="fas fa-calculator"></i> Fantasy Points Preview</h1>
+        <p class="subtitle">Preview points calculation before applying</p>
+        <a href="/fantasy" class="back-link"><i class="fas fa-arrow-left"></i> Back to Fantasy</a>
+    </div>
+
+    <!-- Matchweek Selector -->
+    <form class="selector-form" method="get" action="/fantasy/admin/preview-points">
+        <div class="form-group">
+            <label for="season">Season</label>
+            <select name="season" id="season" required onchange="updateMatchweekOptions()">
+                <option value="">Select Season</option>
+                {% for s in season_matchweeks.keys() | sort %}
+                <option value="{{ s }}" {% if selected_season == s %}selected{% endif %}>Season {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="matchweek">Matchweek</label>
+            <select name="matchweek" id="matchweek" required>
+                <option value="">Select Matchweek</option>
+                {% for s, mws in season_matchweeks.items() %}
+                {% for mw in mws %}
+                <option
+                    value="{{ mw }}"
+                    data-season="{{ s }}"
+                    {% if selected_season == s and selected_matchweek == mw %}selected{% endif %}
+                    {% if selected_season != s %}style="display:none"{% endif %}
+                >MW {{ mw }}</option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="preview-btn">Preview Points</button>
+    </form>
+
+    {% if preview_results %}
+    <div class="warning-box">
+        <p><i class="fas fa-exclamation-triangle"></i> This is a preview only. Points have NOT been applied yet. Use "Process Matchweek" on the main fantasy page to apply these points.</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-card">
+        <div class="summary-stat">
+            <div class="value">{{ preview_results|length }}</div>
+            <div class="label">Users</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value">{{ preview_results|sum(attribute='week_points') }}</div>
+            <div class="label">Total Points</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value">{{ "%.1f"|format(preview_results|sum(attribute='week_points') / preview_results|length) if preview_results else 0 }}</div>
+            <div class="label">Avg Points</div>
+        </div>
+    </div>
+
+    <!-- Preview Table -->
+    <div class="preview-table-section">
+        <table class="preview-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Starting Team</th>
+                    <th class="points">Week Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in preview_results %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ result.username }}</td>
+                    <td>
+                        <div class="player-breakdown">
+                            {% for player_name, player_data in result.breakdown.items() %}
+                            <span class="player-badge {% if player_data.is_captain %}captain{% endif %}">
+                                {{ player_name.split(' ')[0] }}{% if player_data.is_captain %} (C){% endif %}
+                                <span class="pts">{{ player_data.points }}</span>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="points">{{ result.week_points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% elif selected_season and selected_matchweek %}
+    <div class="no-results">
+        <i class="fas fa-users-slash"></i>
+        <p>No users with valid starting teams found.</p>
+    </div>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <p>Select a season and matchweek to preview points calculation.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const seasonMatchweeks = JSON.parse('{{ season_matchweeks | tojson | safe }}');
+
+function updateMatchweekOptions() {
+    const seasonSel = document.getElementById('season');
+    const mwSel = document.getElementById('matchweek');
+    const selected = parseInt(seasonSel.value);
+
+    // Show/hide options based on selected season
+    Array.from(mwSel.options).forEach(opt => {
+        if (!opt.dataset.season) return; // keep the placeholder
+        const s = parseInt(opt.dataset.season);
+        opt.style.display = (s === selected) ? '' : 'none';
+    });
+
+    // Reset to placeholder if current selection belongs to a different season
+    const cur = mwSel.options[mwSel.selectedIndex];
+    if (cur && cur.dataset.season && parseInt(cur.dataset.season) !== selected) {
+        mwSel.value = '';
+    }
+
+    // Auto-select first visible matchweek if nothing selected
+    if (!mwSel.value) {
+        const first = Array.from(mwSel.options).find(
+            o => o.dataset.season && parseInt(o.dataset.season) === selected
+        );
+        if (first) first.selected = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const seasonSel = document.getElementById('season');
+    if (seasonSel.value) updateMatchweekOptions();
+});
+</script>
+
+{% endblock %}

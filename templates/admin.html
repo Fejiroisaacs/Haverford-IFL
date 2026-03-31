@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends "fantasy_base.html" %}
+{% block title %}Admin | IFL Fantasy{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
@@ -28,9 +29,22 @@
 }
 .admin-panel-container input {
     margin-bottom: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+.admin-panel-container input:focus {
+    border-color: #670000;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(103, 0, 0, 0.1);
 }
 .admin-panel-container button {
-    min-width: 180px;
+    display: block;
+    width: 100%;
+    margin-top: 10px;
 }
 .admin-panel-container hr {
     margin: 32px 0;
@@ -162,27 +176,14 @@
 </style>
 <div class="admin-panel-container">
     <h2>Admin Panel</h2>
-    <form id="week-form" method="post" action="/admin/update-week">
-        <div class="form-group">
-            <label for="current-week">Set New Week:</label>
-            <input type="number" id="current-week" name="current_week" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="deadline">Deadline (YYYY-MM-DD HH:MM):</label>
-            <input type="text" id="deadline" name="deadline" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Set New Week & Deadline</button>
-    </form>
-    <hr>
-    <form id="update-week-performance-form" method="post" action="/admin/update-week-performance">
-        <div class="form-group">
-            <label for="update-week">Update Week Performance:</label>
-            <input type="number" id="update-week" name="current_week" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-success">Update All Users' Teams for This Week</button>
-    </form>
-
-    <hr>
+    {% set current_wk = (week_data | default({})).get('Week', 1) | int %}
+    <div style="margin-bottom: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #670000;">
+        <h4 style="margin: 0 0 8px; color: #670000;">Week Management</h4>
+        <p style="margin: 0 0 12px; color: #666; font-size: 0.9rem;">Advance matchweek, lock teams, reset transfers, and start new seasons.</p>
+        <a href="/admin/week-management" style="display: inline-block; background: linear-gradient(135deg, #670000 0%, #a70000 100%); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">
+            <i class="fas fa-calendar-alt"></i> Go to Week Management
+        </a>
+    </div>
 
     <!-- Quick Actions Section -->
     <div class="quick-actions-section">
@@ -191,6 +192,14 @@
             <a href="/admin/data-entry" class="btn btn-data-entry">
                 <i class="fas fa-futbol"></i>
                 Enter Match Result
+            </a>
+            <a href="/admin/fantasy-users" class="btn btn-data-entry" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                <i class="fas fa-users-cog"></i>
+                Manage Fantasy Users
+            </a>
+            <a href="/admin/week-management" class="btn btn-data-entry" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+                <i class="fas fa-calendar-alt"></i>
+                Week Management
             </a>
         </div>
     </div>

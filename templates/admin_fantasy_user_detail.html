@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% block title %}User Detail | Admin{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.admin-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: #670000;
+    margin: 0;
+}
+
+.back-link {
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.user-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.user-card h2 {
+    color: #670000;
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #670000;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-item .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #670000;
+}
+
+.stat-item .label {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.edit-form {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.edit-form h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.btn-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.team-section {
+    margin-top: 2rem;
+}
+
+.team-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.player-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.player-card.captain {
+    border: 2px solid #ffc107;
+    background: #fff8e1;
+}
+
+.player-card .name {
+    font-weight: 600;
+    color: #333;
+}
+
+.player-card .details {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.player-card .captain-badge {
+    background: #ffc107;
+    color: #333;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.no-team {
+    color: #999;
+    font-style: italic;
+    padding: 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.danger-zone {
+    background: #fff5f5;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.danger-zone h3 {
+    color: #dc3545;
+    margin-top: 0;
+}
+
+.danger-zone p {
+    color: #666;
+    margin-bottom: 1rem;
+}
+</style>
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-user-edit"></i> {{ target_user.username }}</h1>
+        <a href="/admin/fantasy-users" class="back-link"><i class="fas fa-arrow-left"></i> Back to Users</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="user-card">
+        <h2>User Stats</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="value">{{ target_user.total_points }}</div>
+                <div class="label">Total Points</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ target_user.week_points }}</div>
+                <div class="label">Week Points</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ "%.1f"|format(target_user.total_balance) }}</div>
+                <div class="label">Balance</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ target_user.free_transfers }}</div>
+                <div class="label">Free Transfers</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ target_user.all_players|length if target_user.all_players else 0 }}</div>
+                <div class="label">Squad Size</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ target_user.current_team|length if target_user.current_team else 0 }}</div>
+                <div class="label">Starting Team</div>
+            </div>
+        </div>
+
+        <div class="edit-form">
+            <h3><i class="fas fa-edit"></i> Edit Stats</h3>
+            <form method="post" action="/admin/fantasy-user/{{ target_user_id }}/update">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="total_points">Total Points</label>
+                        <input type="number" id="total_points" name="total_points" value="{{ target_user.total_points }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="week_points">Week Points</label>
+                        <input type="number" id="week_points" name="week_points" value="{{ target_user.week_points }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="total_balance">Balance</label>
+                        <input type="number" step="0.1" id="total_balance" name="total_balance" value="{{ target_user.total_balance }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="free_transfers">Free Transfers</label>
+                        <input type="number" id="free_transfers" name="free_transfers" value="{{ target_user.free_transfers }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Starting Team -->
+    <div class="user-card">
+        <h2>Starting Team ({{ target_user.current_team|length if target_user.current_team else 0 }}/5)</h2>
+        {% if starting_team_data %}
+        <div class="players-grid">
+            {% for player in starting_team_data %}
+            <div class="player-card {% if player.full_name == target_user.captain or (player.First ~ ' ' ~ player.Last) == target_user.captain %}captain{% endif %}">
+                <div class="name">{{ player.First }} {{ player.Last }}</div>
+                <div class="details">
+                    {{ player.Team }} | {{ player.Primary_Position }} | OVR {{ player['OVR Rating']|int if player['OVR Rating'] else '-' }}
+                </div>
+                {% if player.full_name == target_user.captain or (player.First ~ ' ' ~ player.Last) == target_user.captain %}
+                <span class="captain-badge">CAPTAIN</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-team">No starting team selected</div>
+        {% endif %}
+    </div>
+
+    <!-- Full Squad -->
+    <div class="user-card">
+        <h2>Full Squad ({{ target_user.all_players|length if target_user.all_players else 0 }}/8)</h2>
+        {% if all_players_data %}
+        <div class="players-grid">
+            {% for player in all_players_data %}
+            <div class="player-card">
+                <div class="name">{{ player.First }} {{ player.Last }}</div>
+                <div class="details">
+                    {{ player.Team }} | {{ player.Primary_Position }} | Cost: {{ player['Fantasy Cost'] }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-team">No squad created</div>
+        {% endif %}
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+        <p>These actions are destructive and cannot be undone.</p>
+        <div class="btn-row">
+            <form method="post" action="/admin/fantasy-user/{{ target_user_id }}/reset-team"
+                  onsubmit="return confirm('Are you sure you want to reset this user\'s team? This will clear their squad and reset balance.');">
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-undo"></i> Reset Team
+                </button>
+            </form>
+            <form method="post" action="/admin/fantasy-user/{{ target_user_id }}/delete"
+                  onsubmit="return confirm('Are you sure you want to DELETE this user? This cannot be undone!');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete User
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Request, Form, Depends, Cookie, HTTPException
+from fastapi import APIRouter, Request, Form, Depends, Cookie, HTTPException, Query
 from fastapi.templating import Jinja2Templates
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, HTMLResponse
 from firebase_admin import db
-from models.fantasy import FantasyUser
+from models.fantasy import FantasyUser, FantasyService, FantasyPointsCalculator
 from firebase_admin import auth
 from datetime import datetime
 import os
+import urllib.parse
 from functions import send_email
 
 router = APIRouter()
@@ -59,79 +60,39 @@ async def admin_panel(request: Request, success: str = None, error: str = None, 
     # Get pending player verifications
     pending_verifications = get_pending_verifications()
 
+    # Load fantasy_user for the fantasy_base.html navigation sidebar
+    user_id = user.get('user_id') or user.get('uid')
+    username = user.get('name', 'User')
+    fantasy_user = FantasyUser.load_from_firebase(user_id, username)
+
+    try:
+        week_data = db.reference('Fantasy/current_week').get() or {}
+    except Exception:
+        week_data = {}
+
+    if not week_data.get('Week'):
+        week_data['Week'] = 1
+
+    if not week_data.get('Season'):
+        try:
+            import pandas as pd
+            df = pd.read_csv('data/matchweeks.csv')
+            df.columns = [c.strip() for c in df.columns]
+            week_data['Season'] = int(df['Season'].max())
+        except Exception:
+            week_data['Season'] = week_data.get('Week', 1)  # last resort
+
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "success": success,
         "error": error,
-        "pending_verifications": pending_verifications
+        "pending_verifications": pending_verifications,
+        "fantasy_user": fantasy_user,
+        "user": user,
+        "week_data": week_data
     })
 
-@router.post("/admin/update-week")
-async def update_week(request: Request, current_week: int = Form(...), deadline: str = Form(...), user: dict = Depends(get_current_user)):
-    """Update current week and deadline in Firebase, and archive previous week"""
-    # Only allow admin
-    if not is_admin(user):
-        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
-    try:
-        week_ref = db.reference('Fantasy/current_week')
-        previous_weeks_ref = db.reference('Fantasy/previous_weeks')
-        
-        current_week_data = week_ref.get()
-        if current_week_data:
-            previous_weeks_ref.push(current_week_data)
-        
-        week_ref.update({
-            'Week': current_week,
-            'Deadline': deadline
-        })
-        
-        success_message = "Week and deadline updated successfully."
-        return RedirectResponse(url=f"/admin?success={success_message}", status_code=303)
-    except Exception as e:
-        error_message = f"Error updating week: {str(e)}"
-        return RedirectResponse(url=f"/admin?error={error_message}", status_code=303)
 
-@router.post("/admin/update-week-performance")
-async def update_week_performance(request: Request, current_week: int = Form(...), user: dict = Depends(get_current_user)):
-    # Only allow admin
-    if not is_admin(user):
-        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
-    try:
-        import pandas as pd
-        df = pd.read_csv('data/Fantasy_Data.csv')
-        week_col = f"MW{current_week}"
-        if week_col not in df.columns:
-            error_message = f"Week column {week_col} not found in Fantasy_Data.csv."
-            return RedirectResponse(url=f"/admin?error={error_message}", status_code=303)
-        # Get all users
-        users_ref = db.reference('Fantasy/Users')
-        all_users = users_ref.get() or {}
-        updated_count = 0
-        for user_id, user_data in all_users.items():
-            team = user_data.get('team', {})
-            current_team = team.get('current_team', [])
-            # Sum up MW{current_week} for each player in current_team
-            total_points = 0
-            for player_name in current_team:
-                # Find player row
-                player_row = df[(df['First Name'] + ' ' + df['Last Name']) == player_name]
-                if not player_row.empty:
-                    points = player_row.iloc[0][week_col]
-                    try:
-                        total_points += float(points)
-                    except Exception:
-                        continue
-            # Update user's week_points and total_points
-            users_ref.child(user_id).update({
-                'week_points': total_points,
-                'total_points': user_data.get('total_points', 0) + total_points
-            })
-            updated_count += 1
-        success_message = f"Updated {updated_count} users with week {current_week} performance."
-        return RedirectResponse(url=f"/admin?success={success_message}", status_code=303)
-    except Exception as e:
-        error_message = f"Error updating week performance: {str(e)}"
-        return RedirectResponse(url=f"/admin?error={error_message}", status_code=303)
 
 
 @router.post("/admin/verify-player/approve")
@@ -310,7 +271,12 @@ async def data_entry_page(request: Request, success: str = None, error: str = No
         standings = pd.read_csv('data/season_standings.csv', encoding='utf-8-sig')
         current_season = int(standings['Season'].max())
     except Exception:
-        current_season = 6
+        try:
+            df = pd.read_csv('data/matchweeks.csv')
+            df.columns = [c.strip() for c in df.columns]
+            current_season = int(df['Season'].max())
+        except Exception:
+            current_season = 1
 
     teams = get_teams_for_season(current_season)
 
@@ -529,3 +495,589 @@ async def submit_match_result(request: Request, user: dict = Depends(get_current
         import traceback
         traceback.print_exc()
         return RedirectResponse(url=f"/admin/data-entry?error=Error+saving+match:+{str(e)}", status_code=303)
+
+
+# ===========================
+# FANTASY USER MANAGEMENT
+# ===========================
+
+@router.get("/admin/fantasy-users", response_class=HTMLResponse)
+async def fantasy_users_list(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    success: str = None,
+    error: str = None
+):
+    """View all fantasy users with their stats"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        users_ref = db.reference('Fantasy/Users')
+        all_users = users_ref.get() or {}
+
+        # Get current week settings
+        week_ref = db.reference('Fantasy/current_week')
+        week_data = week_ref.get() or {}
+
+        users_list = []
+        for user_id, user_data in all_users.items():
+            users_list.append({
+                'user_id': user_id,
+                'username': user_data.get('username', 'Unknown'),
+                'total_points': user_data.get('total_points', 0),
+                'week_points': user_data.get('week_points', 0),
+                'total_balance': user_data.get('total_balance', 100.0),
+                'free_transfers': user_data.get('free_transfers', 2),
+                'team_size': len(user_data.get('all_players', [])),
+                'starting_size': len(user_data.get('current_team', [])),
+                'captain': user_data.get('captain', 'None'),
+                'admin': user_data.get('admin', False)
+            })
+
+        # Sort by total points descending
+        users_list.sort(key=lambda x: x['total_points'], reverse=True)
+
+        return templates.TemplateResponse("admin_fantasy_users.html", {
+            "request": request,
+            "users": users_list,
+            "week_data": week_data,
+            "total_users": len(users_list),
+            "success": urllib.parse.unquote(success) if success else None,
+            "error": urllib.parse.unquote(error) if error else None
+        })
+
+    except Exception as e:
+        return templates.TemplateResponse("admin_fantasy_users.html", {
+            "request": request,
+            "users": [],
+            "week_data": {},
+            "total_users": 0,
+            "error": str(e)
+        })
+
+
+@router.get("/admin/fantasy-user/{user_id}", response_class=HTMLResponse)
+async def fantasy_user_detail(
+    request: Request,
+    user_id: str,
+    user: dict = Depends(get_current_user),
+    success: str = None,
+    error: str = None
+):
+    """View and edit a specific fantasy user"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        user_ref = db.reference(f'Fantasy/Users/{user_id}')
+        user_data = user_ref.get()
+
+        if not user_data:
+            return RedirectResponse(url="/admin/fantasy-users?error=User+not+found", status_code=303)
+
+        # Get player details for the user's team
+        fantasy_service = FantasyService()
+        all_players_data = fantasy_service.get_players_by_names(user_data.get('all_players', []))
+        starting_team_data = fantasy_service.get_players_by_names(user_data.get('current_team', []))
+
+        return templates.TemplateResponse("admin_fantasy_user_detail.html", {
+            "request": request,
+            "target_user_id": user_id,
+            "target_user": user_data,
+            "all_players_data": all_players_data,
+            "starting_team_data": starting_team_data,
+            "success": urllib.parse.unquote(success) if success else None,
+            "error": urllib.parse.unquote(error) if error else None
+        })
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/fantasy-users?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.post("/admin/fantasy-user/{user_id}/update")
+async def update_fantasy_user(
+    request: Request,
+    user_id: str,
+    user: dict = Depends(get_current_user),
+    total_points: int = Form(None),
+    week_points: int = Form(None),
+    total_balance: float = Form(None),
+    free_transfers: int = Form(None)
+):
+    """Update a fantasy user's stats"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        user_ref = db.reference(f'Fantasy/Users/{user_id}')
+        user_data = user_ref.get()
+
+        if not user_data:
+            return RedirectResponse(url="/admin/fantasy-users?error=User+not+found", status_code=303)
+
+        updates = {}
+        if total_points is not None:
+            updates['total_points'] = total_points
+        if week_points is not None:
+            updates['week_points'] = week_points
+        if total_balance is not None:
+            updates['total_balance'] = total_balance
+        if free_transfers is not None:
+            updates['free_transfers'] = free_transfers
+
+        if updates:
+            user_ref.update(updates)
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'update_fantasy_user',
+            'target_user_id': user_id,
+            'updates': updates
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Updated user {user_data.get('username', user_id)}"
+        return RedirectResponse(url=f"/admin/fantasy-user/{user_id}?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/fantasy-user/{user_id}?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.post("/admin/fantasy-user/{user_id}/reset-team")
+async def reset_fantasy_user_team(
+    request: Request,
+    user_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Reset a user's fantasy team completely"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        user_ref = db.reference(f'Fantasy/Users/{user_id}')
+        user_data = user_ref.get()
+
+        if not user_data:
+            return RedirectResponse(url="/admin/fantasy-users?error=User+not+found", status_code=303)
+
+        # Reset team data
+        user_ref.update({
+            'all_players': [],
+            'current_team': [],
+            'captain': None,
+            'total_balance': 100.0,
+            'free_transfers': 2
+        })
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'reset_fantasy_team',
+            'target_user_id': user_id,
+            'target_username': user_data.get('username', 'Unknown')
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Reset team for {user_data.get('username', user_id)}"
+        return RedirectResponse(url=f"/admin/fantasy-users?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/fantasy-users?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.post("/admin/fantasy-user/{user_id}/delete")
+async def delete_fantasy_user(
+    request: Request,
+    user_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Delete a fantasy user completely"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        user_ref = db.reference(f'Fantasy/Users/{user_id}')
+        user_data = user_ref.get()
+
+        if not user_data:
+            return RedirectResponse(url="/admin/fantasy-users?error=User+not+found", status_code=303)
+
+        username = user_data.get('username', 'Unknown')
+
+        # Delete the user
+        user_ref.delete()
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'delete_fantasy_user',
+            'target_user_id': user_id,
+            'target_username': username
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Deleted fantasy user {username}"
+        return RedirectResponse(url=f"/admin/fantasy-users?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/fantasy-users?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+# ===========================
+# WEEK & SEASON MANAGEMENT
+# ===========================
+
+@router.get("/admin/week-management", response_class=HTMLResponse)
+async def week_management_page(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    success: str = None,
+    error: str = None
+):
+    """Week and season management page"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        # Get current week settings
+        week_ref = db.reference('Fantasy/current_week')
+        week_data = week_ref.get() or {}
+
+        # Get team lock status
+        lock_ref = db.reference('Fantasy/settings/team_lock')
+        team_locked = lock_ref.get() or False
+
+        # Load matchweeks data grouped by season
+        try:
+            matchweeks_df = pd.read_csv('data/matchweeks.csv')
+            matchweeks_df.columns = [col.strip() for col in matchweeks_df.columns]
+            available_matchweeks = matchweeks_df.to_dict('records')
+
+            # Group matchweeks by season for dynamic dropdown
+            season_matchweeks = {}
+            for row in available_matchweeks:
+                season = int(row['Season'])
+                mw = int(row['MW'])
+                if season not in season_matchweeks:
+                    season_matchweeks[season] = []
+                season_matchweeks[season].append(mw)
+            # Sort matchweeks within each season
+            for season in season_matchweeks:
+                season_matchweeks[season] = sorted(season_matchweeks[season])
+        except Exception as e:
+            print(f"Error loading matchweeks: {e}")
+            available_matchweeks = []
+            season_matchweeks = {}
+
+        # Get user counts
+        users_ref = db.reference('Fantasy/Users')
+        all_users = users_ref.get() or {}
+        users_with_teams = sum(1 for u in all_users.values() if u.get('current_team'))
+
+        return templates.TemplateResponse("admin_week_management.html", {
+            "request": request,
+            "week_data": week_data,
+            "team_locked": team_locked,
+            "available_matchweeks": available_matchweeks,
+            "season_matchweeks": season_matchweeks,
+            "total_users": len(all_users),
+            "users_with_teams": users_with_teams,
+            "success": urllib.parse.unquote(success) if success else None,
+            "error": urllib.parse.unquote(error) if error else None
+        })
+
+    except Exception as e:
+        return templates.TemplateResponse("admin_week_management.html", {
+            "request": request,
+            "week_data": {},
+            "team_locked": False,
+            "available_matchweeks": [],
+            "season_matchweeks": {},
+            "total_users": 0,
+            "users_with_teams": 0,
+            "error": str(e)
+        })
+
+
+@router.post("/admin/set-current-week")
+async def set_current_week(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    season: int = Form(...),
+    matchweek: int = Form(...),
+    deadline: str = Form("")
+):
+    """Set the current active season and matchweek.
+    Also saves current week_points to history, resets week_points to 0, and resets free transfers to 2.
+    """
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        # Validate player data exists for this season
+        fantasy_service = FantasyService(season=season)
+        if not fantasy_service.has_players_for_season(season):
+            error_msg = f"No player data found in Fantasy_Data.csv for Season {season}. Please update the CSV first."
+            return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(error_msg)}", status_code=303)
+
+        week_ref = db.reference('Fantasy/current_week')
+        previous_weeks_ref = db.reference('Fantasy/previous_weeks')
+        history_ref = db.reference('Fantasy/UserHistory')
+
+        # Archive current week data
+        current_data = week_ref.get()
+        if current_data:
+            previous_weeks_ref.push(current_data)
+
+        # Save each user's current week_points to history before reset
+        users_ref = db.reference('Fantasy/Users')
+        all_users = users_ref.get() or {}
+        
+        if current_data:
+            old_season = current_data.get('Season')
+            old_week = current_data.get('Week')
+            if old_season and old_week:
+                history_key = f"S{old_season}_MW{old_week}"
+                for uid, udata in all_users.items():
+                    current_wp = udata.get('week_points', 0)
+                    # Save all users regardless of points to maintain a complete audit trail.
+                    # Only skip if a history entry already exists (e.g. saved by process_all_users_matchweek).
+                    existing = history_ref.child(uid).child(history_key).get()
+                    if not existing:
+                        history_ref.child(uid).child(history_key).set({
+                            'season': old_season,
+                            'matchweek': old_week,
+                            'points': current_wp,
+                            'saved_at': datetime.now().isoformat()
+                        })
+
+        # Reset week_points to 0 and free_transfers to 2 for all users
+        reset_count = 0
+        for uid in all_users.keys():
+            users_ref.child(uid).update({
+                'week_points': 0,
+                'free_transfers': 2
+            })
+            reset_count += 1
+
+        # Set new week data
+        week_ref.set({
+            'Season': season,
+            'Week': matchweek,
+            'Deadline': deadline,
+            'updated_at': datetime.now().isoformat(),
+            'updated_by': user.get('email', 'unknown')
+        })
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'set_current_week',
+            'season': season,
+            'matchweek': matchweek,
+            'users_reset': reset_count
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Set to Season {season} MW{matchweek}. Reset week_points and free_transfers for {reset_count} users."
+        return RedirectResponse(url=f"/admin/week-management?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.post("/admin/toggle-team-lock")
+async def toggle_team_lock(
+    request: Request,
+    user: dict = Depends(get_current_user)
+):
+    """Toggle team editing lock on/off. When locking, auto-snapshot all teams."""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        lock_ref = db.reference('Fantasy/settings/team_lock')
+        current_lock = lock_ref.get() or False
+
+        # Toggle the lock
+        new_lock = not current_lock
+        lock_ref.set(new_lock)
+
+        snapshot_msg = ""
+        # Auto-snapshot all teams when LOCKING
+        if new_lock:
+            week_data = db.reference('Fantasy/current_week').get() or {}
+            season = week_data.get('Season')
+            matchweek = week_data.get('Week')
+
+            if season and matchweek:
+                users_ref = db.reference('Fantasy/Users')
+                snapshots_ref = db.reference('Fantasy/TeamSnapshots')
+                all_users = users_ref.get() or {}
+                snapshot_key = f"S{season}_MW{matchweek}"
+                snapshot_count = 0
+
+                for uid, user_data in all_users.items():
+                    current_team = user_data.get('current_team', [])
+                    if current_team and len(current_team) == 5:
+                        snapshots_ref.child(uid).child(snapshot_key).set({
+                            'team': current_team,
+                            'captain': user_data.get('captain'),
+                            'all_players': user_data.get('all_players', []),
+                            'snapshot_at': datetime.now().isoformat()
+                        })
+                        snapshot_count += 1
+
+                snapshot_msg = f" Snapshotted {snapshot_count} teams for S{season}_MW{matchweek}."
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'toggle_team_lock',
+            'new_status': 'locked' if new_lock else 'unlocked'
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        status = "locked" if new_lock else "unlocked"
+        success_msg = f"Team editing is now {status}.{snapshot_msg}"
+        return RedirectResponse(url=f"/admin/week-management?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.post("/admin/reset-free-transfers")
+async def reset_all_free_transfers(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    transfer_count: int = Form(2)
+):
+    """Reset free transfers for all users"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        users_ref = db.reference('Fantasy/Users')
+        all_users = users_ref.get() or {}
+
+        reset_count = 0
+        for uid in all_users.keys():
+            users_ref.child(uid).update({'free_transfers': transfer_count})
+            reset_count += 1
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'reset_free_transfers',
+            'transfer_count': transfer_count,
+            'users_affected': reset_count
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Reset free transfers to {transfer_count} for {reset_count} users"
+        return RedirectResponse(url=f"/admin/week-management?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+# ===========================
+# SEASON MANAGEMENT
+# ===========================
+
+@router.post("/admin/fantasy/new-season")
+async def start_new_season(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    new_season: int = Form(...)
+):
+    """Start a new fantasy season — archive current data and reset all teams"""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+
+    try:
+        # Get current season
+        current_week_data = db.reference('Fantasy/current_week').get() or {}
+        current_season = int(current_week_data.get('Season', 1))
+        if new_season <= current_season:
+            error_msg = f"New season ({new_season}) must be greater than current season ({current_season})."
+            return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(error_msg)}", status_code=303)
+
+        # Validate player data exists for the new season
+        fantasy_service = FantasyService(season=new_season)
+        if not fantasy_service.has_players_for_season(new_season):
+            error_msg = f"No player data found in Fantasy_Data.csv for Season {new_season}. Please update the CSV first."
+            return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(error_msg)}", status_code=303)
+
+        # Get current season info
+        week_ref = db.reference('Fantasy/current_week')
+        current_week_data = week_ref.get() or {}
+        current_season = current_week_data.get('Season', new_season - 1)
+
+        # Archive current season data for all users
+        users_ref = db.reference('Fantasy/Users')
+        archive_ref = db.reference(f'Fantasy/SeasonArchive/S{current_season}')
+        all_users = users_ref.get() or {}
+
+        archived_count = 0
+        for uid, user_data in all_users.items():
+            # Archive user's current state
+            archive_ref.child(uid).set({
+                'username': user_data.get('username', 'Unknown'),
+                'all_players': user_data.get('all_players', []),
+                'current_team': user_data.get('current_team', []),
+                'captain': user_data.get('captain'),
+                'total_balance': user_data.get('total_balance', 100.0),
+                'total_points': user_data.get('total_points', 0),
+                'season_points': user_data.get('season_points', {}),
+                'week_points': user_data.get('week_points', 0),
+                'archived_at': datetime.now().isoformat()
+            })
+
+            # Reset user for new season — preserve total_points, season_points, UserHistory
+            users_ref.child(uid).update({
+                'all_players': [],
+                'current_team': [],
+                'captain': None,
+                'total_balance': 100.0,
+                'free_transfers': 2,
+                'week_points': 0
+            })
+            archived_count += 1
+
+        # Unlock teams for the new season
+        db.reference('Fantasy/settings/team_lock').set(False)
+
+        # Set new season week 1
+        week_ref.set({
+            'Season': new_season,
+            'Week': 1,
+            'Deadline': '',
+            'updated_at': datetime.now().isoformat(),
+            'updated_by': user.get('email', 'unknown')
+        })
+
+        # Log the action
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'admin': user.get('email', 'unknown'),
+            'action': 'start_new_season',
+            'old_season': current_season,
+            'new_season': new_season,
+            'users_archived': archived_count
+        }
+        db.reference('AdminAuditLog').push(log_entry)
+
+        success_msg = f"Started Season {new_season}! Archived {archived_count} users from Season {current_season}. All teams reset."
+        return RedirectResponse(url=f"/admin/week-management?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url=f"/admin/week-management?error={urllib.parse.quote(str(e))}", status_code=303)

@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Fantasy Users | Admin{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+.admin-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-header h1 {
+    color: #670000;
+    margin: 0;
+}
+
+.back-link {
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+}
+
+.stat-card .value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-card .label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.users-table-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.users-table th,
+.users-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+    background: #670000;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.users-table th:first-child {
+    border-radius: 5px 0 0 0;
+}
+
+.users-table th:last-child {
+    border-radius: 0 5px 0 0;
+}
+
+.users-table tr:hover {
+    background: #f9f9f9;
+}
+
+.users-table .points {
+    font-weight: bold;
+    color: #670000;
+}
+
+.users-table .username {
+    font-weight: 500;
+}
+
+.admin-badge {
+    background: #dc3545;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.team-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.team-status.complete {
+    background: #d4edda;
+    color: #155724;
+}
+
+.team-status.incomplete {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.team-status.none {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.action-btn.view {
+    background: #007bff;
+    color: white;
+}
+
+.action-btn.view:hover {
+    background: #0056b3;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.quick-links {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.quick-link {
+    padding: 0.75rem 1.5rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.quick-link:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.quick-link i {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
+</style>
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-users-cog"></i> Fantasy Users</h1>
+        <a href="/admin" class="back-link"><i class="fas fa-arrow-left"></i> Back to Admin</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="quick-links">
+        <a href="/admin/week-management" class="quick-link">
+            <i class="fas fa-calendar-week"></i> Week Management
+        </a>
+        <a href="/fantasy/admin/preview-points" class="quick-link">
+            <i class="fas fa-calculator"></i> Preview Points
+        </a>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="value">{{ total_users }}</div>
+            <div class="label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ users|selectattr('starting_size', 'equalto', 5)|list|length }}</div>
+            <div class="label">With Starting Teams</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ users|sum(attribute='total_points') }}</div>
+            <div class="label">Total Points Awarded</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ week_data.get('Week', '-') }}</div>
+            <div class="label">Current Week</div>
+        </div>
+    </div>
+
+    <div class="users-table-section">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Team Status</th>
+                    <th>Captain</th>
+                    <th>Balance</th>
+                    <th>Transfers</th>
+                    <th class="points">Week Pts</th>
+                    <th class="points">Total Pts</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="username">
+                        {{ u.username }}
+                        {% if u.admin %}<span class="admin-badge">Admin</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if u.starting_size == 5 %}
+                        <span class="team-status complete">{{ u.starting_size }}/5 Starting</span>
+                        {% elif u.team_size > 0 %}
+                        <span class="team-status incomplete">{{ u.starting_size }}/5 Starting</span>
+                        {% else %}
+                        <span class="team-status none">No Team</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.captain if u.captain else '-' }}</td>
+                    <td>{{ "%.1f"|format(u.total_balance) }}</td>
+                    <td>{{ u.free_transfers }}</td>
+                    <td class="points">{{ u.week_points }}</td>
+                    <td class="points">{{ u.total_points }}</td>
+                    <td>
+                        <a href="/admin/fantasy-user/{{ u.user_id }}" class="action-btn view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not users %}
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 2rem; color: #999;">
+                        No fantasy users found
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
