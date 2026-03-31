@@ -661,12 +661,27 @@ html {
 
     .quick-nav {
         top: 0;
-        align-items: stretch;
-        font-size: 0.9rem;
+        align-items: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        gap: 0.5rem;
+    }
+
+    .quick-nav::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
     }
 
     .nav-link {
         text-align: center;
+        white-space: nowrap;
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        border: 1px solid #eee;
     }
 
     .leaders-grid {
@@ -697,6 +712,16 @@ html {
     }
 }
 </style>
+
+<script id="team-comparison-data" type="application/json">
+    {{ team_comparison|default([])|tojson|safe }}
+</script>
+<script id="rating-distribution-data" type="application/json">
+    {{ rating_distribution|default({})|tojson|safe }}
+</script>
+<script id="season-comparison-data" type="application/json">
+    {{ season_comparison|default([])|tojson|safe }}
+</script>
 
 <script>
 // Tab switching
@@ -761,8 +786,8 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(quickNav);
     }
 
-    const teamData = {{ team_comparison|tojson|safe }};
-    const ratingDist = {{ rating_distribution|tojson|safe }};
+    const teamData = JSON.parse(document.getElementById('team-comparison-data').textContent || 'null');
+    const ratingDist = JSON.parse(document.getElementById('rating-distribution-data').textContent || 'null');
 
     // Win Percentage Chart
     if (teamData && teamData.length > 0) {
@@ -917,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // Season Comparison Charts
-    const seasonCompData = {{ season_comparison|tojson|safe }};
+    const seasonCompData = JSON.parse(document.getElementById('season-comparison-data').textContent || 'null');
     if (seasonCompData && seasonCompData.length > 0) {
         // Goals comparison
         new Chart(document.getElementById('seasonGoalsCompareChart'), {
