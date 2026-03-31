@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "fantasy_base.html" %}
 {% block title %}Match Predictions | Fantasy{% endblock %}
 
 {% block content %}
@@ -260,13 +260,13 @@
     background: #f5f5f5;
 }
 
-.leaderboard-table .position {
+.leaderboard-table .rank-col {
     width: 50px;
     text-align: center;
     font-weight: bold;
 }
 
-.leaderboard-table .points {
+.leaderboard-table .score-col {
     font-weight: bold;
     color: #670000;
 }
@@ -361,12 +361,14 @@
 
 .points-info ul {
     margin: 0;
-    padding-left: 1.5rem;
+    padding-left: 0;
+    list-style-type: none;
+    text-align: center;
     color: #004085;
 }
 
 .points-info li {
-    margin: 0.25rem 0;
+    margin: 0.5rem 0;
 }
 
 /* Two column layout */
@@ -555,15 +557,15 @@
                     <table class="leaderboard-table">
                         <thead>
                             <tr>
-                                <th class="position">#</th>
+                                <th class="rank-col">#</th>
                                 <th>User</th>
-                                <th class="points">Pts</th>
+                                <th class="score-col">Pts</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for entry in leaderboard %}
                             <tr>
-                                <td class="position">
+                                <td class="rank-col">
                                     {% if entry.position == 1 %}
                                     <span class="trophy-icon">🥇</span>
                                     {% elif entry.position == 2 %}
@@ -580,7 +582,7 @@
                                     <span class="you-badge">You</span>
                                     {% endif %}
                                 </td>
-                                <td class="points">{{ entry.total_points }}</td>
+                                <td class="score-col">{{ entry.total_points }}</td>
                             </tr>
                             {% endfor %}
                             {% if not leaderboard %}
@@ -593,7 +595,7 @@
                         </tbody>
                     </table>
                 </div>
-                <a href="/fantasy/predictions/leaderboard" class="btn btn-outline" style="display: block; text-align: center; margin-top: 1rem; color: #670000; border: 2px solid #670000; padding: 0.75rem; border-radius: 5px; text-decoration: none;">
+                <a href="/fantasy/predictions/leaderboard" style="display: block; text-align: center; margin-top: 1rem; color: #670000; border: 2px solid #670000; background: transparent; padding: 0.75rem; border-radius: 5px; text-decoration: none; font-weight: bold;" onmouseover="this.style.background='#670000'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#670000';">
                     View Full Leaderboard
                 </a>
             </section>
