@@ -657,18 +657,30 @@ hr {
         font-size: 0.7rem;
     }
 
-    /* Tabs */
+    /* Tabs — horizontal scroll row on mobile, no stacking */
     .options-container {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
         gap: 8px;
         padding: 8px;
+        justify-content: flex-start;
+    }
+
+    .options-container::-webkit-scrollbar {
+        display: none;
     }
 
     .option {
-        min-width: 100%;
-        max-width: 100%;
-        padding: 14px;
-        font-size: 0.9rem;
+        min-width: unset;
+        max-width: unset;
+        width: auto;
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        border-radius: 20px;
     }
 
     /* POTM */
