@@ -1,0 +1,461 @@
+{% extends "fantasy_base.html" %}
+
+{% block title %}Player Points Explorer | Fantasy{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/table.css">
+<link rel="stylesheet" href="/static/displays.css">
+<link rel="stylesheet" href="/static/fantasy.css">
+
+<style>
+.explore-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.explore-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.explore-header h2 {
+    color: #670000;
+    margin: 0;
+}
+
+.back-link {
+    color: #670000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.filter-bar {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.filter-group select {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    min-width: 140px;
+    background: #fafafa;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #670000;
+    background: #fff;
+}
+
+.btn-apply {
+    padding: 0.6rem 1.25rem;
+    background: #670000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-self: flex-end;
+}
+
+.btn-apply:hover {
+    background: #8a0000;
+}
+
+.no-data-box {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    color: #666;
+}
+
+.no-data-box i {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.no-data-box p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.no-data-box small {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.points-table-wrap {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.points-table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.points-table-wrap thead th {
+    background: #670000;
+    color: #fff;
+    padding: 0.85rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.points-table-wrap thead th:hover {
+    background: #8a0000;
+}
+
+.points-table-wrap thead th.sorted-desc::after {
+    content: " ▼";
+    font-size: 0.75em;
+    opacity: 0.8;
+}
+
+.points-table-wrap thead th.sorted-asc::after {
+    content: " ▲";
+    font-size: 0.75em;
+    opacity: 0.8;
+}
+
+.points-table-wrap tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background 0.1s;
+}
+
+.points-table-wrap tbody tr:hover {
+    background: #fdf5f5;
+}
+
+.points-table-wrap tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.points-table-wrap tbody tr:nth-child(even):hover {
+    background: #fdf5f5;
+}
+
+.points-table-wrap td {
+    padding: 0.7rem 0.75rem;
+    color: #333;
+}
+
+.rank-cell {
+    font-weight: 700;
+    color: #670000;
+    width: 45px;
+    text-align: center;
+}
+
+.player-name {
+    font-weight: 600;
+}
+
+.position-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.pos-GK { background: #fff3cd; color: #856404; }
+.pos-D  { background: #d1ecf1; color: #0c5460; }
+.pos-M  { background: #d4edda; color: #155724; }
+.pos-F  { background: #f8d7da; color: #721c24; }
+
+.breakdown-cell {
+    font-size: 0.82rem;
+    color: #555;
+}
+
+.total-cell {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #670000;
+}
+
+.top-1  { background: #fffbe6 !important; }
+.top-2  { background: #f9f9f9 !important; }
+.top-3  { background: #fff5f0 !important; }
+
+.medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+.medal.gold   { background: #ffd700; color: #6b4f00; }
+.medal.silver { background: #c0c0c0; color: #333; }
+.medal.bronze { background: #cd7f32; color: #fff; }
+
+.table-summary {
+    padding: 0.75rem 1rem;
+    color: #666;
+    font-size: 0.85rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    min-width: 180px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #670000;
+}
+
+@media (max-width: 768px) {
+    .explore-header {
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .points-table-wrap {
+        overflow-x: auto;
+    }
+
+    .breakdown-col {
+        display: none;
+    }
+}
+</style>
+
+<div class="explore-container">
+    <div class="explore-header">
+        <h2>Player Points Explorer</h2>
+        <a href="/fantasy" class="back-link">&larr; Back to Fantasy</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label for="season-sel">Season</label>
+            <select id="season-sel" onchange="updateMwOptions()">
+                {% for s in season_matchweeks.keys() | sort %}
+                <option value="{{ s }}" {% if s == selected_season %}selected{% endif %}>Season {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="mw-sel">Matchweek</label>
+            <select id="mw-sel">
+                {% for s, mws in season_matchweeks.items() %}
+                {% for mw in mws %}
+                <option
+                    value="{{ mw }}"
+                    data-season="{{ s }}"
+                    {% if s == selected_season and mw == selected_matchweek %}selected{% endif %}
+                    {% if s != selected_season %}style="display:none"{% endif %}
+                >MW {{ mw }}</option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="search-box">Search Player</label>
+            <input type="text" id="search-box" class="search-input" placeholder="Player name..." oninput="filterTable()">
+        </div>
+        <button class="btn-apply" onclick="applyFilter()">Apply</button>
+    </div>
+
+    {% if not has_data %}
+    <div class="no-data-box">
+        <i class="fas fa-database"></i>
+        <p>No player points data for Season {{ selected_season }}, MW {{ selected_matchweek }}.</p>
+        <small>Points are cached when an admin processes a matchweek.</small>
+    </div>
+    {% else %}
+    <div class="points-table-wrap">
+        <table id="explore-table">
+            <thead>
+                <tr>
+                    <th class="rank-cell" onclick="sortTable(0)">Rank</th>
+                    <th onclick="sortTable(1)">Player</th>
+                    <th onclick="sortTable(2)">Team</th>
+                    <th onclick="sortTable(3)">Pos</th>
+                    <th class="breakdown-col" onclick="sortTable(4)" title="Goals">G</th>
+                    <th class="breakdown-col" onclick="sortTable(5)" title="Assists">A</th>
+                    <th class="breakdown-col" onclick="sortTable(6)" title="Played">P</th>
+                    <th class="breakdown-col" onclick="sortTable(7)" title="Win bonus">W</th>
+                    <th class="breakdown-col" onclick="sortTable(8)" title="Clean sheet">CS</th>
+                    <th class="breakdown-col" onclick="sortTable(9)" title="POTM bonus">POTM</th>
+                    <th class="breakdown-col" onclick="sortTable(10)" title="Cards penalty">Cards</th>
+                    <th class="sorted-desc" onclick="sortTable(11)">Total Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in players_list %}
+                <tr class="{% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
+                    <td class="rank-cell">
+                        {% if loop.index == 1 %}
+                            <span class="medal gold">1</span>
+                        {% elif loop.index == 2 %}
+                            <span class="medal silver">2</span>
+                        {% elif loop.index == 3 %}
+                            <span class="medal bronze">3</span>
+                        {% else %}
+                            {{ loop.index }}
+                        {% endif %}
+                    </td>
+                    <td class="player-name">{{ p.name }}</td>
+                    <td>{{ p.team }}</td>
+                    <td>
+                        <span class="position-badge pos-{{ p.position }}">{{ p.position }}</span>
+                    </td>
+                    <td class="breakdown-col">{{ p.goals }}</td>
+                    <td class="breakdown-col">{{ p.assists }}</td>
+                    <td class="breakdown-col">{{ p.matches_played }}</td>
+                    <td class="breakdown-col">{{ p.win }}</td>
+                    <td class="breakdown-col">{{ p.clean_sheet }}</td>
+                    <td class="breakdown-col">{{ p.potm }}</td>
+                    <td class="breakdown-col">{{ p.cards }}</td>
+                    <td class="total-cell">{{ p.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="table-summary">
+            <span id="row-count">{{ players_list | length }} players</span>
+            <span>Season {{ selected_season }} &middot; MW {{ selected_matchweek }}</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const seasonMatchweeks = JSON.parse('{{ season_matchweeks | tojson | safe }}');
+
+function updateMwOptions() {
+    const seasonSel = document.getElementById('season-sel');
+    const mwSel = document.getElementById('mw-sel');
+    const selectedSeason = parseInt(seasonSel.value);
+
+    Array.from(mwSel.options).forEach(opt => {
+        const s = parseInt(opt.dataset.season);
+        opt.style.display = (s === selectedSeason) ? '' : 'none';
+        if (s === selectedSeason) opt.selected = true;
+        else opt.selected = false;
+    });
+
+    // Select first visible option
+    const firstVisible = Array.from(mwSel.options).find(o => o.style.display !== 'none');
+    if (firstVisible) firstVisible.selected = true;
+}
+
+function applyFilter() {
+    const season = document.getElementById('season-sel').value;
+    const mw = document.getElementById('mw-sel').value;
+    window.location.href = '/fantasy/explore?season=' + season + '&matchweek=' + mw;
+}
+
+// Client-side search filter
+function filterTable() {
+    const query = document.getElementById('search-box').value.toLowerCase();
+    const rows = document.querySelectorAll('#explore-table tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+        const name = row.cells[1].textContent.toLowerCase();
+        const show = name.includes(query);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    const countEl = document.getElementById('row-count');
+    if (countEl) countEl.textContent = visible + ' players';
+}
+
+// Client-side column sort
+let sortCol = 11;
+let sortAsc = false;
+
+function sortTable(col) {
+    const table = document.getElementById('explore-table');
+    const headers = table.querySelectorAll('thead th');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (sortCol === col) {
+        sortAsc = !sortAsc;
+    } else {
+        sortCol = col;
+        sortAsc = false;
+    }
+
+    headers.forEach((h, i) => {
+        h.classList.remove('sorted-asc', 'sorted-desc');
+        if (i === col) h.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+    });
+
+    rows.sort((a, b) => {
+        const av = a.cells[col].textContent.trim();
+        const bv = b.cells[col].textContent.trim();
+        const an = parseFloat(av);
+        const bn = parseFloat(bv);
+        if (!isNaN(an) && !isNaN(bn)) {
+            return sortAsc ? an - bn : bn - an;
+        }
+        return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+}
+</script>
+
+{% endblock %}

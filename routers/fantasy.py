@@ -2,7 +2,7 @@ from fastapi import Request, Form, APIRouter, Depends, Cookie, HTTPException
 from firebase_admin import auth, db
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
-from models.fantasy import FantasyUser, FantasyService, MiniLeague, MatchPrediction, PredictionLeaderboard
+from models.fantasy import FantasyUser, FantasyService, MiniLeague, MatchPrediction, PredictionLeaderboard, FantasyPointsCalculator
 import pandas as pd
 from datetime import datetime
 import urllib.parse
@@ -12,10 +12,9 @@ import time
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-fantasy_service = FantasyService()
-
-_players_cache = {"data": None, "timestamp": 0}
-_teams_cache = {"data": None, "timestamp": 0}
+_players_cache = {"data": None, "timestamp": 0, "season": None}
+_teams_cache = {"data": None, "timestamp": 0, "season": None}
+_fantasy_service_cache = {"service": None, "season": None}
 CACHE_DURATION = 300  # 5 minutes
 
 def get_current_user(session_token: str = Cookie(None)):
@@ -28,61 +27,156 @@ def get_current_user(session_token: str = Cookie(None)):
         print("Invalid session token:", str(e))
         raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
 
+def get_fantasy_service() -> FantasyService:
+    """Get a season-aware FantasyService, cached until season changes"""
+    current_season = FantasyService.get_current_season()
+    
+    if (_fantasy_service_cache["service"] is None or 
+        _fantasy_service_cache["season"] != current_season):
+        _fantasy_service_cache["service"] = FantasyService(season=current_season)
+        _fantasy_service_cache["season"] = current_season
+        # Invalidate player/team caches when season changes
+        _players_cache["data"] = None
+        _teams_cache["data"] = None
+        print(f"Created FantasyService for Season {current_season}")
+    
+    return _fantasy_service_cache["service"]
+
 def get_cached_players():
-    """Get all players with caching to reduce database calls"""
+    """Get all players with caching, season-aware"""
     current_time = time.time()
+    current_season = FantasyService.get_current_season()
     
     if (_players_cache["data"] is None or 
-        current_time - _players_cache["timestamp"] > CACHE_DURATION):
+        current_time - _players_cache["timestamp"] > CACHE_DURATION or
+        _players_cache["season"] != current_season):
         
-        _players_cache["data"] = fantasy_service.get_all_players()
+        service = get_fantasy_service()
+        _players_cache["data"] = service.get_all_players()
         _players_cache["timestamp"] = current_time
-        print("Refreshed players cache")
+        _players_cache["season"] = current_season
+        print(f"Refreshed players cache for Season {current_season}")
     
     return _players_cache["data"]
 
 def get_cached_teams():
-    """Get all teams with caching"""
+    """Get all teams with caching, season-aware"""
     current_time = time.time()
-    
-    if (_teams_cache["data"] is None or 
-        current_time - _teams_cache["timestamp"] > CACHE_DURATION):
-        
+    current_season = FantasyService.get_current_season()
+
+    if (_teams_cache["data"] is None or
+        current_time - _teams_cache["timestamp"] > CACHE_DURATION or
+        _teams_cache["season"] != current_season):
+
         all_players = get_cached_players()
         _teams_cache["data"] = sorted(list(set(
-            player.get('Team', 'Unknown') 
-            for player in all_players 
+            player.get('Team', 'Unknown')
+            for player in all_players
             if player.get('Team')
         )))
         _teams_cache["timestamp"] = current_time
-        print("Refreshed teams cache")
-    
+        _teams_cache["season"] = current_season
+        print(f"Refreshed teams cache for Season {current_season}")
+
     return _teams_cache["data"]
+
+
+def is_team_locked():
+    """Check if team editing is locked"""
+    try:
+        lock_ref = db.reference('Fantasy/settings/team_lock')
+        return lock_ref.get() or False
+    except Exception as e:
+        print(f"Error checking team lock status: {e}")
+        return False
 
 @router.get("/fantasy", response_class=HTMLResponse)
 async def fantasy_home(request: Request, user: dict = Depends(get_current_user), error: str = None, success: str = None):
     """Main fantasy page - shows different views based on user's team status"""
     fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
-    current_week = db.reference('Fantasy').child('current_week').child('Week').get() or 1
-    
+
+    # Get current week data
+    week_data = db.reference('Fantasy/current_week').get() or {}
+    current_week = week_data.get('Week', 1)
+    current_season = week_data.get('Season', 6)
+    deadline = week_data.get('Deadline', '')
+
+    # Check if teams are locked
+    team_locked = is_team_locked()
+
+    # Get user's matchweek history
+    user_history = db.reference(f'Fantasy/UserHistory/{user["user_id"]}').get() or {}
+
     all_players = get_cached_players()
     teams = get_cached_teams()
-    
+
     context = {
-        "request": request, 
-        "user": user, 
+        "request": request,
+        "user": user,
         "fantasy_user": fantasy_user,
         "current_week": current_week,
+        "current_season": current_season,
+        "deadline": deadline,
+        "team_locked": team_locked,
+        "user_history": user_history,
         "all_players": all_players,
         "teams": teams,
         "has_team": bool(fantasy_user.team.all_players),
         "has_starting_team": bool(fantasy_user.team.current_team),
         "players_data": get_user_players_data(fantasy_user),
-        "error": error,  # Pass error message to template
-        "success": success  # Pass success message to template
+        "error": error,
+        "success": success
     }
-    
+
     return templates.TemplateResponse("fantasy.html", context)
+
+@router.get("/fantasy/rules", response_class=HTMLResponse)
+async def fantasy_rules(request: Request, user: dict = Depends(get_current_user)):
+    """Fantasy rules and scoring reference page"""
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+    context = {
+        "request": request,
+        "user": user,
+        "fantasy_user": fantasy_user
+    }
+    return templates.TemplateResponse("fantasy_rules.html", context)
+
+@router.get("/fantasy/admin-points", response_class=HTMLResponse)
+async def fantasy_admin_points(request: Request, user: dict = Depends(get_current_user)):
+    """Fantasy admin points calculator page"""
+    if not user:
+        return RedirectResponse(url="/login")
+
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+
+    season_matchweeks = {}
+    try:
+        matchweeks_df = pd.read_csv('data/matchweeks.csv')
+        matchweeks_df.columns = [col.strip() for col in matchweeks_df.columns]
+        for _, row in matchweeks_df.iterrows():
+            s = int(row['Season'])
+            mw = int(row['MW'])
+            if s not in season_matchweeks:
+                season_matchweeks[s] = []
+            season_matchweeks[s].append(mw)
+        for s in season_matchweeks:
+            season_matchweeks[s] = sorted(season_matchweeks[s])
+    except Exception:
+        season_matchweeks = {}
+
+    week_data = db.reference('Fantasy/current_week').get() or {}
+    current_season = int(week_data.get('Season', 6))
+    current_week = int(week_data.get('Week', 1))
+
+    context = {
+        "request": request,
+        "user": user,
+        "fantasy_user": fantasy_user,
+        "season_matchweeks": season_matchweeks,
+        "current_season": current_season,
+        "current_week": current_week
+    }
+    return templates.TemplateResponse("fantasy_admin.html", context)
 
 @router.post("/fantasy/create-team")
 async def create_team(
@@ -96,10 +190,10 @@ async def create_team(
     try:
         player_names = [name.strip() for name in selected_players.split(',') if name.strip()]
         
-        is_valid, message = fantasy_service.validate_team_creation(player_names, fantasy_user.total_balance)
+        is_valid, message = get_fantasy_service().validate_team_creation(player_names, fantasy_user.total_balance)
         
         if not is_valid:
-            all_players = fantasy_service.get_all_players()
+            all_players = get_fantasy_service().get_all_players()
             teams = sorted(list(set(player.get('Team', 'Unknown') for player in all_players if player.get('Team'))))
             context = {
                 "request": request,
@@ -113,7 +207,7 @@ async def create_team(
             }
             return templates.TemplateResponse("fantasy.html", context)
         
-        players_data = fantasy_service.get_players_by_names(player_names)
+        players_data = get_fantasy_service().get_players_by_names(player_names)
         total_cost = sum(player['Fantasy Cost'] for player in players_data)
         
         fantasy_user.team.all_players = player_names
@@ -137,15 +231,19 @@ async def select_weekly_team(
     starting_team: str = Form(...)
 ):
     """Select starting team for the week"""
+    # Check if team editing is locked
+    if is_team_locked():
+        return RedirectResponse(url="/fantasy?error=Team+editing+is+currently+locked", status_code=303)
+
     fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
-    
+
     try:
         starting_players = [name.strip() for name in starting_team.split(',') if name.strip()]
         
-        is_valid, message = fantasy_service.validate_weekly_team(starting_players, fantasy_user.team.all_players)
+        is_valid, message = get_fantasy_service().validate_weekly_team(starting_players, fantasy_user.team.all_players)
         
         if not is_valid:
-            all_players = fantasy_service.get_all_players()
+            all_players = get_fantasy_service().get_all_players()
             teams = sorted(list(set(player.get('Team', 'Unknown') for player in all_players if player.get('Team'))))
             context = {
                 "request": request,
@@ -179,8 +277,12 @@ async def set_captain(
     captain: str = Form(...)
 ):
     """Set team captain"""
+    # Check if team editing is locked
+    if is_team_locked():
+        return RedirectResponse(url="/fantasy?error=Team+editing+is+currently+locked", status_code=303)
+
     fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
-    
+
     try:
         captain = captain.strip()
         
@@ -207,8 +309,12 @@ async def make_substitution(
     players_in: str = Form(...)
 ):
     """Make substitutions between starting team and bench"""
+    # Check if team editing is locked
+    if is_team_locked():
+        return RedirectResponse(url="/fantasy?error=Team+editing+is+currently+locked", status_code=303)
+
     fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
-    
+
     try:
         out_players = [name.strip() for name in players_out.split(',') if name.strip()]
         in_players = [name.strip() for name in players_in.split(',') if name.strip()]
@@ -228,7 +334,7 @@ async def make_substitution(
             test_starting_team.remove(player_out)
             test_starting_team.append(player_in)
         
-        is_valid, message = fantasy_service.validate_weekly_team(test_starting_team, fantasy_user.team.all_players)
+        is_valid, message = get_fantasy_service().validate_weekly_team(test_starting_team, fantasy_user.team.all_players)
         
         if not is_valid:
             raise ValueError(message)
@@ -254,16 +360,20 @@ async def make_transfer(
     player_in: str = Form(...)
 ):
     """Make a transfer (buy/sell player)"""
+    # Check if team editing is locked
+    if is_team_locked():
+        return RedirectResponse(url="/fantasy?error=Team+editing+is+currently+locked", status_code=303)
+
     fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
-    
+
     try:
         player_out = player_out.strip()
         player_in = player_in.strip()
         
-        is_valid, message = fantasy_service.validate_transfer(player_in, player_out, fantasy_user)
+        is_valid, message = get_fantasy_service().validate_transfer(player_in, player_out, fantasy_user)
         
         if not is_valid:
-            all_players = fantasy_service.get_all_players()
+            all_players = get_fantasy_service().get_all_players()
             teams = sorted(list(set(player.get('Team', 'Unknown') for player in all_players if player.get('Team'))))
             context = {
                 "request": request,
@@ -278,8 +388,8 @@ async def make_transfer(
             }
             return templates.TemplateResponse("fantasy.html", context)
         
-        player_in_data = fantasy_service.get_player_by_name(*player_in.split(" ", 1))
-        player_out_data = fantasy_service.get_player_by_name(*player_out.split(" ", 1))
+        player_in_data = get_fantasy_service().get_player_by_name(*player_in.split(" ", 1))
+        player_out_data = get_fantasy_service().get_player_by_name(*player_out.split(" ", 1))
         
         cost_difference = player_in_data['Fantasy Cost'] - player_out_data['Fantasy Cost']
         
@@ -321,9 +431,9 @@ def get_user_players_data(fantasy_user: FantasyUser):
             'total_value': 0
         }
     
-    all_players_data = fantasy_service.get_players_by_names(fantasy_user.team.all_players)
-    starting_team_data = fantasy_service.get_players_by_names(fantasy_user.team.current_team)
-    bench_players_data = fantasy_service.get_players_by_names(fantasy_user.team.bench_players)
+    all_players_data = get_fantasy_service().get_players_by_names(fantasy_user.team.all_players)
+    starting_team_data = get_fantasy_service().get_players_by_names(fantasy_user.team.current_team)
+    bench_players_data = get_fantasy_service().get_players_by_names(fantasy_user.team.bench_players)
     
     return {
         'all_players': all_players_data,
@@ -345,35 +455,60 @@ def log_user_action(user_id: str, action: str, details: str):
         print(f"Error logging action: {e}")
 
 @router.get("/fantasy/leaderboard", response_class=HTMLResponse)
-async def fantasy_leaderboard(request: Request, user: dict = Depends(get_current_user)):
-    """Show fantasy leaderboard"""
+async def fantasy_leaderboard(request: Request, user: dict = Depends(get_current_user), season: int = None):
+    """Show fantasy leaderboard with optional season filtering"""
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
     try:
+        current_season = FantasyService.get_current_season()
+        if season is None:
+            season = current_season
+            
         users_ref = db.reference('Fantasy/Users')
         all_users = users_ref.get() or {}
-        
+
         leaderboard = []
         for user_id, user_data in all_users.items():
+            season_points = user_data.get('season_points', {})
+
+            if season:
+                # Show points for specific season
+                points = season_points.get(str(season), 0)
+            else:
+                # Show total points across all seasons
+                points = user_data.get('total_points', 0)
+
             leaderboard.append({
                 'username': user_data.get('username', 'Unknown'),
                 'total_points': user_data.get('total_points', 0),
+                'season_points': season_points,
+                'points': points,  # Points for current view (filtered or total)
                 'week_points': user_data.get('week_points', 0)
             })
-        
-        leaderboard.sort(key=lambda x: x['total_points'], reverse=True)
-        
+
+        leaderboard.sort(key=lambda x: x['points'], reverse=True)
+
+        # Add rank
+        for i, entry in enumerate(leaderboard):
+            entry['rank'] = i + 1
+
         context = {
             "request": request,
             "user": user,
-            "leaderboard": leaderboard
+            "leaderboard": leaderboard,
+            "season": season,
+            "current_season": current_season,
+            "fantasy_user": fantasy_user
         }
         
         return templates.TemplateResponse("fantasy_leaderboard.html", context)
-        
+
     except Exception as e:
         print(f"Error loading leaderboard: {e}")
         return templates.TemplateResponse("fantasy_leaderboard.html", {
             "request": request,
             "user": user,
+            "fantasy_user": fantasy_user,
+            "season": season,
             "leaderboard": [],
             "error": "Error loading leaderboard"
         })
@@ -381,7 +516,7 @@ async def fantasy_leaderboard(request: Request, user: dict = Depends(get_current
 @router.get("/fantasy/api/players")
 async def get_players_api(user: dict = Depends(get_current_user)):
     """API endpoint to get all players data"""
-    return {"players": fantasy_service.get_all_players()}
+    return {"players": get_fantasy_service().get_all_players()}
 
 
 # ============ Mini-League Routes ============
@@ -389,6 +524,7 @@ async def get_players_api(user: dict = Depends(get_current_user)):
 @router.get("/fantasy/leagues", response_class=HTMLResponse)
 async def leagues_home(request: Request, user: dict = Depends(get_current_user), error: str = None, success: str = None):
     """Mini-leagues home page - shows user's leagues and options to create/join"""
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
     user_leagues = MiniLeague.get_user_leagues(user['user_id'])
     public_leagues = MiniLeague.get_public_leagues()
 
@@ -398,6 +534,7 @@ async def leagues_home(request: Request, user: dict = Depends(get_current_user),
     context = {
         "request": request,
         "user": user,
+        "fantasy_user": fantasy_user,
         "user_leagues": user_leagues,
         "public_leagues": public_leagues[:10],  # Limit public leagues shown
         "error": urllib.parse.unquote(error) if error else None,
@@ -609,7 +746,7 @@ async def league_leaderboard_api(
 def get_upcoming_matches():
     """Get upcoming matches that can be predicted"""
     try:
-        matches_df = pd.read_csv('data\F25 Futsal Schedule.csv')
+        matches_df = pd.read_csv('data/F25 Futsal Schedule.csv')
         matches_df.columns = [col.strip() for col in matches_df.columns]
 
         # Get matches that haven't been played yet (no score)
@@ -802,7 +939,10 @@ async def predictions_leaderboard(
     user: dict = Depends(get_current_user)
 ):
     """Full predictions leaderboard page"""
+    fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'Unknown'))
     leaderboard = PredictionLeaderboard.get_leaderboard(100)
+    
+    # Calculate current user's position
     user_stats = PredictionLeaderboard.get_user_stats(user['user_id'])
 
     # Find user's position
@@ -814,8 +954,8 @@ async def predictions_leaderboard(
     context = {
         "request": request,
         "user": user,
+        "fantasy_user": fantasy_user,
         "leaderboard": leaderboard,
-        "user_stats": user_stats,
         "user_position": user_position
     }
 
@@ -860,3 +1000,259 @@ async def process_predictions(
 async def get_predictable_matches(user: dict = Depends(get_current_user)):
     """API endpoint to get matches available for prediction"""
     return {"matches": get_upcoming_matches()}
+
+
+# ============ Fantasy Points Admin Routes ============
+
+@router.post("/fantasy/admin/process-matchweek")
+async def process_matchweek_points(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    season: int = Form(...),
+    matchweek: int = Form(...)
+):
+    """Admin route to process fantasy points for all users for a matchweek"""
+    try:
+        # Check if user is admin
+        fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+        if not fantasy_user.admin:
+            raise ValueError("Admin access required")
+
+        # Create calculator and process
+        calculator = FantasyPointsCalculator()
+        results = calculator.process_all_users_matchweek(season, matchweek)
+
+        # Log the action
+        log_user_action(
+            user['user_id'],
+            "Processed matchweek points",
+            f"Season {season} MW{matchweek}: {results['processed_count']} users, {results['total_points_awarded']} total points"
+        )
+
+        success_msg = f"Processed MW{matchweek} for {results['processed_count']} users. Total points awarded: {results['total_points_awarded']}"
+        return RedirectResponse(url=f"/fantasy?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        print(f"Error processing matchweek: {e}")
+        error_msg = f"Error processing matchweek: {str(e)}"
+        return RedirectResponse(url=f"/fantasy?error={urllib.parse.quote(error_msg)}", status_code=303)
+
+
+@router.post("/fantasy/admin/reset-week-points")
+async def reset_week_points(
+    request: Request,
+    user: dict = Depends(get_current_user)
+):
+    """Admin route to reset all users' week_points to 0"""
+    try:
+        # Check if user is admin
+        fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+        if not fantasy_user.admin:
+            raise ValueError("Admin access required")
+
+        calculator = FantasyPointsCalculator()
+        reset_count = calculator.reset_all_week_points()
+
+        log_user_action(user['user_id'], "Reset week points", f"Reset {reset_count} users")
+
+        success_msg = f"Reset week points for {reset_count} users"
+        return RedirectResponse(url=f"/fantasy?success={urllib.parse.quote(success_msg)}", status_code=303)
+
+    except Exception as e:
+        print(f"Error resetting week points: {e}")
+        error_msg = f"Error resetting week points: {str(e)}"
+        return RedirectResponse(url=f"/fantasy?error={urllib.parse.quote(error_msg)}", status_code=303)
+
+
+@router.get("/fantasy/admin/preview-points", response_class=HTMLResponse)
+async def preview_matchweek_points(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    season: int = None,
+    matchweek: int = None
+):
+    """Admin route to preview points calculation without saving"""
+    try:
+        # Check if user is admin
+        fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+        if not fantasy_user.admin:
+            return RedirectResponse(url="/fantasy?error=Admin%20access%20required", status_code=303)
+
+        preview_results = []
+
+        if season is not None and matchweek is not None:
+            calculator = FantasyPointsCalculator()
+
+            # Get all users and preview their points
+            from firebase_admin import db as firebase_db
+            users_ref = firebase_db.reference('Fantasy/Users')
+            all_users = users_ref.get() or {}
+
+            for user_id, user_data in all_users.items():
+                current_team = user_data.get('current_team', [])
+                if not current_team or len(current_team) != 5:
+                    continue
+
+                captain = user_data.get('captain')
+                breakdown = calculator.calculate_user_matchweek_points(
+                    current_team, captain, season, matchweek
+                )
+
+                preview_results.append({
+                    'username': user_data.get('username', 'Unknown'),
+                    'current_team': current_team,
+                    'captain': captain,
+                    'week_points': breakdown['total'],
+                    'breakdown': breakdown['players']
+                })
+
+            # Sort by week points
+            preview_results.sort(key=lambda x: x['week_points'], reverse=True)
+
+        # Load matchweeks for dropdown — build season -> [mw, ...] mapping
+        season_matchweeks = {}
+        try:
+            matchweeks_df = pd.read_csv('data/matchweeks.csv')
+            matchweeks_df.columns = [col.strip() for col in matchweeks_df.columns]
+            for _, row in matchweeks_df.iterrows():
+                s = int(row['Season'])
+                mw = int(row['MW'])
+                if s not in season_matchweeks:
+                    season_matchweeks[s] = []
+                season_matchweeks[s].append(mw)
+            for s in season_matchweeks:
+                season_matchweeks[s] = sorted(season_matchweeks[s])
+        except Exception:
+            season_matchweeks = {}
+
+        context = {
+            "request": request,
+            "user": user,
+            "fantasy_user": fantasy_user,
+            "preview_results": preview_results,
+            "season_matchweeks": season_matchweeks,
+            "selected_season": season,
+            "selected_matchweek": matchweek
+        }
+
+        return templates.TemplateResponse("fantasy_admin_preview.html", context)
+
+    except Exception as e:
+        print(f"Error previewing points: {e}")
+        return RedirectResponse(url=f"/fantasy?error={urllib.parse.quote(str(e))}", status_code=303)
+
+
+@router.get("/fantasy/api/player-points/{player_name}")
+async def get_player_points_breakdown(
+    player_name: str,
+    season: int,
+    matchweek: int,
+    user: dict = Depends(get_current_user)
+):
+    """API endpoint to get detailed point breakdown for a player"""
+    try:
+        calculator = FantasyPointsCalculator()
+        match_ids = calculator.get_match_ids_for_matchweek(season, matchweek)
+
+        breakdown = []
+        total_points = 0
+
+        for match_id in match_ids:
+            result = calculator.calculate_player_match_points(player_name, match_id)
+            if result['played']:
+                result['match_id'] = match_id
+                breakdown.append(result)
+                total_points += result['total']
+
+        return {
+            "player_name": player_name,
+            "season": season,
+            "matchweek": matchweek,
+            "total_points": total_points,
+            "matches": breakdown
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ============ Explore Page ============
+
+@router.get("/fantasy/explore", response_class=HTMLResponse)
+async def fantasy_explore(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    season: int = None,
+    matchweek: int = None
+):
+    """Explore page showing all players' fantasy points per matchweek"""
+    try:
+        fantasy_user = FantasyUser.load_from_firebase(user['user_id'], user.get('name', 'User'))
+
+        # Get current week data for defaults
+        week_data = db.reference('Fantasy/current_week').get() or {}
+        current_season = week_data.get('Season', 6)
+        current_week = week_data.get('Week', 1)
+        
+        if season is None:
+            season = current_season
+        if matchweek is None:
+            matchweek = current_week
+
+        # Read cached player points from Firebase
+        player_points = FantasyPointsCalculator.get_cached_player_points(season, matchweek)
+        
+        # Convert to sorted list for template
+        players_list = []
+        for player_name, data in player_points.items():
+            players_list.append({
+                'name': player_name,
+                'team': data.get('team', ''),
+                'position': data.get('position', ''),
+                'goals': data.get('goals', 0),
+                'assists': data.get('assists', 0),
+                'start': data.get('start', 0),
+                'potm': data.get('potm', 0),
+                'cards': data.get('cards', 0),
+                'win': data.get('win', 0),
+                'clean_sheet': data.get('clean_sheet', 0),
+                'total': data.get('total', 0),
+                'matches_played': data.get('matches_played', 0)
+            })
+        
+        # Sort by total points descending
+        players_list.sort(key=lambda x: x['total'], reverse=True)
+        
+        # Load available matchweeks for the dropdown
+        try:
+            matchweeks_df = pd.read_csv('data/matchweeks.csv')
+            matchweeks_df.columns = [col.strip() for col in matchweeks_df.columns]
+            
+            season_matchweeks = {}
+            for _, row in matchweeks_df.iterrows():
+                s = int(row['Season'])
+                mw = int(row['MW'])
+                if s not in season_matchweeks:
+                    season_matchweeks[s] = []
+                season_matchweeks[s].append(mw)
+            for s in season_matchweeks:
+                season_matchweeks[s] = sorted(season_matchweeks[s])
+        except Exception:
+            season_matchweeks = {}
+
+        context = {
+            "request": request,
+            "user": user,
+            "fantasy_user": fantasy_user,
+            "players_list": players_list,
+            "selected_season": season,
+            "selected_matchweek": matchweek,
+            "season_matchweeks": season_matchweeks,
+            "has_data": len(players_list) > 0
+        }
+        
+        return templates.TemplateResponse("fantasy_explore.html", context)
+
+    except Exception as e:
+        print(f"Error in explore page: {e}")
+        return RedirectResponse(url=f"/fantasy?error={urllib.parse.quote(str(e))}", status_code=303)

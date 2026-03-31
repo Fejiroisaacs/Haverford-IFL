@@ -1,0 +1,80 @@
+{% extends "fantasy_base.html" %}
+
+{% block title %}Rules & Scoring | Fantasy{% endblock %}
+
+{% block content %}
+<div class="fantasy-container">
+    <div class="fantasy-header">
+        <h2>Rules & Scoring</h2>
+        <p>Everything you need to know about managing your IFL Fantasy Team</p>
+    </div>
+
+    <div class="fantasy-content active" style="margin-top: 2rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+        <div class="rules-section">
+            <div class="rules-box" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #670000; margin-bottom: 2rem;">
+                <h3 style="color: #670000; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-users" style="margin-right: 10px;"></i> Team Creation Rules</h3>
+                <p style="line-height: 1.6; color: #444; font-size: 1.1rem;">{{ fantasy_user.CREATING_TEAM_RULES }}</p>
+            </div>
+
+            <div class="rules-box" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #670000; margin-bottom: 2rem;">
+                <h3 style="color: #670000; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-calendar-check" style="margin-right: 10px;"></i> Weekly Team Rules</h3>
+                <p style="line-height: 1.6; color: #444; font-size: 1.1rem;">{{ fantasy_user.WEEKLY_TEAM_RULES }}</p>
+            </div>
+
+            <div class="rules-box points-reference" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #27ae60;">
+                <h3 style="color: #27ae60; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-calculator" style="margin-right: 10px;"></i> Points Rules Reference</h3>
+                <p style="margin-bottom: 1.5rem; color: #555;">Learn how your players earn points for their performances on the pitch.</p>
+                
+                <div class="table-container" style="overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #eee;">
+                    <table class="points-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa;">
+                                <th style="padding: 15px; border-bottom: 2px solid #27ae60; color: #333;">Category</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #27ae60; color: #333;">F (Forward)</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #27ae60; color: #333;">M (Midfielder)</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #27ae60; color: #333;">D (Defender)</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #27ae60; color: #333;">GK (Goalkeeper)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
+                                <td style="padding: 15px; font-weight: 600; color: #444;">Goals</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">3</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">4</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">5</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">6</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
+                                <td style="padding: 15px; font-weight: 600; color: #444;">Assists</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">2</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">1</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">2</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">2</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
+                                <td style="padding: 15px; font-weight: 600; color: #444;">Clean Sheet</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">1</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">2</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">3</td>
+                                <td style="padding: 15px; color: #27ae60; font-weight: bold;">5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="bonus-list" style="margin-top: 2rem; background: #fdfaf2; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #F39C12;">
+                    <h4 style="margin-bottom: 1rem; color: #333;"><i class="fas fa-star" style="color:#F39C12; margin-right: 8px;"></i> Other Bonuses & Penalties</h4>
+                    <ul style="list-style-type: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; font-size: 1.05rem;">
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #27ae60; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">+1</span> Win Bonus</li>
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #27ae60; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">+1</span> Starting Match</li>
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #27ae60; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">+3</span> Player of the Match</li>
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #e74c3c; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">-2</span> Yellow Card</li>
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #c0392b; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">-5</span> Red Card</li>
+                        <li style="display: flex; align-items: center; background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><span style="color: white; background: #F39C12; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 45px; text-align: center;">2x</span> Designated Captain</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

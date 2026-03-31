@@ -1,32 +1,14 @@
-{% extends "base.html" %}
+{% extends "fantasy_base.html" %}
 
-{% block title %}Fantasy{% endblock %}
+{% block title %}Squad Manager - IFL Fantasy{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="/static/table.css">
 <link rel="stylesheet" href="/static/displays.css">
 <link rel="stylesheet" href="/static/fantasy.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
-.fantasy-nav {
-    display:flex;
-    justify-content:flex-end;
-    gap:16px;
-    margin-bottom:24px;
-}
-/* Performance Indicator Styles */
-.player-performance-indicator {
-    position: absolute !important;
-    top: 5px !important;
-    right: 5px !important;
-    width: 12px !important;
-    height: 12px !important;
-    border-radius: 50% !important;
-    border: 2px solid white !important;
-    z-index: 10 !important;
-    display: block !important;
-}
-
 .fantasy-nav a {
     text-decoration: none !important;
 }
@@ -54,6 +36,401 @@
 /* Make sure player cards have relative positioning for absolute indicators */
 .player-card {
     position: relative !important;
+}
+
+/* Admin Section Styles */
+.admin-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.admin-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-card h4 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.admin-description {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.admin-form .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.admin-form .form-group {
+    flex: 1;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.admin-form .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.points-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.points-table th, .points-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.points-table th {
+    background: #007bff;
+    color: white;
+}
+
+.points-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.bonus-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bonus-list li {
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+}
+
+.bonus-list li:last-child {
+    border-bottom: none;
+}
+
+/* Lock Status Styles */
+.lock-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.lock-status.locked {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.lock-status.unlocked {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+/* History Section Styles */
+.history-section {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.history-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.history-card-header:hover {
+    background: #f8f9fa;
+}
+
+.history-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.history-badge {
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.history-date {
+    color: #999;
+    font-size: 0.85rem;
+}
+
+.history-points-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.history-points-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #670000;
+}
+
+.history-points-label {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.history-toggle-icon {
+    color: #999;
+    transition: transform 0.3s;
+}
+
+.history-toggle-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.history-card-details {
+    border-top: 1px solid #eee;
+    padding: 1.25rem;
+    background: #fafafa;
+}
+
+.history-team-used {
+    margin-bottom: 1.25rem;
+}
+
+.history-team-used h5,
+.history-breakdown-section h5 {
+    margin: 0 0 0.75rem 0;
+    color: #555;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-team-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.history-team-player {
+    background: #e9ecef;
+    padding: 0.4rem 0.75rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+.history-team-player.captain {
+    background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+    font-weight: 600;
+}
+
+.history-breakdown-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-player-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.history-player-row.captain-row {
+    border-left: 3px solid #ffc107;
+}
+
+.history-player-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.captain-badge-small {
+    background: #ffc107;
+    color: #333;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.history-player-pts {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.history-player-pts.positive {
+    color: #28a745;
+}
+
+.history-player-pts.negative {
+    color: #dc3545;
+}
+
+.no-history {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+    /* Points container */
+    .points-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .points-container .points {
+        flex: 1 1 40%;
+        text-align: center;
+    }
+
+    .points-container .pt {
+        font-size: 1.5rem;
+    }
+
+    .points-container .pt-label {
+        font-size: 0.75rem;
+    }
+
+    /* Deadline section */
+    .deadline {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .deadline .vertic-line {
+        display: none;
+    }
+
+    /* Admin section */
+    .admin-section {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form .form-row {
+        flex-direction: column;
+    }
+
+    /* History styles */
+    .history-card-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .history-meta {
+        flex: 1;
+    }
+
+    .history-points-value {
+        font-size: 1.5rem;
+    }
+
+    .history-team-list {
+        gap: 0.35rem;
+    }
+
+    .history-team-player {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+
+    .points-container .points {
+        padding: 0.5rem;
+    }
+    
+    .points h1 {
+        font-size: 1rem;
+    }
+    
+    .player-details span {
+        padding: 2px 4px;
+        font-size: 0.7rem;
+    }
+    
+    .stat-mini {
+        padding: 0.1rem 0.2rem;
+        font-size: 0.6rem;
+    }
+
+    .history-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .history-player-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .history-player-pts {
+        align-self: flex-end;
+    }
 }
 </style>
 
@@ -83,6 +460,10 @@
                     <h4 class='pt-label'>Balance</h4>
                 </div>
                 <div class='points'>
+                    <h1 class='pt'>{{ fantasy_user.season_points.get(current_season|string, 0) }}</h1>
+                    <h4 class='pt-label'>S{{ current_season }} Points</h4>
+                </div>
+                <div class='points'>
                     <h1 class='pt'>{{ fantasy_user.total_points }}</h1>
                     <h4 class='pt-label'>Total Points</h4>
                 </div>
@@ -97,42 +478,84 @@
             </div>
         </div>
 
-        <hr style='margin: 2rem 0;'>
-
         <!-- Current Week Info -->
         <div class='deadline'>
-            <h3>Matchweek {{ current_week }}</h3>
+            <h3>Season {{ current_season }} - Matchweek {{ current_week }}</h3>
             <div class='vertic-line'></div>
-            <span class='deadline-time'>Next Deadline: Check Schedule</span>
+            {% if team_locked %}
+            <span class='lock-status locked'>
+                <i class="fas fa-lock"></i> Teams Locked
+            </span>
+            {% else %}
+            <span class='lock-status unlocked'>
+                <i class="fas fa-lock-open"></i> Teams Open
+            </span>
+            {% endif %}
+            {% if deadline %}
+            <div class='vertic-line'></div>
+            <span class='deadline-time'>Deadline: {{ deadline }}</span>
+            {% endif %}
         </div>
 
-        <hr style='margin: 2rem 0;'>
+        <!-- Squad Context Header -->
+        <h3 style="color: var(--fantasy-text); border-bottom: 2px solid var(--fantasy-border); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+            Squad Manager
+        </h3>
 
-        <!-- Navigation Tabs -->
+        <!-- Squad Management Tabs -->
+        <style>
+            .options-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+            .option {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                color: #333;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                border: 1px solid #ddd;
+                transition: all 0.3s ease;
+                text-align: center;
+                white-space: nowrap;
+                min-width: 120px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .option:hover {
+                background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            .option.active {
+                background: linear-gradient(135deg, #670000 0%, #8B0000 100%);
+                color: white;
+                border: 1px solid #670000;
+                box-shadow: 0 4px 12px rgba(103, 0, 0, 0.2);
+            }
+
+        </style>
+        
         <div class="options-container">
             {% if not has_team %}
-                <div class="option active" id="create-team-option" onclick="showContent('create-team')">Create Team</div>
-            {% elif not has_starting_team %}
-                <div class="option active" id="select-weekly-option" onclick="showContent('select-weekly')">Select Weekly Team</div>
-                <div class="option" id="my-team-option" onclick="showContent('my-team')">My Squad</div>
-                <div class="option" id="transfer-option" onclick="showContent('transfer')">Transfers</div>
+            <div class="option active" id="create-team-option" onclick="showContent('create-team')">Create Team</div>
             {% else %}
-                <div class="option active" id="my-team-option" onclick="showContent('my-team')">My Team</div>
+                {% if not has_starting_team %}
+                <div class="option active" id="select-weekly-option" onclick="showContent('select-weekly')">Select Weekly Team</div>
+                {% endif %}
+                
+                <div class="option {% if has_starting_team %}active{% endif %}" id="my-team-option" onclick="showContent('my-team')">My Team</div>
+                
+                {% if has_starting_team %}
                 <div class="option" id="manage-team-option" onclick="showContent('manage-team')">Manage Team</div>
+                <div class="option" id="captain-option" onclick="showContent('captain')">Change Captain</div>
+                <div class="option" id="history-option" onclick="showContent('history')">Matchweek History</div>
+                {% endif %}
+                
                 <div class="option" id="transfer-option" onclick="showContent('transfer')">Transfers</div>
-                <div class="option" id="captain-option" onclick="showContent('captain')">
-                    {% if fantasy_user.team.captain %}Change Captain{% else %}Set Captain{% endif %}
-                </div>
-            {% endif %}
-            <div class="option" id="leaderboard-option" onclick="showContent('leaderboard')">Leaderboard</div>
-        </div>
-
-        <div class="fantasy-nav">
-            <a href="/fantasy/predictions" class="btn btn-outline-success">Predictions</a>
-            <a href="/fantasy/leagues" class="btn btn-outline-primary">Mini-Leagues</a>
-            <a href="/settings" class="btn btn-outline-secondary">User Settings</a>
-            {% if fantasy_user.admin %}
-            <a href="/admin" class="btn btn-outline-danger">Admin Portal</a>
             {% endif %}
         </div>
 
@@ -740,6 +1163,74 @@
         </div>
         {% endif %}
 
+        <!-- History Section -->
+        <div id="history" class="fantasy-content">
+            <h3>Points History</h3>
+            <p>Your fantasy points breakdown by matchweek</p>
+
+            {% if user_history %}
+            <div class="history-section">
+                {% for key, entry in user_history.items()|sort(reverse=true) %}
+                <div class="history-card">
+                    <div class="history-card-header" onclick="toggleHistoryDetails('{{ key }}')">
+                        <div class="history-meta">
+                            <span class="history-badge">S{{ entry.season }} MW{{ entry.matchweek }}</span>
+                            <span class="history-date">{{ (entry.processed_at or entry.saved_at or '')[:10] }}</span>
+                        </div>
+                        <div class="history-points-display">
+                            <span class="history-points-value">{{ entry.points }}</span>
+                            <span class="history-points-label">pts</span>
+                        </div>
+                        <i class="fas fa-chevron-down history-toggle-icon" id="icon-{{ key }}"></i>
+                    </div>
+                    <div class="history-card-details" id="details-{{ key }}" style="display: none;">
+                        {% if entry.team %}
+                        <div class="history-team-used">
+                            <h5><i class="fas fa-users"></i> Team Used</h5>
+                            <div class="history-team-list">
+                                {% for player in entry.team %}
+                                <span class="history-team-player {% if player == entry.captain %}captain{% endif %}">
+                                    {{ player }}{% if player == entry.captain %} <i class="fas fa-star"></i>{% endif %}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if entry.breakdown %}
+                        <div class="history-breakdown-section">
+                            <h5><i class="fas fa-chart-bar"></i> Points Breakdown</h5>
+                            <div class="history-breakdown-grid">
+                                {% for player, data in entry.breakdown.items() %}
+                                <div class="history-player-row {% if data.is_captain %}captain-row{% endif %}">
+                                    <div class="history-player-name">
+                                        {{ player }}
+                                        {% if data.is_captain %}<span class="captain-badge-small">C</span>{% endif %}
+                                    </div>
+                                    <div class="history-player-pts {% if data.points > 0 %}positive{% elif data.points < 0 %}negative{% endif %}">
+                                        {% if data.points > 0 %}+{% endif %}{{ data.points }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <p style="color:#999; font-size:0.85rem; margin:0;">
+                            <i class="fas fa-info-circle"></i> Detailed breakdown not available for this matchweek.
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-history">
+                <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: #ccc;"></i>
+                <p>No matchweek history yet.</p>
+                <p style="font-size: 0.85rem; color: #bbb; margin-top: 0.5rem;">Results appear here after an admin processes each matchweek. Only matchweeks processed with the current scoring system will show.</p>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Leaderboard Section -->
         <div id="leaderboard" class="fantasy-content">
             <h3>Fantasy Leaderboard</h3>
@@ -765,8 +1256,8 @@
 </div>
 
 <script>
-// Make player data available to JavaScript
-const allPlayersData = {{ all_players|tojson }};
+// @ts-ignore - Jinja template syntax causes IDE parser errors
+const allPlayersData = JSON.parse('{{ all_players|tojson|safe }}');
 
 // Security: HTML escaping function to prevent XSS
 function escapeHTML(str) {
@@ -806,6 +1297,20 @@ const DOMCache = {
     }
 };
 
+// History toggle functionality
+function toggleHistoryDetails(key) {
+    const details = document.getElementById('details-' + key);
+    const icon = document.getElementById('icon-' + key);
+
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        icon.classList.add('expanded');
+    } else {
+        details.style.display = 'none';
+        icon.classList.remove('expanded');
+    }
+}
+
 // Tab switching functionality
 function showContent(contentId) {
     // Hide all content
@@ -837,7 +1342,7 @@ function setupTeamCreation() {
     const selectedPlayersEl = document.getElementById('selected-players');
     const createBtn = document.getElementById('create-team-btn');
     const hiddenInput = document.getElementById('selected_players_input');
-    const budget = {{ fantasy_user.total_balance }};
+    const budget = parseFloat('{{ fantasy_user.total_balance }}') || 0;
     
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateTeamCreation);
@@ -1249,10 +1754,12 @@ function setupTransfers() {
             const outCost = parseFloat(outCard.querySelector('.cost').textContent.replace('🪙', ''));
             const inCost = parseFloat(inCard.querySelector('.cost').textContent.replace('🪙', ''));
             const difference = inCost - outCost;
+            const currentBalance = parseFloat('{{ fantasy_user.total_balance }}') || 0;
+            const newBalance = currentBalance - difference;
             
             transferCostInfo.innerHTML = `
                 <p>Transfer Cost: ${difference >= 0 ? '+' : ''}🪙${difference.toFixed(1)}</p>
-                <p>New Balance: 🪙${({{ fantasy_user.total_balance }} - difference).toFixed(1)}</p>
+                <p>New Balance: 🪙${newBalance.toFixed(1)}</p>
             `;
         }
     }
@@ -2152,13 +2659,16 @@ function initializePlayerModal() {
 
 // Set up all interactions when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    {% if not has_team %}
+    const hasTeam = JSON.parse('{{ "true" if has_team else "false" }}');
+    const hasStartingTeam = JSON.parse('{{ "true" if has_starting_team else "false" }}');
+    
+    if (!hasTeam) {
         showContent('create-team'); // Show team creation if user doesn't have a team
-    {% elif has_team and not has_starting_team %}
+    } else if (hasTeam && !hasStartingTeam) {
         showContent('select-weekly'); // Show weekly selection if team exists but no starting team
-    {% else %}
+    } else {
         showContent('my-team'); // Show My Team if user has a complete team
-    {% endif %}
+    }
     
     setupTeamCreation();
     setupWeeklyTeamSelection();

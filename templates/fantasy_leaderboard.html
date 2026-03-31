@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "fantasy_base.html" %}
 
 {% block title %}Fantasy Leaderboard{% endblock %}
 
@@ -9,12 +9,26 @@
 
 <div class='container'>
     <h2 class='title'>Fantasy Leaderboard</h2>
-    
+
     {% if error %}
         <div class="alert alert-error">
             <strong>Error:</strong> {{ error }}
         </div>
     {% endif %}
+
+    <!-- Season Filter -->
+    <div class="season-filter">
+        <label for="season-select">View by Season:</label>
+        <select id="season-select" onchange="filterBySeason(this.value)">
+            <option value="" {% if not selected_season %}selected{% endif %}>All Time</option>
+            {% for s in available_seasons %}
+            <option value="{{ s }}" {% if selected_season == s %}selected{% endif %}>Season {{ s }}</option>
+            {% endfor %}
+        </select>
+        {% if selected_season %}
+        <span class="filter-badge">Showing Season {{ selected_season }}</span>
+        {% endif %}
+    </div>
 
     <div class="leaderboard-container">
         <div class="tbl-content">
@@ -23,26 +37,26 @@
                     <tr>
                         <th>Rank</th>
                         <th>Manager</th>
-                        <th>Total Points</th>
+                        <th>{% if selected_season %}Season {{ selected_season }} Points{% else %}Total Points{% endif %}</th>
                         <th>This Week</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for entry in leaderboard %}
-                    <tr {% if loop.index <= 3 %}class="top-three"{% endif %}>
+                    <tr {% if entry.rank <= 3 %}class="top-three"{% endif %}>
                         <td>
-                            {% if loop.index == 1 %}
-                                🥇 {{ loop.index }}
-                            {% elif loop.index == 2 %}
-                                🥈 {{ loop.index }}
-                            {% elif loop.index == 3 %}
-                                🥉 {{ loop.index }}
+                            {% if entry.rank == 1 %}
+                                <span class="medal gold">1</span>
+                            {% elif entry.rank == 2 %}
+                                <span class="medal silver">2</span>
+                            {% elif entry.rank == 3 %}
+                                <span class="medal bronze">3</span>
                             {% else %}
-                                {{ loop.index }}
+                                {{ entry.rank }}
                             {% endif %}
                         </td>
                         <td class="manager-name">{{ entry.username }}</td>
-                        <td class="total-points">{{ entry.total_points }}</td>
+                        <td class="total-points">{{ entry.points }}</td>
                         <td class="week-points">{{ entry.week_points }}</td>
                     </tr>
                     {% endfor %}
@@ -56,7 +70,50 @@
     </div>
 </div>
 
+<script>
+function filterBySeason(season) {
+    if (season) {
+        window.location.href = '/fantasy/leaderboard?season=' + season;
+    } else {
+        window.location.href = '/fantasy/leaderboard';
+    }
+}
+</script>
+
 <style>
+.season-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.season-filter label {
+    font-weight: 500;
+    color: #333;
+}
+
+.season-filter select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-badge {
+    background: #670000;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
 .leaderboard-container {
     margin: 2rem 0;
     background: white;
@@ -68,6 +125,32 @@
 .top-three {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 223, 0, 0.05));
     font-weight: 600;
+}
+
+.medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.medal.gold {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #333;
+}
+
+.medal.silver {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    color: #333;
+}
+
+.medal.bronze {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    color: white;
 }
 
 .manager-name {
