@@ -9,6 +9,7 @@ import pandas as pd
 from datetime import datetime
 from firebase_admin import db, auth
 from functions import send_email
+from models.fantasy import FantasyUser
 
 router = APIRouter()
 
@@ -94,9 +95,14 @@ async def get_settings(request: Request):
     # Get current player link status
     player_link = get_user_player_link(user_id)
 
+    # Load fantasy_user for the fantasy_base.html navigation sidebar
+    username = user.get('name', 'User')
+    fantasy_user = FantasyUser.load_from_firebase(user_id, username)
+
     return templates.TemplateResponse("settings.html", {
         "request": request,
         "user": user,
+        "fantasy_user": fantasy_user,
         "all_players": available_players,
         "player_link": player_link
     })
