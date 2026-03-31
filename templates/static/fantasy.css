@@ -2101,7 +2101,7 @@
 /* Floating Action Button */
 .fab {
     position: fixed;
-    bottom: 20px;
+    bottom: 90px; /* Adjusted to clear mobile bottom nav */
     right: 20px;
     width: 56px;
     height: 56px;
@@ -2217,8 +2217,6 @@
     }
     
     .player-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
         gap: 0.3rem;
         font-size: 0.85rem;
     }
@@ -2373,8 +2371,8 @@
     }
     
     .bench-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 0.8rem;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
+        gap: 0.5rem;
     }
     
     /* Captain selection */
@@ -2552,7 +2550,7 @@
     }
     
     .points-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
     
@@ -2805,7 +2803,6 @@
     .match-stats {
         flex-wrap: wrap;
     }
-}
 }
 
 @media (hover: none) and (pointer: coarse) {

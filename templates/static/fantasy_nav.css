@@ -1,0 +1,301 @@
+/* Root Variables for Fantasy Theme (Inherits main brand colors from base if present, or specifies overrides) */
+:root {
+    --fantasy-primary: #670000;
+    --fantasy-secondary: #a70000;
+    --fantasy-bg: #f8f9fa;
+    --fantasy-card-bg: #ffffff;
+    --fantasy-text: #2c3e50;
+    --fantasy-text-muted: #6b7280;
+    --fantasy-border: #e5e7eb;
+    --fantasy-active-bg: #fff1f2;
+    --fantasy-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    
+    /* Nav Heights */
+    --fantasy-top-nav-height: 60px;
+    --fantasy-bottom-nav-height: 70px;
+}
+
+/* Base resets specifically for Fantasy view */
+.fantasy-viewport {
+    background-color: var(--fantasy-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ====== TOP NAVIGATION (Desktop & Tablet) ====== */
+.fantasy-top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--fantasy-top-nav-height);
+    background: var(--fantasy-card-bg);
+    border-bottom: 1px solid var(--fantasy-border);
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--fantasy-shadow);
+}
+
+.fantasy-nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.back-to-ifl-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fantasy-text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.back-to-ifl-btn:hover {
+    background: var(--fantasy-active-bg);
+    color: var(--fantasy-primary);
+}
+
+.fantasy-nav-center {
+    display: flex;
+    gap: 0.5rem;
+    height: 100%;
+}
+
+.fantasy-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    color: var(--fantasy-text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.fantasy-nav-item:hover {
+    color: var(--fantasy-primary);
+    background: rgba(103, 0, 0, 0.03);
+}
+
+.fantasy-nav-item.active {
+    color: var(--fantasy-primary);
+    border-bottom-color: var(--fantasy-primary);
+}
+
+.fantasy-nav-item i {
+    font-size: 1.1rem;
+}
+
+.fantasy-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ====== MOBILE BOTTOM FAB NAVIGATION ====== */
+.fantasy-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--fantasy-bottom-nav-height);
+    background: var(--fantasy-card-bg);
+    border-top: 1px solid var(--fantasy-border);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.fantasy-bottom-nav-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    flex: 1;
+    height: 100%;
+    color: var(--fantasy-text-muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.mobile-nav-item i {
+    font-size: 1.25rem;
+    margin-bottom: 2px;
+}
+
+.mobile-nav-item.active {
+    color: var(--fantasy-primary);
+}
+
+/* Focus/Action Button inside Nav */
+.mobile-nav-item.primary-action i {
+    background: linear-gradient(135deg, var(--fantasy-primary), var(--fantasy-secondary));
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transform: translateY(-10px);
+    box-shadow: 0 4px 10px rgba(103, 0, 0, 0.3);
+}
+
+/* ====== SIDE "MORE" MENU FOR MOBILE (and overflow on Desktop if needed) ====== */
+.fantasy-side-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.fantasy-side-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.fantasy-side-menu {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Hidden by default offscreen right */
+    width: 280px;
+    height: 100%;
+    background: var(--fantasy-card-bg);
+    z-index: 1002;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.fantasy-side-menu.active {
+    right: 0;
+}
+
+.side-menu-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--fantasy-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.side-menu-header h3 {
+    margin: 0;
+    color: var(--fantasy-text);
+}
+
+.close-side-menu {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--fantasy-text-muted);
+    cursor: pointer;
+}
+
+.side-menu-content {
+    padding: 1rem 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.side-menu-group-label {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--fantasy-text-muted);
+    letter-spacing: 0.5px;
+    margin-top: 1rem;
+}
+
+.side-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--fantasy-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.side-menu-item:hover {
+    background: var(--fantasy-active-bg);
+    color: var(--fantasy-primary);
+}
+
+.side-menu-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--fantasy-primary);
+}
+
+.side-menu-item.admin-link {
+    color: #dc3545;
+}
+
+.side-menu-item.admin-link i {
+    color: #dc3545;
+}
+
+/* ====== MAIN CONTENT AREA ====== */
+.fantasy-main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ====== RESPONSIVE BEHAVIOR ====== */
+@media (max-width: 768px) {
+    .fantasy-top-nav {
+        /* On mobile, only show left (Back to IFL) and right (User/Settings) in top bar, or hide completely */
+        /* For this design, we will keep a slim top bar for branding and "Back", and use bottom nav for routing */
+        justify-content: space-between;
+        padding: 0 1rem;
+    }
+    
+    .fantasy-nav-center {
+        display: none; /* Hide standard tabs on mobile */
+    }
+
+    .fantasy-bottom-nav {
+        display: block; /* Show bottom tab bar */
+    }
+
+    .fantasy-main-content {
+        padding: 1rem;
+        /* Padding bottom to clear the fixed bottom nav */
+        padding-bottom: calc(var(--fantasy-bottom-nav-height) + 1.5rem);
+    }
+}
