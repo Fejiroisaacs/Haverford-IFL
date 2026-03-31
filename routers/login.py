@@ -49,7 +49,7 @@ async def post_login(request: Request, email: str = Form(...), password: str = F
     except Exception as e:
         # Log error for monitoring but don't expose details to user
         print(f"Login error: {str(e)}")
-        return templates.TemplateResponse("login.html", {
+        return templates.TemplateResponse(request=request, name="login.html", context={
             "request": request,
             "error": "Invalid username/password",
             "user": None,
@@ -68,7 +68,7 @@ async def login(request: Request, session_token: str = Cookie(None)):
         except Exception as e:
             print("Invalid session token:", str(e))
             # Clear invalid cookie
-            response = templates.TemplateResponse("login.html", {
+            response = templates.TemplateResponse(request=request, name="login.html", context={
                 "request": request,
                 "user": None,
                 'Login': True
@@ -76,7 +76,7 @@ async def login(request: Request, session_token: str = Cookie(None)):
             response.delete_cookie("session_token")
             return response
 
-    return templates.TemplateResponse("login.html", {"request": request, "user": user, 'Login': True})
+    return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "user": user, 'Login': True})
 
 @router.get("/logout")
 async def logout(request: Request, response: Response):

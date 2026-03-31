@@ -13,7 +13,7 @@ CURRENT_SEASON = max(pd.read_csv("data/season_standings.csv")['Season'].tolist()
 
 @router.get("/matches", response_class=HTMLResponse)
 async def read_matches(request: Request):
-    return templates.TemplateResponse("matches.html", {"request": request, 
+    return templates.TemplateResponse(request=request, name="matches.html", context={"request": request, 
                                                        "groups": get_table(CURRENT_SEASON),
                                                        "matches_data": get_matches(CURRENT_SEASON),
                                                        "upcoming_matches_data": get_upcoming_matches(),
@@ -23,14 +23,14 @@ async def read_matches(request: Request):
 @router.get("/matches/{season}", response_class=HTMLResponse)
 async def read_matches(request: Request, season: int):
     if season <= CURRENT_SEASON and season > 0:
-        return templates.TemplateResponse("matches.html", {"request": request, 
+        return templates.TemplateResponse(request=request, name="matches.html", context={"request": request, 
                                                         "groups": get_table(season),
                                                         "matches_data": get_matches(season),
                                                         "upcoming_matches_data": get_upcoming_matches(),
                                                         "active_season": season,
                                                         "current_season": CURRENT_SEASON})
     else:
-        return templates.TemplateResponse("matches.html", {"request": request, 
+        return templates.TemplateResponse(request=request, name="matches.html", context={"request": request, 
                                                         "groups": get_table(CURRENT_SEASON),
                                                         "matches_data": get_matches(CURRENT_SEASON),
                                                         "upcoming_matches_data": get_upcoming_matches(),

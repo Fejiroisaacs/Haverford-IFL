@@ -39,7 +39,7 @@ class FeedbackData(BaseModel):
 
 @router.get("/contact", response_class=HTMLResponse)
 async def read_contact(request: Request):
-    return templates.TemplateResponse("contact.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="contact.html", context={"request": request, "user": user})
 
 
 @router.post("/send-message", response_class=HTMLResponse)
@@ -51,7 +51,7 @@ async def send_feedback(request: Request, email: str = Form(...), textarea: str 
                               if current_time - timestamp < CONTACT_WINDOW]
 
     if len(_api_calls[client_ip]) >= CONTACT_RATE_LIMIT:
-        return templates.TemplateResponse("contact.html", {"request": request,
+        return templates.TemplateResponse(request=request, name="contact.html", context={"request": request,
                                                         "error": 'Too many submissions. Please try again in an hour.',
                                                         "success": None})
 
@@ -59,7 +59,7 @@ async def send_feedback(request: Request, email: str = Form(...), textarea: str 
 
     try:
         if not email or not textarea:
-            return templates.TemplateResponse("contact.html", {"request": request,
+            return templates.TemplateResponse(request=request, name="contact.html", context={"request": request,
                                                             "error": 'All fields are required.',
                                                             "success": None})
 
@@ -68,17 +68,17 @@ async def send_feedback(request: Request, email: str = Form(...), textarea: str 
 
         send_email(email=f'{os.getenv("OUR_EMAIL")}', bccs=emails, subject=f'{email} left a message', message=textarea)
 
-        return templates.TemplateResponse("contact.html", {"request": request,
+        return templates.TemplateResponse(request=request, name="contact.html", context={"request": request,
                                                         "success": f"Thank you, {email}. We've received your message.",
                                                         "error": None})
     except ValueError as e:
         print(f"Contact form configuration error: {str(e)}")
-        return templates.TemplateResponse("contact.html", {"request": request,
+        return templates.TemplateResponse(request=request, name="contact.html", context={"request": request,
                                                         "success": None,
                                                         "error": 'Service temporarily unavailable. Please try again later.'})
     except Exception as e:
         print(f"Contact form error: {str(e)}")
-        return templates.TemplateResponse("contact.html", {"request": request,
+        return templates.TemplateResponse(request=request, name="contact.html", context={"request": request,
                                                         "success": None,
                                                         "error": 'Unable to send message. Please try again later.'})
 

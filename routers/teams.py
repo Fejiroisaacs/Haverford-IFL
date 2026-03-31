@@ -85,7 +85,7 @@ async def teams_home(request: Request, session: int = None, session_token: str =
     performance_metrics = get_performance_metrics(selected_season)
     awards_stats = get_awards_statistics(selected_season)
 
-    return templates.TemplateResponse("teams.html", {
+    return templates.TemplateResponse(request=request, name="teams.html", context={
         "request": request,
         "Teams": teams_with_stats,
         "count": len(teams_with_stats),
@@ -112,7 +112,7 @@ async def team_page(request: Request, team: str):
         awards_data = get_team_awards(team)
         head_to_head = get_head_to_head_records(team, seasons_played)
 
-        return templates.TemplateResponse("team.html", {
+        return templates.TemplateResponse(request=request, name="team.html", context={
             "request": request,
             "team": team,
             "data": team_data,
@@ -126,7 +126,7 @@ async def team_page(request: Request, team: str):
             "head_to_head": head_to_head
         })
     else:
-        return templates.TemplateResponse("404error.html", {"request": request, "error": "Team doesn't exist or team hasn't played a game yet"})
+        return templates.TemplateResponse(request=request, name="404error.html", context={"request": request, "error": "Team doesn't exist or team hasn't played a game yet"})
 
 @router.get("/teams/{team_name}/{match_details}", response_class=HTMLResponse)
 async def team_page(request: Request, team_name: str, match_details: str):
@@ -135,13 +135,13 @@ async def team_page(request: Request, team_name: str, match_details: str):
         player_data = get_player_data(*match_details.split('-'))
         potm = get_potm_match(match_details.split('-')[-1])
         
-        return templates.TemplateResponse("match.html", {"request": request, 
+        return templates.TemplateResponse(request=request, name="match.html", context={"request": request, 
                                                         "match_data": match_data, 
                                                         "player_data": player_data,
                                                         "potm": potm,
                                                         "match_details": match_details.split('-')})
     except Exception as e:
-        return templates.TemplateResponse("404error.html", {"request": request, 'error': str(e)})
+        return templates.TemplateResponse(request=request, name="404error.html", context={"request": request, 'error': str(e)})
 
 
 @router.get("/team_search", response_class=HTMLResponse)
@@ -165,7 +165,7 @@ async def search_teams(request: Request, query: str, session: int = None):
     performance_metrics = get_performance_metrics(selected_season)
     awards_stats = get_awards_statistics(selected_season)
 
-    return templates.TemplateResponse("teams.html", {
+    return templates.TemplateResponse(request=request, name="teams.html", context={
         "request": request,
         "Teams": filtered_teams,
         "count": len(filtered_teams),

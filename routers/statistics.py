@@ -692,7 +692,7 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
         stats_df = data_cache.get('player_stats', load_player_stats)
         all_players = stats_df[stats_df['Season'] == 'Total']['Name'].sort_values().unique().tolist()
 
-        return templates.TemplateResponse("statistics.html", {
+        return templates.TemplateResponse(request=request, name="statistics.html", context={
             "request": request,
             "user": user,
             "selected_season": season,
@@ -708,7 +708,7 @@ async def statistics_page(request: Request, season: int = 6, user = Depends(get_
         print(f"Error in statistics_page: {e}")
         import traceback
         traceback.print_exc()
-        return templates.TemplateResponse("statistics.html", {
+        return templates.TemplateResponse(request=request, name="statistics.html", context={
             "request": request,
             "user": user,
             "selected_season": season,
@@ -726,7 +726,7 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
     """Hall of Fame page"""
     # Check if statistics pages are enabled or admin logged in
     if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
-        return templates.TemplateResponse("coming-soon.html", {
+        return templates.TemplateResponse(request=request, name="coming-soon.html", context={
             "request": request,
             "user": user,
             "page_name": "Hall of Fame",
@@ -740,7 +740,7 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
         total_inductees = len(hof_members)
         total_awards = sum(len(member['awards']) for member in hof_members)
 
-        return templates.TemplateResponse("hall-of-fame.html", {
+        return templates.TemplateResponse(request=request, name="hall-of-fame.html", context={
             "request": request,
             "user": user,
             "hof_members": hof_members,
@@ -751,7 +751,7 @@ async def hall_of_fame_page(request: Request, user = Depends(get_current_user)):
         print(f"Error in hall_of_fame_page: {e}")
         import traceback
         traceback.print_exc()
-        return templates.TemplateResponse("hall-of-fame.html", {
+        return templates.TemplateResponse(request=request, name="hall-of-fame.html", context={
             "request": request,
             "user": user,
             "hof_members": [],
@@ -776,7 +776,7 @@ async def archives_page(request: Request, user = Depends(get_current_user)):
     """Season Archives page"""
     # Check if statistics pages are enabled or admin logged in
     if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
-        return templates.TemplateResponse("coming-soon.html", {
+        return templates.TemplateResponse(request=request, name="coming-soon.html", context={
             "request": request,
             "user": user,
             "page_name": "Season Archives",
@@ -786,7 +786,7 @@ async def archives_page(request: Request, user = Depends(get_current_user)):
     try:
         archives = get_all_seasons_summary()
 
-        return templates.TemplateResponse("archives.html", {
+        return templates.TemplateResponse(request=request, name="archives.html", context={
             "request": request,
             "user": user,
             "archives": archives,
@@ -796,7 +796,7 @@ async def archives_page(request: Request, user = Depends(get_current_user)):
         print(f"Error in archives_page: {e}")
         import traceback
         traceback.print_exc()
-        return templates.TemplateResponse("archives.html", {
+        return templates.TemplateResponse(request=request, name="archives.html", context={
             "request": request,
             "user": user,
             "archives": [],

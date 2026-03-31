@@ -82,7 +82,7 @@ async def admin_panel(request: Request, success: str = None, error: str = None, 
         except Exception:
             week_data['Season'] = week_data.get('Week', 1)  # last resort
 
-    return templates.TemplateResponse("admin.html", {
+    return templates.TemplateResponse(request=request, name="admin.html", context={
         "request": request,
         "success": success,
         "error": error,
@@ -287,7 +287,7 @@ async def data_entry_page(request: Request, success: str = None, error: str = No
     except Exception:
         next_match_id = 1
 
-    return templates.TemplateResponse("admin_data_entry.html", {
+    return templates.TemplateResponse(request=request, name="admin_data_entry.html", context={
         "request": request,
         "teams": teams,
         "current_season": current_season,
@@ -538,7 +538,7 @@ async def fantasy_users_list(
         # Sort by total points descending
         users_list.sort(key=lambda x: x['total_points'], reverse=True)
 
-        return templates.TemplateResponse("admin_fantasy_users.html", {
+        return templates.TemplateResponse(request=request, name="admin_fantasy_users.html", context={
             "request": request,
             "users": users_list,
             "week_data": week_data,
@@ -548,7 +548,7 @@ async def fantasy_users_list(
         })
 
     except Exception as e:
-        return templates.TemplateResponse("admin_fantasy_users.html", {
+        return templates.TemplateResponse(request=request, name="admin_fantasy_users.html", context={
             "request": request,
             "users": [],
             "week_data": {},
@@ -581,7 +581,7 @@ async def fantasy_user_detail(
         all_players_data = fantasy_service.get_players_by_names(user_data.get('all_players', []))
         starting_team_data = fantasy_service.get_players_by_names(user_data.get('current_team', []))
 
-        return templates.TemplateResponse("admin_fantasy_user_detail.html", {
+        return templates.TemplateResponse(request=request, name="admin_fantasy_user_detail.html", context={
             "request": request,
             "target_user_id": user_id,
             "target_user": user_data,
@@ -779,7 +779,7 @@ async def week_management_page(
         all_users = users_ref.get() or {}
         users_with_teams = sum(1 for u in all_users.values() if u.get('current_team'))
 
-        return templates.TemplateResponse("admin_week_management.html", {
+        return templates.TemplateResponse(request=request, name="admin_week_management.html", context={
             "request": request,
             "week_data": week_data,
             "team_locked": team_locked,
@@ -792,7 +792,7 @@ async def week_management_page(
         })
 
     except Exception as e:
-        return templates.TemplateResponse("admin_week_management.html", {
+        return templates.TemplateResponse(request=request, name="admin_week_management.html", context={
             "request": request,
             "week_data": {},
             "team_locked": False,

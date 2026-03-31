@@ -348,9 +348,9 @@ def get_season_top_performers(season='6'):
 async def http_exception_handler(request, exc):
     try:
         if exc.status_code == 404:
-            return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
+            return templates.TemplateResponse(request=request, name="404error.html", context={"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
     except Exception:
-        return templates.TemplateResponse("error.html", {"request": request})
+        return templates.TemplateResponse(request=request, name="error.html", context={"request": request})
     
 app.add_middleware(ServerErrorMiddleware, handler=http_exception_handler)
 
@@ -358,15 +358,15 @@ app.add_middleware(ServerErrorMiddleware, handler=http_exception_handler)
 async def validation_exception_handler(request, exc):
     try:
         if exc.status_code == 404:
-            return templates.TemplateResponse("404error.html", {"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
+            return templates.TemplateResponse(request=request, name="404error.html", context={"request": request, "error": f"{exc.status_code} {str(exc.detail)}"})
     except Exception:
-        return templates.TemplateResponse("error.html", {"request": request})
+        return templates.TemplateResponse(request=request, name="error.html", context={"request": request})
 
 @app.exception_handler(HTTPException) 
 async def http_exception_handler(request: Request, exc: HTTPException): 
     if exc.status_code == 401: 
         return RedirectResponse(url="/login") 
-    return templates.TemplateResponse("login.html", {"request": request, "user": None, "Login": True})
+    return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "user": None, "Login": True})
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
@@ -385,7 +385,7 @@ async def read_root(request: Request, user = Depends(get_current_user)):
     if user and 'user_id' in user:
         user_follows = follows.get_user_follows(user['user_id'])
 
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse(request=request, name="index.html", context={
         "request": request,
         "user": user,
         "season_progress": season_progress,
@@ -402,7 +402,7 @@ async def gallery(request: Request, user = Depends(get_current_user)):
     """Gallery page displaying images from all seasons"""
     # Check if gallery page is enabled or admin logged in
     if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
-        return templates.TemplateResponse("coming-soon.html", {
+        return templates.TemplateResponse(request=request, name="coming-soon.html", context={
             "request": request,
             "user": user,
             "page_name": "Gallery",
@@ -421,7 +421,7 @@ async def gallery(request: Request, user = Depends(get_current_user)):
             if 'images' in season_data:
                 total_images += len(season_data['images'])
 
-        return templates.TemplateResponse("gallery.html", {
+        return templates.TemplateResponse(request=request, name="gallery.html", context={
             "request": request,
             "user": user,
             "gallery_data": gallery_data,
@@ -429,7 +429,7 @@ async def gallery(request: Request, user = Depends(get_current_user)):
         })
     except FileNotFoundError:
         # If gallery.json doesn't exist, show empty gallery
-        return templates.TemplateResponse("gallery.html", {
+        return templates.TemplateResponse(request=request, name="gallery.html", context={
             "request": request,
             "user": user,
             "gallery_data": {"seasons": {}},
@@ -438,7 +438,7 @@ async def gallery(request: Request, user = Depends(get_current_user)):
     except Exception as e:
         print(f"Error loading gallery: {e}")
         # Return error page or empty gallery
-        return templates.TemplateResponse("gallery.html", {
+        return templates.TemplateResponse(request=request, name="gallery.html", context={
             "request": request,
             "user": user,
             "gallery_data": {"seasons": {}},
@@ -448,7 +448,7 @@ async def gallery(request: Request, user = Depends(get_current_user)):
 @app.get("/patch-notes", response_class=HTMLResponse)
 async def patch_notes(request: Request, user = Depends(get_current_user)):
     """Patch notes page with complete update history"""
-    return templates.TemplateResponse("patch-notes.html", {
+    return templates.TemplateResponse(request=request, name="patch-notes.html", context={
         "request": request,
         "user": user
     })

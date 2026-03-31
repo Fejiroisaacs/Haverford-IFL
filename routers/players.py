@@ -101,7 +101,7 @@ async def read_players(request: Request, session: int = None, page: int = 1, pos
     # Get POTM highlights
     potm_images = get_k_recent_potm(k=5, season=selected_season)
 
-    return templates.TemplateResponse("players.html", {"request": request,
+    return templates.TemplateResponse(request=request, name="players.html", context={"request": request,
                                                        "Players": players_with_stats,
                                                        'potm_images': potm_images,
                                                        "count": total_count,
@@ -133,7 +133,7 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
     previous_teams = get_previous_teams(player)
 
     if player_rating_data:
-        return templates.TemplateResponse("player.html", {
+        return templates.TemplateResponse(request=request, name="player.html", context={
             "request": request,
             "rating_data": player_rating_data,
             'potm_images': potm_images,
@@ -150,7 +150,7 @@ async def get_player(request: Request, player: str, db: firebase_db.Reference = 
             'previous_teams': previous_teams
         })
     else:
-        return templates.TemplateResponse("404error.html", {"request": request, 'error': f'Player {player} not found'})
+        return templates.TemplateResponse(request=request, name="404error.html", context={"request": request, 'error': f'Player {player} not found'})
 
 @router.get("/api/players/{player}")
 async def get_player_data(player: str, request: Request, db: firebase_db.Reference = Depends(lambda: firebase_db.reference('/'))):
@@ -255,7 +255,7 @@ async def search_players(request: Request, query: str, session: int = None, page
     # Get POTM highlights
     potm_images = get_k_recent_potm(k=5, season=selected_season)
 
-    return templates.TemplateResponse("players.html", {"request": request,
+    return templates.TemplateResponse(request=request, name="players.html", context={"request": request,
                                                        "Players": paginated_players,
                                                        'potm_images': potm_images,
                                                        "count": total_count,

@@ -99,7 +99,7 @@ async def get_settings(request: Request):
     username = user.get('name', 'User')
     fantasy_user = FantasyUser.load_from_firebase(user_id, username)
 
-    return templates.TemplateResponse("settings.html", {
+    return templates.TemplateResponse(request=request, name="settings.html", context={
         "request": request,
         "user": user,
         "fantasy_user": fantasy_user,
@@ -177,7 +177,7 @@ async def update_settings(request: Request,
             error = f"Error updating password: {str(e)}"
 
     context = {"request": request, "user": user_data, "success": success if not error else None, "error": error}
-    return templates.TemplateResponse("settings.html", context)
+    return templates.TemplateResponse(request=request, name="settings.html", context=context)
 
 @router.post("/settings/delete", response_class=HTMLResponse)
 async def delete_account(request: Request):
@@ -303,7 +303,7 @@ async def link_player_request(request: Request, player_name: str = Form(...)):
     # Use available players for the dropdown (excludes already linked players)
     available_players = get_available_players()
 
-    return templates.TemplateResponse("settings.html", {
+    return templates.TemplateResponse(request=request, name="settings.html", context={
         "request": request,
         "user": user,
         "all_players": available_players,

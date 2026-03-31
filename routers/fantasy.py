@@ -128,7 +128,7 @@ async def fantasy_home(request: Request, user: dict = Depends(get_current_user),
         "success": success
     }
 
-    return templates.TemplateResponse("fantasy.html", context)
+    return templates.TemplateResponse(request=request, name="fantasy.html", context=context)
 
 @router.get("/fantasy/rules", response_class=HTMLResponse)
 async def fantasy_rules(request: Request, user: dict = Depends(get_current_user)):
@@ -139,7 +139,7 @@ async def fantasy_rules(request: Request, user: dict = Depends(get_current_user)
         "user": user,
         "fantasy_user": fantasy_user
     }
-    return templates.TemplateResponse("fantasy_rules.html", context)
+    return templates.TemplateResponse(request=request, name="fantasy_rules.html", context=context)
 
 @router.get("/fantasy/admin-points", response_class=HTMLResponse)
 async def fantasy_admin_points(request: Request, user: dict = Depends(get_current_user)):
@@ -176,7 +176,7 @@ async def fantasy_admin_points(request: Request, user: dict = Depends(get_curren
         "current_season": current_season,
         "current_week": current_week
     }
-    return templates.TemplateResponse("fantasy_admin.html", context)
+    return templates.TemplateResponse(request=request, name="fantasy_admin.html", context=context)
 
 @router.post("/fantasy/create-team")
 async def create_team(
@@ -205,7 +205,7 @@ async def create_team(
                 "has_team": False,
                 "has_starting_team": False
             }
-            return templates.TemplateResponse("fantasy.html", context)
+            return templates.TemplateResponse(request=request, name="fantasy.html", context=context)
         
         players_data = get_fantasy_service().get_players_by_names(player_names)
         total_cost = sum(player['Fantasy Cost'] for player in players_data)
@@ -256,7 +256,7 @@ async def select_weekly_team(
                 "has_starting_team": bool(fantasy_user.team.current_team),
                 "players_data": get_user_players_data(fantasy_user)
             }
-            return templates.TemplateResponse("fantasy.html", context)
+            return templates.TemplateResponse(request=request, name="fantasy.html", context=context)
         
         fantasy_user.team.current_team = starting_players
         fantasy_user.save_to_firebase()
@@ -386,7 +386,7 @@ async def make_transfer(
                 "has_starting_team": bool(fantasy_user.team.current_team),
                 "players_data": get_user_players_data(fantasy_user)
             }
-            return templates.TemplateResponse("fantasy.html", context)
+            return templates.TemplateResponse(request=request, name="fantasy.html", context=context)
         
         player_in_data = get_fantasy_service().get_player_by_name(*player_in.split(" ", 1))
         player_out_data = get_fantasy_service().get_player_by_name(*player_out.split(" ", 1))
@@ -500,11 +500,11 @@ async def fantasy_leaderboard(request: Request, user: dict = Depends(get_current
             "fantasy_user": fantasy_user
         }
         
-        return templates.TemplateResponse("fantasy_leaderboard.html", context)
+        return templates.TemplateResponse(request=request, name="fantasy_leaderboard.html", context=context)
 
     except Exception as e:
         print(f"Error loading leaderboard: {e}")
-        return templates.TemplateResponse("fantasy_leaderboard.html", {
+        return templates.TemplateResponse(request=request, name="fantasy_leaderboard.html", context={
             "request": request,
             "user": user,
             "fantasy_user": fantasy_user,
@@ -541,7 +541,7 @@ async def leagues_home(request: Request, user: dict = Depends(get_current_user),
         "success": urllib.parse.unquote(success) if success else None
     }
 
-    return templates.TemplateResponse("fantasy_leagues.html", context)
+    return templates.TemplateResponse(request=request, name="fantasy_leagues.html", context=context)
 
 
 @router.post("/fantasy/league/create")
@@ -626,7 +626,7 @@ async def league_detail(
         "success": urllib.parse.unquote(success) if success else None
     }
 
-    return templates.TemplateResponse("fantasy_league_detail.html", context)
+    return templates.TemplateResponse(request=request, name="fantasy_league_detail.html", context=context)
 
 
 @router.post("/fantasy/league/join")
@@ -868,7 +868,7 @@ async def predictions_home(
         "success": urllib.parse.unquote(success) if success else None
     }
 
-    return templates.TemplateResponse("predictions.html", context)
+    return templates.TemplateResponse(request=request, name="predictions.html", context=context)
 
 
 @router.post("/fantasy/predictions/submit")
@@ -959,7 +959,7 @@ async def predictions_leaderboard(
         "user_position": user_position
     }
 
-    return templates.TemplateResponse("predictions_leaderboard.html", context)
+    return templates.TemplateResponse(request=request, name="predictions_leaderboard.html", context=context)
 
 
 @router.post("/fantasy/predictions/process")
@@ -1135,7 +1135,7 @@ async def preview_matchweek_points(
             "selected_matchweek": matchweek
         }
 
-        return templates.TemplateResponse("fantasy_admin_preview.html", context)
+        return templates.TemplateResponse(request=request, name="fantasy_admin_preview.html", context=context)
 
     except Exception as e:
         print(f"Error previewing points: {e}")
@@ -1251,7 +1251,7 @@ async def fantasy_explore(
             "has_data": len(players_list) > 0
         }
         
-        return templates.TemplateResponse("fantasy_explore.html", context)
+        return templates.TemplateResponse(request=request, name="fantasy_explore.html", context=context)
 
     except Exception as e:
         print(f"Error in explore page: {e}")
