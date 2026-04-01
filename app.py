@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search, follows
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search, follows, analytics
 from auth_utils import get_current_user
 import json
 import os
@@ -66,7 +66,7 @@ class DataCache:
     def refresh(self):
         """Refresh the cache by loading CSV files."""
         try:
-            self.schedule = pd.read_csv('data/F25 Futsal Schedule.csv')
+            self.schedule = pd.read_csv('data/S26_Schedule.csv')
             self.results = pd.read_csv('data/Match_Results.csv')
             self.standings = pd.read_csv('data/season_standings.csv')
             self.player_stats = pd.read_csv('data/season_player_stats.csv')
@@ -168,13 +168,14 @@ app.include_router(admin.router)
 app.include_router(statistics.router, dependencies=[Depends(lambda: db)])
 app.include_router(search.router)
 app.include_router(follows.router, dependencies=[Depends(lambda: db), Depends(lambda: auth)])
+app.include_router(analytics.router)
 
 def get_cached_data():
     """Get cached data from app state."""
     return app.state.cache.get_data()
 
 # Helper functions for homepage
-def get_season_progress(season=6):
+def get_season_progress(season=7):
     """Calculate season progress based on matchdays completed"""
     try:
         data = get_cached_data()
@@ -231,14 +232,15 @@ def get_next_matchday():
         print(f"Error in get_next_matchday: {e}")
         return {'matchday': None, 'date': None, 'matches': []}
 
-def get_group_leaders(season=6):
+def get_group_leaders(season=7):
     """Get top 2 teams from each group"""
     try:
         data = get_cached_data()
         standings = data['standings'][data['standings']['Season'] == season]
+        groups = sorted(standings['Group'].unique())
 
         leaders = {}
-        for group in ['A', 'B', 'C']:
+        for group in groups:
             group_standings = standings[standings['Group'] == group].sort_values(
                 by=['PTS', 'GD'], ascending=[False, False]
             ).head(2)
@@ -250,7 +252,7 @@ def get_group_leaders(season=6):
         print(f"Error in get_group_leaders: {e}")
         return {'A': [], 'B': [], 'C': []}
 
-def get_latest_results(season=6, limit=4):
+def get_latest_results(season=7, limit=4):
     """Get most recent completed matches"""
     try:
         data = get_cached_data()
@@ -277,7 +279,7 @@ def get_latest_results(season=6, limit=4):
         print(f"Error in get_latest_results: {e}")
         return []
 
-def get_season_stats(season=6):
+def get_season_stats(season=7):
     """Calculate aggregate season statistics"""
     try:
         data = get_cached_data()
