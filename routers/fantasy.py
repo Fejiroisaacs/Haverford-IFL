@@ -746,7 +746,7 @@ async def league_leaderboard_api(
 def get_upcoming_matches():
     """Get upcoming matches that can be predicted"""
     try:
-        matches_df = pd.read_csv('data/F25 Futsal Schedule.csv')
+        matches_df = pd.read_csv('data/S26_Schedule.csv')
         matches_df.columns = [col.strip() for col in matches_df.columns]
 
         # Get matches that haven't been played yet (no score)

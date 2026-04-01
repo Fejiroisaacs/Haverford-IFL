@@ -63,7 +63,7 @@ def get_matches(season):
 
 def get_upcoming_matches():
     match_dict = {}
-    with open("data/F25 Futsal Schedule.csv") as file:
+    with open("data/S26_Schedule.csv") as file:
         data = pd.read_csv(file)[['MD', 'Team 1', 'Team 2', 'Day', 'Time']]
 
     for k, gb in data.groupby(by='MD'):
