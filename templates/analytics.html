@@ -1,0 +1,1310 @@
+{% extends "base.html" %}
+{% block title %}Site Analytics | Haverford IFL{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<div class="analytics-container" id="top">
+    <div class="analytics-header">
+        <h1><i class="fas fa-chart-line"></i> Site Analytics</h1>
+        <p class="subtitle">Engagement metrics and site performance insights</p>
+
+        {% if is_admin %}
+        <div class="admin-badge">
+            <i class="fas fa-shield-alt"></i> Admin View — Full metrics visible
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-globe"></i></div>
+            <div class="stat-info">
+                <div class="stat-value" id="total-requests">{{ analytics_data.totals.requests | default(0) }}</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-user"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ analytics_data.totals.player_views | default(0) }}</div>
+                <div class="stat-label">Player Profile Views</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ analytics_data.totals.team_views | default(0) }}</div>
+                <div class="stat-label">Team Page Views</div>
+            </div>
+        </div>
+        {% if is_admin %}
+        <div class="stat-card stat-card--error">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ analytics_data.error_count | default(0) }}</div>
+                <div class="stat-label">Total Errors</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ analytics_data.totals.page_views | default(0) }}</div>
+                <div class="stat-label">Total Page Views</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="quick-nav" id="analytics-nav">
+        <a href="#trending" class="nav-link"><i class="fas fa-fire"></i> Trending</a>
+        <a href="#pages" class="nav-link"><i class="fas fa-file-alt"></i> Pages</a>
+        {% if is_admin %}
+        <a href="#traffic" class="nav-link"><i class="fas fa-chart-area"></i> Traffic</a>
+        <a href="#errors" class="nav-link"><i class="fas fa-bug"></i> Errors</a>
+        <a href="#performance" class="nav-link"><i class="fas fa-tachometer-alt"></i> Performance</a>
+        <a href="#visitors" class="nav-link"><i class="fas fa-desktop"></i> Visitors</a>
+        <a href="#logs" class="nav-link"><i class="fas fa-list-alt"></i> Logs</a>
+        {% endif %}
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Trending (Public) -->
+    <!-- ======================== -->
+    <div id="trending" class="section">
+        <h2><i class="fas fa-fire"></i> Trending Content</h2>
+        <p class="section-subtitle">Most viewed players and teams across the site</p>
+
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Most Viewed Players</h3>
+                <canvas id="playerViewsChart"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Most Viewed Teams</h3>
+                <canvas id="teamViewsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Match Preview Popularity -->
+        {% if analytics_data.match_preview_views %}
+        <div class="chart-container">
+            <h3>Most Previewed Matchups</h3>
+            <div class="matchup-list">
+                {% for team, matchups in analytics_data.match_preview_views.items() %}
+                    {% if matchups is mapping %}
+                        {% for matchup_key, count in matchups.items() %}
+                        <div class="matchup-item">
+                            <span class="matchup-name">{{ matchup_key | replace('-', ' ') | replace('_', ' ') }}</span>
+                            <div class="matchup-bar-wrapper">
+                                <div class="matchup-bar" data-width="{{ [count / 50 * 100, 100] | min }}"></div>
+                            </div>
+                            <span class="matchup-count">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Page Popularity (Public) -->
+    <!-- ======================== -->
+    <div id="pages" class="section">
+        <h2><i class="fas fa-file-alt"></i> Page Popularity</h2>
+        <p class="section-subtitle">Which sections of the site get the most traffic</p>
+
+        <div class="chart-container">
+            <canvas id="pageViewsChart" style="max-height: 400px;"></canvas>
+        </div>
+
+        <div class="table-container">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Page</th>
+                        <th>Views</th>
+                        <th>Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set total_pv = analytics_data.totals.page_views | default(1) %}
+                    {% for page, views in analytics_data.page_views | dictsort(by='value', reverse=true) %}
+                    <tr>
+                        <td class="rank-cell">{{ loop.index }}</td>
+                        <td>
+                            <a href="/{{ page if page != 'home' else '' }}">{{ page | replace('_', ' ') | title }}</a>
+                        </td>
+                        <td class="views-cell">{{ views }}</td>
+                        <td>
+                            <div class="share-bar-wrapper">
+                                <div class="share-bar" style="width: {{ (views / total_pv * 100) | round(1) }}%"></div>
+                                <span class="share-pct">{{ (views / total_pv * 100) | round(1) }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_admin %}
+    <!-- ======================== -->
+    <!-- SECTION: Traffic Overview (Admin) -->
+    <!-- ======================== -->
+    <div id="traffic" class="section admin-section">
+        <div class="admin-section-badge"><i class="fas fa-lock"></i> Admin Only</div>
+        <h2><i class="fas fa-chart-area"></i> Traffic Overview</h2>
+        <p class="section-subtitle">Daily request volume over time</p>
+
+        <div class="traffic-summary-cards">
+            {% set daily_values = [] %}
+            {% for date, day_data in analytics_data.daily_stats | dictsort(reverse=true) %}
+                {% if day_data is mapping %}
+                    {% set _ = daily_values.append(day_data.get('total_requests', 0)) %}
+                {% else %}
+                    {% set _ = daily_values.append(day_data) %}
+                {% endif %}
+            {% endfor %}
+            <div class="mini-stat">
+                <div class="mini-stat-value">{{ daily_values[0] if daily_values else 0 }}</div>
+                <div class="mini-stat-label">Today</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-value">
+                    {{ (daily_values[:7] | sum / (daily_values[:7] | length or 1)) | round(0) | int }}
+                </div>
+                <div class="mini-stat-label">7-Day Avg</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-value">{{ daily_values[:30] | sum }}</div>
+                <div class="mini-stat-label">30-Day Total</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="dailyTrafficChart" style="max-height: 350px;"></canvas>
+        </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Error Tracking (Admin) -->
+    <!-- ======================== -->
+    <div id="errors" class="section admin-section">
+        <div class="admin-section-badge"><i class="fas fa-lock"></i> Admin Only</div>
+        <h2><i class="fas fa-bug"></i> Error Tracking</h2>
+        <p class="section-subtitle">Recent errors and failure patterns</p>
+
+        <div class="traffic-summary-cards">
+            <div class="mini-stat mini-stat--error">
+                <div class="mini-stat-value">{{ analytics_data.error_count | default(0) }}</div>
+                <div class="mini-stat-label">Total Errors</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-value">
+                    {% set four_xx = analytics_data.errors | selectattr('status_code', 'equalto', 404) | list | length %}
+                    {{ four_xx }}
+                </div>
+                <div class="mini-stat-label">404 Not Found</div>
+            </div>
+            <div class="mini-stat mini-stat--critical">
+                <div class="mini-stat-value">
+                    {% set five_xx = analytics_data.errors | default([]) | selectattr('status_code', 'ge', 500) | list | length %}
+                    {{ five_xx }}
+                </div>
+                <div class="mini-stat-label">5xx Server Errors</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Route</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for error in analytics_data.errors | default([]) %}
+                    <tr class="{% if error.status_code >= 500 %}error-row--critical{% else %}error-row--warning{% endif %}">
+                        <td class="timestamp-cell">{{ error.timestamp[:19] | default('—') }}</td>
+                        <td><code>{{ error.route | default('—') }}</code></td>
+                        <td>
+                            <span class="status-badge status-{{ error.status_code | default(0) }}">
+                                {{ error.status_code | default('—') }}
+                            </span>
+                        </td>
+                        <td>{{ error.method | default('—') }}</td>
+                        <td class="ip-cell">{{ error.ip | default('—') }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not analytics_data.errors %}
+                    <tr><td colspan="5" class="empty-state">No errors recorded</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Performance (Admin) -->
+    <!-- ======================== -->
+    <div id="performance" class="section admin-section">
+        <div class="admin-section-badge"><i class="fas fa-lock"></i> Admin Only</div>
+        <h2><i class="fas fa-tachometer-alt"></i> Performance Metrics</h2>
+        <p class="section-subtitle">Response times and endpoint performance (from sampled requests)</p>
+
+        <div class="traffic-summary-cards">
+            <div class="mini-stat">
+                <div class="mini-stat-value">{{ analytics_data.performance.avg_response_ms | default(0) }}ms</div>
+                <div class="mini-stat-label">Avg Response Time</div>
+            </div>
+            <div class="mini-stat {% if analytics_data.performance.max_response_ms | default(0) > 1000 %}mini-stat--error{% endif %}">
+                <div class="mini-stat-value">{{ analytics_data.performance.max_response_ms | default(0) }}ms</div>
+                <div class="mini-stat-label">Max Response Time</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-value">{{ analytics_data.performance.sample_count | default(0) }}</div>
+                <div class="mini-stat-label">Samples Today</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Response Time Distribution</h3>
+            <canvas id="responseTimeChart" style="max-height: 300px;"></canvas>
+        </div>
+
+        <!-- Status Code Breakdown -->
+        <div class="charts-row">
+            <div class="chart-container half">
+                <h3>Status Code Breakdown</h3>
+                <canvas id="statusCodesChart"></canvas>
+            </div>
+            <div class="chart-container half">
+                <h3>Request Methods</h3>
+                <canvas id="methodsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Visitor Insights (Admin) -->
+    <!-- ======================== -->
+    <div id="visitors" class="section admin-section">
+        <div class="admin-section-badge"><i class="fas fa-lock"></i> Admin Only</div>
+        <h2><i class="fas fa-desktop"></i> Visitor Insights</h2>
+        <p class="section-subtitle">Device types and browsing patterns</p>
+
+        <div class="chart-container" style="max-width: 500px; margin: 0 auto;">
+            <h3>Device Breakdown</h3>
+            <canvas id="devicesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- SECTION: Detailed Logs (Admin) -->
+    <!-- ======================== -->
+    <div id="logs" class="section admin-section">
+        <div class="admin-section-badge"><i class="fas fa-lock"></i> Admin Only</div>
+        <h2><i class="fas fa-list-alt"></i> Request Logs</h2>
+        <p class="section-subtitle">Sampled detailed request log entries (20% sample rate)</p>
+
+        <div class="table-container">
+            <table class="analytics-table" id="logs-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Route</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Time (ms)</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in analytics_data.detailed_logs | default([]) %}
+                    <tr>
+                        <td class="timestamp-cell">{{ log.timestamp[:19] | default('—') }}</td>
+                        <td><code>{{ log.route | default('—') }}</code></td>
+                        <td>{{ log.method | default('—') }}</td>
+                        <td>
+                            <span class="status-badge status-{{ log.status_code | default(0) }}">
+                                {{ log.status_code | default('—') }}
+                            </span>
+                        </td>
+                        <td class="{% if (log.response_time_ms | default(0)) > 500 %}slow-response{% endif %}">
+                            {{ log.response_time_ms | default('—') }}
+                        </td>
+                        <td class="ip-cell">{{ log.ip | default('—') }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not analytics_data.detailed_logs %}
+                    <tr><td colspan="6" class="empty-state">No log entries for today</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 120px;
+}
+
+/* =================== */
+/* Container & Header  */
+/* =================== */
+.analytics-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.analytics-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.analytics-header h1 {
+    color: var(--color-maroon, #670000);
+    font-family: var(--font-display, 'Allerta Stencil', sans-serif);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.analytics-header h1 i {
+    margin-right: 0.5rem;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin-top: 0;
+}
+
+.dev-banner {
+    display: inline-block;
+    background: var(--color-warning-bg, #fff3cd);
+    color: var(--color-warning-dark, #856404);
+    padding: 0.5rem 1.25rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+}
+
+.admin-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+}
+
+/* =================== */
+/* Quick Stats Grid    */
+/* =================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid var(--color-maroon, #670000);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.12));
+}
+
+.stat-card--error {
+    border-left-color: var(--color-error, #dc3545);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(103, 0, 0, 0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--color-maroon, #670000);
+    flex-shrink: 0;
+}
+
+.stat-card--error .stat-icon {
+    background: rgba(220, 53, 69, 0.08);
+    color: var(--color-error, #dc3545);
+}
+
+.stat-info .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.2;
+}
+
+.stat-info .stat-label {
+    font-size: 0.85rem;
+    color: #888;
+    font-weight: 500;
+}
+
+/* =================== */
+/* Quick Nav           */
+/* =================== */
+.quick-nav {
+    position: sticky;
+    top: 50px;
+    z-index: 99;
+    background: hsla(0, 0%, 100%, 0.4);
+    backdrop-filter: blur(4px);
+    padding: 1rem 0;
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--color-maroon, #670000);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    border-radius: 20px;
+}
+
+.nav-link:hover {
+    background: rgba(103, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.nav-link i {
+    margin-right: 0.35rem;
+}
+
+/* =================== */
+/* Section Cards       */
+/* =================== */
+.section {
+    margin: 2.5rem 0;
+    padding: 2rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+
+.section h2 {
+    color: var(--color-maroon, #670000);
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+    font-family: var(--font-display, 'Allerta Stencil', sans-serif);
+}
+
+.section h2 i {
+    margin-right: 0.5rem;
+}
+
+.section-subtitle {
+    color: #888;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+/* Admin section styling */
+.admin-section {
+    border: 1px solid rgba(103, 0, 0, 0.12);
+}
+
+.admin-section-badge {
+    position: absolute;
+    top: -12px;
+    right: 24px;
+    background: linear-gradient(135deg, #670000 0%, #a70000 100%);
+    color: white;
+    padding: 0.25rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* =================== */
+/* Charts              */
+/* =================== */
+.chart-container {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.chart-container h3 {
+    color: var(--color-maroon, #670000);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.chart-container.half {
+    padding: 1.5rem;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+/* =================== */
+/* Tables              */
+/* =================== */
+.table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.analytics-table th {
+    background: var(--color-maroon, #670000);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.analytics-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.analytics-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.analytics-table tr:hover {
+    background: #f5f5f5;
+}
+
+.analytics-table a {
+    color: var(--color-maroon, #670000);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.analytics-table a:hover {
+    text-decoration: underline;
+}
+
+.analytics-table code {
+    background: rgba(103, 0, 0, 0.06);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.rank-cell {
+    font-weight: 700;
+    color: var(--color-maroon, #670000);
+    width: 50px;
+}
+
+.views-cell {
+    font-weight: 600;
+    color: #333;
+}
+
+.timestamp-cell {
+    font-size: 0.8rem;
+    color: #666;
+    font-family: monospace;
+}
+
+.ip-cell {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.empty-state {
+    text-align: center;
+    color: #aaa;
+    font-style: italic;
+    padding: 2rem !important;
+}
+
+/* Share bars for page views */
+.share-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.share-bar {
+    height: 8px;
+    background: linear-gradient(135deg, #670000, #a70000);
+    border-radius: 4px;
+    min-width: 4px;
+    transition: width 0.5s ease;
+}
+
+.share-pct {
+    font-size: 0.8rem;
+    color: #888;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge[class*="status-2"] {
+    background: var(--color-success-bg, #d4edda);
+    color: var(--color-success-dark, #155724);
+}
+
+.status-badge[class*="status-3"] {
+    background: var(--color-info-bg, #d1ecf1);
+    color: var(--color-info-dark, #0c5460);
+}
+
+.status-badge[class*="status-4"] {
+    background: var(--color-warning-bg, #fff3cd);
+    color: var(--color-warning-dark, #856404);
+}
+
+.status-badge[class*="status-5"] {
+    background: var(--color-error-bg, #f8d7da);
+    color: var(--color-error-dark, #721c24);
+}
+
+.error-row--critical {
+    background: rgba(220, 53, 69, 0.04);
+}
+
+.error-row--warning {
+    background: rgba(255, 193, 7, 0.04);
+}
+
+.slow-response {
+    color: var(--color-error, #dc3545);
+    font-weight: 600;
+}
+
+/* =================== */
+/* Mini stat cards     */
+/* =================== */
+.traffic-summary-cards {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.mini-stat {
+    flex: 1;
+    min-width: 120px;
+    padding: 1rem 1.25rem;
+    background: #f9f9f9;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.mini-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.mini-stat-label {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+.mini-stat--error .mini-stat-value {
+    color: var(--color-error, #dc3545);
+}
+
+.mini-stat--critical .mini-stat-value {
+    color: var(--color-error, #dc3545);
+}
+
+/* =================== */
+/* Matchup List        */
+/* =================== */
+.matchup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.matchup-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.matchup-name {
+    flex: 0 0 250px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.matchup-bar-wrapper {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.matchup-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #670000, #a70000);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.matchup-count {
+    font-weight: 700;
+    color: var(--color-maroon, #670000);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* =================== */
+/* Responsive          */
+/* =================== */
+@media (max-width: 768px) {
+    .analytics-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .analytics-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .stat-info .stat-value {
+        font-size: 1.35rem;
+    }
+
+    .stat-info .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .quick-nav {
+        top: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0.5rem;
+        gap: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .quick-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-link {
+        white-space: nowrap;
+        background: #f8f9fa;
+        border: 1px solid #eee;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.85rem;
+    }
+
+    .section {
+        padding: 1.25rem 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .section h2 {
+        font-size: 1.35rem;
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+        padding: 1rem;
+    }
+
+    .traffic-summary-cards {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .mini-stat {
+        min-width: 90px;
+    }
+
+    .mini-stat-value {
+        font-size: 1.15rem;
+    }
+
+    .matchup-name {
+        flex: 0 0 140px;
+        font-size: 0.8rem;
+    }
+
+    .admin-section-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<!-- Data injection -->
+<script id="analytics-data" type="application/json">
+    {{ analytics_data | tojson | safe }}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const data = JSON.parse(document.getElementById('analytics-data').textContent);
+    const maroon = '#670000';
+    const maroonLight = '#a70000';
+    const gold = '#D4AF37';
+
+    // ========================
+    // Shared Chart Defaults
+    // ========================
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.color = '#666';
+
+    // ========================
+    // Player Views Chart
+    // ========================
+    const playerCtx = document.getElementById('playerViewsChart');
+    if (playerCtx && data.player_views) {
+        const playerLabels = Object.keys(data.player_views).slice(0, 10);
+        const playerValues = Object.values(data.player_views).slice(0, 10);
+
+        new Chart(playerCtx, {
+            type: 'bar',
+            data: {
+                labels: playerLabels,
+                datasets: [{
+                    label: 'Profile Views',
+                    data: playerValues,
+                    backgroundColor: playerValues.map((_, i) =>
+                        i === 0 ? gold : `rgba(103, 0, 0, ${0.9 - i * 0.07})`
+                    ),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#ddd',
+                        cornerRadius: 8,
+                        padding: 12,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { size: 12 } }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 12, weight: 500 } }
+                    }
+                }
+            }
+        });
+        playerCtx.parentElement.style.height = Math.max(250, playerLabels.length * 40) + 'px';
+    }
+
+    // ========================
+    // Team Views Chart
+    // ========================
+    const teamCtx = document.getElementById('teamViewsChart');
+    if (teamCtx && data.team_views) {
+        const teamLabels = Object.keys(data.team_views).slice(0, 10);
+        const teamValues = Object.values(data.team_views).slice(0, 10);
+
+        new Chart(teamCtx, {
+            type: 'bar',
+            data: {
+                labels: teamLabels,
+                datasets: [{
+                    label: 'Page Views',
+                    data: teamValues,
+                    backgroundColor: teamValues.map((_, i) =>
+                        i === 0 ? gold : `rgba(103, 0, 0, ${0.9 - i * 0.07})`
+                    ),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                        cornerRadius: 8,
+                        padding: 12,
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(0,0,0,0.04)' } },
+                    y: { grid: { display: false }, ticks: { font: { size: 12, weight: 500 } } }
+                }
+            }
+        });
+        teamCtx.parentElement.style.height = Math.max(200, teamLabels.length * 40) + 'px';
+    }
+
+    // ========================
+    // Page Views Chart
+    // ========================
+    const pageCtx = document.getElementById('pageViewsChart');
+    if (pageCtx && data.page_views) {
+        const sorted = Object.entries(data.page_views).sort((a, b) => b[1] - a[1]);
+        const pageLabels = sorted.map(e => e[0].replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        const pageValues = sorted.map(e => e[1]);
+
+        new Chart(pageCtx, {
+            type: 'bar',
+            data: {
+                labels: pageLabels,
+                datasets: [{
+                    label: 'Views',
+                    data: pageValues,
+                    backgroundColor: pageValues.map((_, i) =>
+                        `rgba(103, 0, 0, ${0.9 - i * 0.06})`
+                    ),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                        cornerRadius: 8,
+                        padding: 12,
+                    }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
+                    x: { grid: { display: false }, ticks: { maxRotation: 45 } }
+                }
+            }
+        });
+    }
+
+    // ========================
+    // ADMIN CHARTS
+    // ========================
+
+    // Daily Traffic Chart
+    const trafficCtx = document.getElementById('dailyTrafficChart');
+    if (trafficCtx && data.daily_stats) {
+        const sortedDays = Object.entries(data.daily_stats).sort((a, b) => a[0].localeCompare(b[0]));
+        const trafficLabels = sortedDays.map(e => {
+            const d = new Date(e[0]);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        const trafficValues = sortedDays.map(e => {
+            const val = e[1];
+            return typeof val === 'object' ? (val.total_requests || 0) : val;
+        });
+
+        new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: trafficLabels,
+                datasets: [{
+                    label: 'Requests',
+                    data: trafficValues,
+                    borderColor: maroon,
+                    backgroundColor: 'rgba(103, 0, 0, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: maroon,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                        cornerRadius: 8,
+                        padding: 12,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' }
+                    },
+                    x: { grid: { display: false } }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+    }
+
+    // Response Time Distribution
+    const rtCtx = document.getElementById('responseTimeChart');
+    if (rtCtx && data.detailed_logs) {
+        const buckets = { '0-100ms': 0, '100-250ms': 0, '250-500ms': 0, '500ms-1s': 0, '1s+': 0 };
+        data.detailed_logs.forEach(log => {
+            const t = log.response_time_ms || 0;
+            if (t < 100) buckets['0-100ms']++;
+            else if (t < 250) buckets['100-250ms']++;
+            else if (t < 500) buckets['250-500ms']++;
+            else if (t < 1000) buckets['500ms-1s']++;
+            else buckets['1s+']++;
+        });
+
+        new Chart(rtCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(buckets),
+                datasets: [{
+                    label: 'Requests',
+                    data: Object.values(buckets),
+                    backgroundColor: [
+                        '#28a745', '#4CAF50', '#D4AF37', '#ffc107', '#dc3545'
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Status Codes Doughnut
+    const scCtx = document.getElementById('statusCodesChart');
+    if (scCtx && data.status_codes) {
+        new Chart(scCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.status_codes),
+                datasets: [{
+                    data: Object.values(data.status_codes),
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, font: { size: 13 } } }
+                }
+            }
+        });
+    }
+
+    // Methods Chart
+    const mCtx = document.getElementById('methodsChart');
+    if (mCtx && data.methods) {
+        new Chart(mCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.methods),
+                datasets: [{
+                    data: Object.values(data.methods),
+                    backgroundColor: [maroon, gold, '#17a2b8', '#6c757d'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, font: { size: 13 } } }
+                }
+            }
+        });
+    }
+
+    // Devices Chart
+    const dCtx = document.getElementById('devicesChart');
+    if (dCtx && data.user_agents) {
+        new Chart(dCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.user_agents),
+                datasets: [{
+                    data: Object.values(data.user_agents),
+                    backgroundColor: [maroon, gold, '#17a2b8', '#6c757d', '#28a745'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, font: { size: 13 } } }
+                }
+            }
+        });
+    }
+
+    // Sticky nav observer
+    const quickNav = document.getElementById('analytics-nav');
+    if (quickNav) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                quickNav.style.background = 'hsla(0, 0%, 100%, 0.95)';
+                quickNav.style.backdropFilter = 'blur(8px)';
+                quickNav.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+            } else {
+                quickNav.style.background = 'hsla(0, 0%, 100%, 0.4)';
+                quickNav.style.backdropFilter = 'blur(4px)';
+                quickNav.style.boxShadow = 'none';
+            }
+        }, { passive: true });
+    }
+
+    // Number animation on stat cards
+    document.querySelectorAll('.stat-value, .mini-stat-value').forEach(el => {
+        const text = el.textContent.trim();
+        const num = parseInt(text.replace(/[^0-9]/g, ''));
+        if (!isNaN(num) && num > 0 && !text.includes('ms')) {
+            const suffix = text.replace(String(num), '');
+            let current = 0;
+            const step = Math.ceil(num / 40);
+            const interval = setInterval(() => {
+                current += step;
+                if (current >= num) {
+                    current = num;
+                    clearInterval(interval);
+                }
+                el.textContent = current.toLocaleString() + suffix;
+            }, 25);
+        }
+    });
+});
+
+// Apply matchup bar widths from data attributes
+document.querySelectorAll('.matchup-bar[data-width]').forEach(bar => {
+    bar.style.width = bar.dataset.width + '%';
+});
+</script>
+
+{% endblock %}

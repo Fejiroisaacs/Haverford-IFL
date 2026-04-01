@@ -8,7 +8,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 import firebase_admin
 from firebase_admin import credentials, auth, storage, db
 from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
-from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search, follows#, analytics
+from routers import matches, signup, login, contact, fantasy, players, settings, teams, admin, statistics, search, follows, analytics
 from auth_utils import get_current_user
 import json
 import os
