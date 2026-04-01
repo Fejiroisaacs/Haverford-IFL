@@ -189,6 +189,26 @@ def log_request(request_data: Dict[str, Any]):
     except Exception as e:
         logger.error(f"Error in log_request: {e}")
 
+# Known content pages to track under page_views
+TRACKED_PAGES = {
+    '/', '/home', '/index',
+    '/players', '/teams', '/matches',
+    '/statistics', '/hall-of-fame', '/archives',
+    '/gallery', '/contact',
+    '/fantasy', '/fantasy/leagues', '/fantasy/leaderboard',
+    '/fantasy/predictions', '/fantasy/rules',
+    '/player_search', '/team_search',
+    '/analytics', '/patch-notes',
+    '/settings', '/my-stats',
+}
+
+# Route prefixes that should be grouped under a parent page
+# e.g. /matches/6 -> 'matches', /fantasy/leagues/join -> 'fantasy_leagues'
+GROUPED_PREFIXES = {
+    '/matches/': 'matches',
+    '/archives/': 'archives',
+}
+
 def _log_aggregate_counters(request_data: Dict[str, Any]):
     """Update aggregate counters for analytics"""
     try:
@@ -233,34 +253,6 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
                     'increment': 1
                 })
 
-
-        elif route == '/players':
-            log_queue.put({
-                'log_type': 'counter',
-                'path': 'page_views/players',
-                'increment': 1
-            })
-
-        elif route == '/teams':
-            log_queue.put({
-                'log_type': 'counter',
-                'path': 'page_views/teams',
-                'increment': 1
-            })
-
-        elif route == '/matches':
-            log_queue.put({
-                'log_type': 'counter',
-                'path': 'page_views/matches',
-                'increment': 1
-            })
-
-        elif route.startswith('/player_search'):
-            log_queue.put({
-                'log_type': 'counter',
-                'path': 'page_views/player_search',
-                'increment': 1
-            })
         elif route.startswith('/api/match-preview'):
             params = request_data.get('query_params', {})
 
@@ -275,21 +267,31 @@ def _log_aggregate_counters(request_data: Dict[str, Any]):
             })
 
         else:
-            # Track all other page visits individually
-            # Exclude static files, API endpoints, and health checks
-            if not route.startswith('/static') and not route.startswith('/api/') and route != '/health':
-                clean_route = route.split('?')[0].lstrip('/')
-  
-                if clean_route == '':
-                    clean_route = 'home'
+            # Only track known content pages
+            clean_route = route.split('?')[0].rstrip('/')
+            if not clean_route:
+                clean_route = '/'
 
-                if "." not in clean_route: # route not invalid (sitemap.xml / robots.txt)
-                    clean_route = _sanitize_firebase_key(clean_route)
+            # Check grouped prefixes first (e.g. /matches/6 -> matches)
+            grouped = False
+            for prefix, page_key in GROUPED_PREFIXES.items():
+                if clean_route.startswith(prefix):
                     log_queue.put({
                         'log_type': 'counter',
-                        'path': f'page_views/{clean_route}',
+                        'path': f'page_views/{page_key}',
                         'increment': 1
                     })
+                    grouped = True
+                    break
+
+            # Check exact match against allowlist
+            if not grouped and clean_route in TRACKED_PAGES:
+                page_key = clean_route.lstrip('/').replace('/', '_') or 'home'
+                log_queue.put({
+                    'log_type': 'counter',
+                    'path': f'page_views/{page_key}',
+                    'increment': 1
+                })
 
     except Exception as e:
         logger.error(f"Error logging counters: {e}")
