@@ -318,7 +318,7 @@ def get_season_stats(season=7):
         print(f"Error in get_season_stats: {e}")
         return {'total_goals': 0, 'avg_goals': 0, 'biggest_win': 'TBD', 'total_teams': 18}
 
-def get_season_top_performers(season='6'):
+def get_season_top_performers(season=7):
     """Get top 3 players for goals, assists, and saves"""
     try:
         data = get_cached_data()

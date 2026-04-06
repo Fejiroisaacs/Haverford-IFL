@@ -817,7 +817,7 @@ def get_league_leaders(season=None):
     }).reset_index()
 
     # Get selected season stats
-    season_stats_df = player_stats_df[player_stats_df['Season'] == str(season)].copy()
+    season_stats_df = player_stats_df[player_stats_df['Season'] == season].copy()
     season_agg = season_stats_df.groupby('Name').agg({
         'Goals': 'sum',
         'Assists': 'sum',
