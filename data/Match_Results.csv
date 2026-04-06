@@ -67,7 +67,7 @@ MCH,LJP,2,B,64,8,0,Final,0,0,1,0
 HPA,E44,2,B,65,0,5,Forfeit,0,0,0,1
 SHT,BBL,2,A,66,2,11,Final,0,0,0,1
 SFA,CSW,2,A,67,2,1,Final,0,0,1,0
-NPC,TOE,2,A,68,16,1,Final,1,0,1,0
+NPC,TOE,2,A,68,16,1,Final,2,0,1,0
 MCH,E44,2,B,69,5,1,Final,0,0,1,0
 HPA,ASB,2,B,70,0,5,Forfeit,0,0,0,1
 BNC,BBL,2,A,71,2,5,Final,0,0,0,1
@@ -85,7 +85,7 @@ HPA,TFF,2,B,82,0,5,Forfeit,0,0,0,1
 SHT,NPC,2,A,83,3,10,Final,0,0,0,1
 LJP,HBD,2,B,84,3,8,Final,0,0,0,1
 SFA,BNC,2,A,85,3,5,Final,0,0,0,1
-NPC,CSW,2,A,86,6,1,Final,0,1,1,0
+NPC,CSW,2,A,86,6,1,Final,0,2,1,0
 E44,TFF,2,B,87,0,9,Final,0,0,0,1
 HPA,MCH,2,B,88,0,5,Forfeit,0,0,0,1
 BNC,ASB,2,Playoff,89,4,5,Playoff/FT,0,0,0,1
@@ -266,4 +266,7 @@ NPC,BNC,6,Playoff,263,3,5,Playoff/FT,0,0,0,1
 RFT,SWF,6,Playoff,264,6,1,Playoff/FT,0,0,1,0
 RFT,BNC,6,Playoff,265,3,10,Playoff/FT,0,0,0,1
 EGG,NPC,7,B,266,1,6,Final,0,0,0,1
-GFC,MCH,7,B,267,1,9,Final,0,0,0,1
+GFC,MCH,7,B,267,1,9,Final,0,1,0,1
+VBF,NFC,7,B,268,2,5,Final,0,0,0,1
+HFC,LBJ,7,A,269,7,1,Final,0,0,1,0
+TOE,RFT,7,A,270,5,6,Final,0,0,0,1

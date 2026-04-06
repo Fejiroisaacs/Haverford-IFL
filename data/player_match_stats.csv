@@ -3210,21 +3210,54 @@ Rami Nasr,7,266,NPC,0,0,M,0-0,0,1,2,0,EGG
 Yassine Falah,7,266,NPC,Y,0,F,0-0,0,2,0,0,EGG
 Grant DeVries,7,266,NPC,Y,0,GK,0-0,0,0,0,3,EGG
 Will Murdock,7,266,NPC,Y,0,D,0-0,0,2,1,0,EGG
-Kabir Hinduja-Obregon,7,266,NPC,Y,0,GK,0-0,0,0,0,6,EGG
+Kabir Alvaro Hinduja-Obregon,7,266,NPC,Y,0,GK,0-0,0,0,0,6,EGG
 Alex Geng,7,266,NPC,Y,0,D,0-0,0,0,0,0,EGG
 Owen Sykes,7,266,NPC,0,0,M,0-0,0,1,2,0,EGG
 Henry Nam,7,267,GFC,Y,0,M,0-0,0,1,0,0,MCH
-Seth Anderson,7,267,GFC,Y,0,M,0-0,1,0,0,0,MCH
+Seth Anderson,7,267,GFC,Y,0,M,0-0,0,0,0,0,MCH
 Ian Hochman,7,267,GFC,0,0,M,0-0,0,0,0,0,MCH
-Tyler Nolan,7,267,GFC,Y,0,M,0-0,0,0,0,0,MCH
+Tyler Nolan,7,267,GFC,Y,0,M,1-0,0,0,0,0,MCH
 Raja Coleman,7,267,GFC,Y,0,M,0-0,0,0,0,0,MCH
-Carter Warren,7,267,GFC,Y,0,M,0-0,0,0,0,0,MCH
+Carter Warren,7,267,GFC,Y,0,M,0-0,0,0,0,2,MCH
 Isaac,7,267,GFC,0,0,M,0-0,0,0,0,0,MCH
-Krish Gupta,7,267,MCH,Y,0,M,0-0,0,1,1,0,GFC
+Krish Gupta,7,267,MCH,Y,0,M,0-0,0,1,3,0,GFC
 Ishan Deb,7,267,MCH,Y,0,M,0-0,1,4,2,0,GFC
-Oliver Lee,7,267,MCH,0,0,M,0-0,0,0,0,0,GFC
+Oliver Lee,7,267,MCH,0,0,M,0-0,0,0,1,0,GFC
 James He,7,267,MCH,Y,0,M,0-0,0,2,0,0,GFC
 Zekiah Juliusson,7,267,MCH,Y,0,M,0-0,0,1,1,0,GFC
-Sammy Kniker,7,267,MCH,Y,0,GK,0-0,0,0,0,6,GFC
-Max Jones,7,267,MCH,0,0,M,0-0,0,0,0,0,GFC
+Sammy Kniker,7,267,MCH,Y,0,GK,0-0,0,0,1,6,GFC
+Max Jones,7,267,MCH,0,0,M,0-1,0,0,0,0,GFC
 Dylan Monaghan,7,267,MCH,0,0,M,0-0,0,1,1,0,GFC
+Eliana Brown,7,268,VBF,Y,0,M,0-0,0,0,2,0,NFC
+Kayla Chu,7,268,VBF,Y,0,M,0-0,0,0,0,0,NFC
+Olivia DeVille,7,268,VBF,Y,0,F,0-0,0,2,0,0,NFC
+Marlena Kinlan,7,268,VBF,0,0,M,0-0,0,0,0,0,NFC
+Lolly Adair,7,268,VBF,Y,0,GK,0-0,0,0,0,10,NFC
+Lizzy,7,268,VBF,0,0,F,0-0,0,0,0,0,NFC
+Ishan Deb,7,268,VBF,Y,1,D,0-0,0,0,0,0,NFC
+Jose Andres Gavilanes Carranza,7,268,NFC,Y,0,M,0-0,1,3,2,0,VBF
+Erika Rosales,7,268,NFC,Y,0,M,0-0,0,1,1,0,VBF
+Wyatt Staey-Bischoff,7,268,NFC,Y,0,M,0-0,0,1,1,0,VBF
+Grant DeVries,7,268,NFC,Y,1,GK,1-0,0,0,0,13,VBF
+Haroun Shah,7,269,HFC,Y,0,M,0-0,0,1,1,0,LBJ
+Mustafa Rashid,7,269,HFC,0,0,M,0-0,0,1,0,0,LBJ
+Dean Ibrahim,7,269,HFC,Y,0,M,0-0,0,0,0,0,LBJ
+Sameeh Karakra,7,269,HFC,0,0,M,0-0,0,1,0,0,LBJ
+Victor Jimenez,7,269,HFC,Y,0,M,0-0,0,0,3,0,LBJ
+Sho Nadata,7,269,HFC,Y,0,M,0-0,1,3,1,0,LBJ
+João Victor Hasse,7,269,HFC,Y,0,GK,0-0,0,0,0,7,LBJ
+Ethan Kang,7,269,HFC,0,0,M,0-0,0,0,0,0,LBJ
+Juan,7,269,HFC,0,0,M,0-0,0,1,0,0,LBJ
+Amanda Cruz,7,269,LBJ,Y,0,D,0-0,0,0,0,0,HFC
+Carly Penn,7,269,LBJ,Y,0,GK,0-0,0,0,0,8,HFC
+Natalia Chorzepa,7,269,LBJ,0,0,D,0-0,0,0,0,0,HFC
+"Charlene ""Chuck"" Basque",7,269,LBJ,Y,0,D,0-0,0,0,0,0,HFC
+Sarah Walker,7,269,LBJ,Y,0,F,0-0,0,0,0,0,HFC
+Lucia Engelhardt,7,269,LBJ,Y,0,M,0-0,0,1,0,0,HFC
+Isaiah Woods-Kolsky,7,269,LBJ,0,0,M,0-0,0,0,0,0,HFC
+Oliver Wilson,7,270,TOE,Y,0,D,0-0,0,0,0,0,RFT
+Owen Ryan,7,270,TOE,Y,0,F,0-0,0,1,2,0,RFT
+Dane Clunk,7,270,TOE,Y,0,D,0-0,0,2,0,0,RFT
+Grant DeVries,7,270,TOE,Y,1,GK,1-0,0,2,2,3,RFT
+Reed Sussman,7,270,RFT,Y,0,F,0-0,1,6,0,0,TOE
+Kabir Alvaro Hinduja-Obregon,7,270,RFT,Y,1,GK,0-0,0,0,4,13,TOE
