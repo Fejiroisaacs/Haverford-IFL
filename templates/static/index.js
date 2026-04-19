@@ -1,7 +1,7 @@
 // Index Page JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    const bannerVersion = '4';
+    const bannerVersion = '5';
     const dismissedVersion = localStorage.getItem('featureBannerDismissedVersion');
 
     if (dismissedVersion !== bannerVersion) {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Feature Announcement Banner Functions
 function dismissBanner() {
     const banner = document.getElementById('featureBanner');
-    const bannerVersion = '4';
+    const bannerVersion = '5';
     banner.style.animation = 'slideDown 0.5s ease-out reverse';
     setTimeout(() => {
         banner.style.display = 'none';
@@ -113,11 +113,6 @@ function parseMatchDate(dateStr, timeStr) {
         }
 
         let targetDate = new Date(currentYear, month, day, hours, minutes);
-
-        // If the date has passed, assume it's next year
-        if (targetDate < new Date()) {
-            targetDate = new Date(currentYear + 1, month, day, hours, minutes);
-        }
 
         return targetDate;
     } catch (e) {

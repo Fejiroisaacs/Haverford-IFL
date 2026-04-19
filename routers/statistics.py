@@ -774,15 +774,6 @@ async def compare_players_api(player1: str, player2: str):
 @router.get("/archives", response_class=HTMLResponse)
 async def archives_page(request: Request, user = Depends(get_current_user)):
     """Season Archives page"""
-    # Check if statistics pages are enabled or admin logged in
-    if not IS_DEV and (not user or user['email'] not in ["fejiroisaac@gmail.com", "gdevries@haverford.edu"]):
-        return templates.TemplateResponse(request=request, name="coming-soon.html", context={
-            "request": request,
-            "user": user,
-            "page_name": "Season Archives",
-            "page_description": "historical data, past season standings, and memorable moments from previous campaigns"
-        })
-
     try:
         archives = get_all_seasons_summary()
 
