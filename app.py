@@ -196,23 +196,83 @@ def get_season_progress(season=7):
         print(f"Error in get_season_progress: {e}")
         return {'current_matchday': 0, 'total_matchdays': 10, 'matches_played': 0, 'total_matches': 0}
 
+def _parse_schedule_datetime(day_str, time_str):
+    """Parse schedule Day and Time columns into a datetime.
+
+    Day format: 'Mon, April 20' or 'April 20'
+    Time format: '7:00 PM' or '19:00'
+    Returns a datetime for the current year, or None on failure.
+    """
+    try:
+        import re
+        current_year = datetime.now().year
+
+        # Strip leading day-of-week abbreviation (e.g. "Mon, ")
+        clean = re.sub(r'^[A-Za-z]+,\s*', '', str(day_str).strip())
+
+        months = {
+            'January': 1, 'February': 2, 'March': 3, 'April': 4,
+            'May': 5, 'June': 6, 'July': 7, 'August': 8,
+            'September': 9, 'October': 10, 'November': 11, 'December': 12
+        }
+
+        parts = clean.split()
+        month = months.get(parts[0])
+        day = int(parts[1])
+        if month is None:
+            return None
+
+        hours, minutes = 0, 0
+        if pd.notna(time_str) and str(time_str).strip():
+            m = re.match(r'(\d+):(\d+)\s*(AM|PM)?', str(time_str).strip(), re.IGNORECASE)
+            if m:
+                hours = int(m.group(1))
+                minutes = int(m.group(2))
+                period = m.group(3)
+                if period:
+                    if period.upper() == 'PM' and hours != 12:
+                        hours += 12
+                    if period.upper() == 'AM' and hours == 12:
+                        hours = 0
+
+        return datetime(current_year, month, day, hours, minutes)
+    except Exception:
+        return None
+
+
 def get_next_matchday():
     """Get next upcoming matchday with fixtures"""
     try:
         data = get_cached_data()
         schedule = data['schedule']
-        results_s6 = data['results'][data['results']['Season'] == '6']
 
-        # Filter for upcoming matches
-        upcoming = schedule[~schedule.apply(lambda row: f"{row['Team 1']} vs {row['Team 2']}" in
-                                            [f"{r['Team 1']} vs {r['Team 2']}" for _, r in results_s6.iterrows()], axis=1)]
-
-        if upcoming.empty:
+        if schedule.empty:
             return {'matchday': None, 'date': None, 'matches': []}
 
-        # Get next matchday
-        next_md = upcoming['MD'].min()
-        next_matches = upcoming[upcoming['MD'] == next_md]
+        now = datetime.now()
+
+        # Find the next matchday whose date hasn't fully passed.
+        # A matchday is "future" if its latest game start time is still in the future.
+        matchdays = sorted(schedule['MD'].unique())
+
+        next_md = None
+        for md in matchdays:
+            md_matches = schedule[schedule['MD'] == md]
+            # Check if *any* match in this matchday is still in the future
+            has_future = False
+            for _, row in md_matches.iterrows():
+                dt = _parse_schedule_datetime(row['Day'], row['Time'])
+                if dt is not None and dt > now:
+                    has_future = True
+                    break
+            if has_future:
+                next_md = md
+                break
+
+        if next_md is None:
+            return {'matchday': None, 'date': None, 'matches': []}
+
+        next_matches = schedule[schedule['MD'] == next_md]
 
         matches_list = []
         for _, match in next_matches.iterrows():
