@@ -197,45 +197,13 @@ def get_season_progress(season=7):
         return {'current_matchday': 0, 'total_matchdays': 10, 'matches_played': 0, 'total_matches': 0}
 
 def _parse_schedule_datetime(day_str, time_str):
-    """Parse schedule Day and Time columns into a datetime.
-
-    Day format: 'Mon, April 20' or 'April 20'
-    Time format: '7:00 PM' or '19:00'
-    Returns a datetime for the current year, or None on failure.
-    """
+    """Parse schedule Day ('Mon, April 20') and Time ('7:00 PM') into a datetime for the current year."""
     try:
         import re
-        current_year = datetime.now().year
-
-        # Strip leading day-of-week abbreviation (e.g. "Mon, ")
-        clean = re.sub(r'^[A-Za-z]+,\s*', '', str(day_str).strip())
-
-        months = {
-            'January': 1, 'February': 2, 'March': 3, 'April': 4,
-            'May': 5, 'June': 6, 'July': 7, 'August': 8,
-            'September': 9, 'October': 10, 'November': 11, 'December': 12
-        }
-
-        parts = clean.split()
-        month = months.get(parts[0])
-        day = int(parts[1])
-        if month is None:
-            return None
-
-        hours, minutes = 0, 0
-        if pd.notna(time_str) and str(time_str).strip():
-            m = re.match(r'(\d+):(\d+)\s*(AM|PM)?', str(time_str).strip(), re.IGNORECASE)
-            if m:
-                hours = int(m.group(1))
-                minutes = int(m.group(2))
-                period = m.group(3)
-                if period:
-                    if period.upper() == 'PM' and hours != 12:
-                        hours += 12
-                    if period.upper() == 'AM' and hours == 12:
-                        hours = 0
-
-        return datetime(current_year, month, day, hours, minutes)
+        clean = re.sub(r'^[A-Za-z]+,\s*', '', str(day_str).strip())  # Strip day name
+        time_part = str(time_str).strip() if pd.notna(time_str) and str(time_str).strip() else '12:00 AM'
+        dt = datetime.strptime(f"{clean} {time_part}", "%B %d %I:%M %p")
+        return dt.replace(year=datetime.now().year)
     except Exception:
         return None
 
@@ -258,11 +226,11 @@ def get_next_matchday():
         next_md = None
         for md in matchdays:
             md_matches = schedule[schedule['MD'] == md]
-            # Check if *any* match in this matchday is still in the future
+            # Check if *any* match in this matchday is today or in the future
             has_future = False
             for _, row in md_matches.iterrows():
                 dt = _parse_schedule_datetime(row['Day'], row['Time'])
-                if dt is not None and dt > now:
+                if dt is not None and dt.date() >= now.date():
                     has_future = True
                     break
             if has_future:
