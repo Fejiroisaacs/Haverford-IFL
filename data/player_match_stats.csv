@@ -3316,14 +3316,14 @@ Jose Andres Gavilanes Carranza,7,275,NFC,Y,0,M,0-0,0,0,0,0,NPC
 Erika Rosales,7,275,NFC,Y,0,M,0-0,0,0,0,0,NPC
 Wyatt Staey-Bischoff,7,275,NFC,Y,0,M,0-0,0,0,0,0,NPC
 Ben Mansfield,7,275,NFC,Y,0,GK,0-0,0,0,0,11,NPC
-Eliana Brown,7,276,VBF,Y,0,M,0-0,0,1,0,0,GFC
+Eliana Brown,7,276,VBF,Y,0,M,0-0,0,1,1,0,GFC
 Izabela Potocnjak,7,276,VBF,0,0,M,0-0,0,0,0,0,GFC
 Kayla Chu,7,276,VBF,0,0,M,0-0,0,0,0,0,GFC
-Olivia DeVille,7,276,VBF,Y,0,M,0-0,0,1,1,0,GFC
+Olivia DeVille,7,276,VBF,Y,0,M,0-0,0,1,0,0,GFC
 Marlena Kinlan,7,276,VBF,Y,0,M,0-0,0,0,0,0,GFC
 Lolly Adair,7,276,VBF,Y,0,GK,0-0,0,0,0,0,GFC
 Lizzy,7,276,VBF,Y,0,M,0-0,0,0,0,0,GFC
-Ishan Deb,7,276,VBF,0,1,M,0-0,0,0,0,0,GFC
+Ishan Deb,7,276,VBF,0,1,M,0-0,0,0,1,0,GFC
 Henry Nam,7,276,GFC,Y,0,M,0-0,1,3,0,0,VBF
 Seth Anderson,7,276,GFC,Y,0,M,0-0,0,2,0,0,VBF
 Christian Uremovich,7,276,GFC,Y,0,GK,0-0,0,0,0,2,VBF
@@ -3333,3 +3333,51 @@ Tyler Nolan,7,276,GFC,0,0,M,0-0,0,1,0,0,VBF
 Josh Ho,7,276,GFC,0,0,M,0-0,0,0,0,0,VBF
 Raja Coleman,7,276,GFC,0,0,M,0-0,0,0,0,3,VBF
 Isaac,7,276,GFC,0,0,M,0-0,0,2,1,0,VBF
+Oliver Wilson,7,277,TOE,Y,0,D,0-0,0,0,0,0,HFC
+Owen Ryan,7,277,TOE,Y,0,F,0-0,0,0,1,0,HFC
+Dane Clunk,7,277,TOE,Y,0,D,0-0,0,1,0,3,HFC
+Noah Chong,7,277,TOE,Y,0,GK,0-0,1,1,0,3,HFC
+Aiden Kim,7,277,TOE,Y,0,D,0-0,0,0,0,0,HFC
+Haroun Shah,7,277,HFC,Y,0,D,0-0,0,0,0,0,TOE
+Adnaan Mohamud,7,277,HFC,0,0,M,0-0,0,0,0,0,TOE
+Dean Ibrahim,7,277,HFC,0,0,M,0-0,0,0,0,0,TOE
+Victor Jimenez,7,277,HFC,Y,0,D,0-0,0,0,0,0,TOE
+Rameel Rizwan,7,277,HFC,Y,0,F,0-0,0,1,0,0,TOE
+João Victor Hasse,7,277,HFC,Y,0,GK,0-0,0,0,0,7,TOE
+Ivan Paiewonsky,7,277,HFC,Y,0,F,0-0,0,0,1,0,TOE
+Kenton Goo,7,279,EGG,Y,0,F,1-0,0,1,1,0,VBF
+Matthew Jeon,7,279,EGG,Y,0,F,0-0,1,6,1,0,VBF
+Jersson Veliz,7,279,EGG,Y,0,GK,0-0,0,0,0,10,VBF
+Zoe Liu,7,279,EGG,0,0,M,0-0,0,0,1,0,VBF
+Noah Tsau,7,279,EGG,Y,0,D,0-0,0,1,1,0,VBF
+Alex Henry,7,279,EGG,Y,0,D,0-0,0,0,0,0,VBF
+Eliana Brown,7,279,VBF,Y,0,M,0-0,0,0,0,0,EGG
+Kayla Chu,7,279,VBF,Y,0,D,0-0,0,0,0,0,EGG
+Olivia DeVille,7,279,VBF,Y,0,F,0-0,0,2,0,0,EGG
+Lizzy,7,279,VBF,Y,0,M,0-0,0,0,1,0,EGG
+Ishan Deb,7,279,VBF,Y,0,GK,0-0,0,0,0,15,EGG
+Henry Nam,7,280,GFC,Y,0,M,0-0,0,0,0,0,NFC
+Emmanuel Cheung-Hernandez,7,280,GFC,Y,0,M,0-0,0,0,1,0,NFC
+Tyler Nolan,7,280,GFC,Y,0,M,0-0,0,1,0,0,NFC
+Raja Coleman,7,280,GFC,Y,0,GK,0-0,0,0,0,8,NFC
+Carter Warren,7,280,GFC,Y,0,M,0-0,1,1,0,0,NFC
+Isaac,7,280,GFC,0,0,M,0-0,0,0,1,0,NFC
+Marko Nagel,7,280,NFC,Y,0,M,0-0,0,0,1,0,GFC
+Max Koprivica,7,280,NFC,Y,0,M,0-0,0,1,0,0,GFC
+Jose Andres Gavilanes Carranza,7,280,NFC,Y,0,M,0-0,0,0,0,0,GFC
+Erika Rosales,7,280,NFC,Y,0,M,0-0,0,0,0,0,GFC
+Ben Mansfield,7,280,NFC,Y,0,GK,0-0,0,0,0,8,GFC
+Lorenzo Bulichelli,7,281,TGS,Y,0,M,0-0,0,1,0,0,RFT
+Luka Harb,7,281,TGS,Y,0,M,0-0,0,2,0,0,RFT
+Arun Bhattacharjee,7,281,TGS,0,0,M,0-0,0,0,0,0,RFT
+Tinashe Mutasa,7,281,TGS,0,0,M,0-0,0,0,0,0,RFT
+Eli Kwait-Spitzer,7,281,TGS,Y,0,GK,0-0,0,0,0,10,RFT
+Tyrese Clarke,7,281,TGS,0,0,M,0-0,0,0,0,0,RFT
+Sam Cohen,7,281,TGS,Y,0,M,0-0,0,1,1,0,RFT
+Aiden,7,281,TGS,Y,0,M,0-0,0,3,0,0,RFT
+Richard Lutkins,7,281,RFT,Y,0,GK,0-0,0,0,0,5,TGS
+Juan Rivera,7,281,RFT,Y,0,M,0-0,0,1,1,0,TGS
+Richard Zhao,7,281,RFT,Y,0,M,0-0,0,0,1,0,TGS
+Brendan,7,281,RFT,Y,0,M,0-0,0,0,0,0,TGS
+Reed Sussman,7,281,RFT,Y,0,M,0-0,0,4,0,0,TGS
+Conrad Parkzes,7,281,RFT,0,0,M,0-0,0,2,0,0,TGS
