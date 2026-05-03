@@ -289,3 +289,9 @@ NPC,VBF,7,B,286,3,0,Final,0,0,1,0
 RFT,VSH,7,A,287,5,0,Forfeit,0,0,1,0
 HFC,VSH,7,A,288,5,0,Forfeit,0,0,1,0
 TGS,VSH,7,A,289,5,0,Forfeit,0,0,1,0
+MCH,NPC,7,B,290,2,1,Final,0,0,1,0
+MCH,VBF,7,B,291,9,0,Final,0,0,1,0
+LBJ,RFT,7,A,292,2,10,Final,0,0,0,1
+GFC,NPC,7,B,293,2,8,Final,0,0,0,1
+TOE,TGS,7,A,294,5,9,Final,0,0,0,1
+EGG,NFC,7,B,295,5,0,Forfeit,0,0,1,0

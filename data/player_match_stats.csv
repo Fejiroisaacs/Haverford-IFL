@@ -3428,7 +3428,7 @@ Nafis Raz,7,285,TGS,0,0,M,0-0,0,0,0,0,HFC
 Tyrese Clarke,7,285,TGS,Y,0,M,0-0,0,1,0,0,HFC
 Sam Cohen,7,285,TGS,0,0,M,0-0,0,0,0,0,HFC
 Aiden,7,285,TGS,Y,0,M,0-0,0,0,0,0,HFC
-Haroun Shah,7,285,HFC,Y,0,M,0-0,0,0,0,0,TGS
+Haroun Shah,7,285,HFC,Y,0,M,0-0,0,0,1,0,TGS
 Mustafa Rashid,7,285,HFC,Y,0,M,0-0,0,0,0,0,TGS
 Sho Nadata,7,285,HFC,Y,0,M,0-0,0,1,0,0,TGS
 João Victor Hasse,7,285,HFC,Y,0,GK,0-0,1,0,0,11,TGS
@@ -3446,3 +3446,66 @@ Lolly Adair,7,286,VBF,0,0,M,0-0,0,0,0,0,NPC
 Lizzy,7,286,VBF,Y,0,M,0-0,0,0,0,0,NPC
 Ishan Deb,7,286,VBF,Y,1,GK,0-0,0,0,0,5,NPC
 Krish Gupta,7,286,VBF,0,1,M,0-0,0,0,0,3,NPC
+Krish Gupta,7,290,MCH,Y,0,M,0-0,0,1,0,0,NPC
+Ishan Deb,7,290,MCH,Y,0,M,0-0,0,1,0,0,NPC
+James He,7,290,MCH,Y,0,M,0-0,0,0,0,0,NPC
+Zekiah Juliusson,7,290,MCH,0,0,M,0-0,0,0,0,0,NPC
+Sammy Kniker,7,290,MCH,Y,0,GK,0-0,0,0,0,10,NPC
+Dylan Monaghan,7,290,MCH,Y,0,M,0-0,0,0,0,0,NPC
+Rami Nasr,7,290,NPC,0,0,M,0-0,0,0,1,0,MCH
+Yassine Falah,7,290,NPC,Y,0,F,0-0,0,0,0,0,MCH
+Vivek Mittal-Henkle,7,290,NPC,Y,0,F,0-0,0,0,0,0,MCH
+Grant DeVries,7,290,NPC,0,0,M,0-0,0,0,0,0,MCH
+Abigail Trapp,7,290,NPC,0,0,M,0-0,1,1,0,0,MCH
+Will Murdock,7,290,NPC,Y,0,D,0-0,0,0,0,0,MCH
+Kabir Alvaro Hinduja-Obregon,7,290,NPC,Y,0,GK,0-0,0,0,0,14,MCH
+Alex Geng,7,290,NPC,Y,0,D,1-0,0,0,0,0,MCH
+Owen Sykes,7,290,NPC,0,0,M,0-0,0,0,0,0,MCH
+Ishan Deb,7,291,MCH,Y,0,M,0-0,0,3,1,0,VBF
+Oliver Lee,7,291,MCH,Y,0,M,0-0,0,0,1,0,VBF
+James He,7,291,MCH,Y,0,M,0-0,0,2,0,0,VBF
+Zekiah Juliusson,7,291,MCH,Y,0,M,0-0,0,0,4,0,VBF
+Sammy Kniker,7,291,MCH,Y,0,GK,0-0,0,1,1,4,VBF
+Chauncy Wadsworth,7,291,MCH,0,0,M,0-0,0,3,0,2,VBF
+Eliana Brown,7,291,VBF,Y,0,GK,0-0,1,0,0,7,MCH
+Kayla Chu,7,291,VBF,Y,0,M,0-0,0,0,0,4,MCH
+Olivia DeVille,7,291,VBF,Y,0,M,0-0,0,0,0,0,MCH
+Marlena Kinlan,7,291,VBF,0,0,M,0-0,0,0,0,0,MCH
+Lolly Adair,7,291,VBF,Y,0,M,0-0,0,0,0,1,MCH
+Lizzy,7,291,VBF,Y,0,M,0-0,0,0,0,0,MCH
+Amanda Cruz,7,292,LBJ,Y,0,F,0-0,0,0,0,1,RFT
+Carly Penn,7,292,LBJ,Y,0,D,0-0,0,0,1,2,RFT
+Natalia Chorzepa,7,292,LBJ,Y,0,GK,0-0,0,0,0,5,RFT
+Dani,7,292,LBJ,Y,0,F,0-0,0,1,0,3,RFT
+Maddie,7,292,LBJ,Y,0,D,0-0,0,1,1,0,RFT
+Richard Lutkins,7,292,RFT,Y,0,GK,0-0,0,1,1,12,LBJ
+Juan Rivera,7,292,RFT,Y,0,F,0-0,0,1,0,0,LBJ
+Richard Zhao,7,292,RFT,Y,0,M,0-0,0,0,2,0,LBJ
+Reed Sussman,7,292,RFT,Y,0,F,0-0,1,8,0,0,LBJ
+Henry Nam,7,293,GFC,Y,0,M,0-0,0,1,0,0,NPC
+Seth Anderson,7,293,GFC,Y,0,M,0-0,0,0,0,0,NPC
+Emmanuel Cheung-Hernandez,7,293,GFC,Y,0,M,0-0,0,1,0,0,NPC
+Tyler Nolan,7,293,GFC,Y,0,M,0-0,0,0,0,0,NPC
+Raja Coleman,7,293,GFC,Y,0,GK,0-0,0,0,0,2,NPC
+Owen,7,293,GFC,0,0,M,0-0,0,0,0,0,NPC
+Rami Nasr,7,293,NPC,Y,0,D,1-0,0,0,1,0,GFC
+Yassine Falah,7,293,NPC,Y,0,F,0-0,0,1,4,0,GFC
+Vivek Mittal-Henkle,7,293,NPC,Y,0,D,0-0,0,2,0,0,GFC
+Grant DeVries,7,293,NPC,Y,0,GK,1-0,0,0,1,8,GFC
+Kabir Alvaro Hinduja-Obregon,7,293,NPC,Y,0,F,0-0,1,5,1,0,GFC
+Owen Sykes,7,293,NPC,0,0,M,0-0,0,0,1,0,GFC
+Oliver Wilson,7,294,TOE,Y,0,D,0-0,0,0,0,0,TGS
+Owen Ryan,7,294,TOE,Y,0,F,0-0,0,4,0,0,TGS
+Dane Clunk,7,294,TOE,Y,0,GK,1-0,0,0,1,8,TGS
+Noah Chong,7,294,TOE,Y,0,D,0-0,0,0,0,0,TGS
+Aiden Kim,7,294,TOE,Y,0,F,0-0,0,0,0,0,TGS
+Daniel Yor,7,294,TOE,0,0,M,0-0,0,1,1,0,TGS
+Lorenzo Bulichelli,7,294,TGS,Y,0,M,0-0,0,1,0,0,TOE
+Luka Harb,7,294,TGS,Y,0,M,0-0,1,4,3,0,TOE
+Arun Bhattacharjee,7,294,TGS,0,0,M,0-0,0,0,0,0,TOE
+Tinashe Mutasa,7,294,TGS,0,0,M,0-0,0,0,1,0,TOE
+Eli Kwait-Spitzer,7,294,TGS,Y,0,GK,0-0,0,0,0,6,TOE
+Reid Mccarty,7,294,TGS,0,0,M,0-0,0,0,0,0,TOE
+Tyrese Clarke,7,294,TGS,Y,0,M,0-0,0,2,0,0,TOE
+Sam Cohen,7,294,TGS,Y,0,M,0-0,0,1,0,0,TOE
+Aiden,7,294,TGS,0,0,M,0-0,0,1,2,0,TOE
